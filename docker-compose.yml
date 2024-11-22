@@ -1,0 +1,19 @@
+services:
+  marreta:
+    container_name: marreta
+    image: ghcr.io/manualdousuario/marreta:latest
+    ports:
+      - "80:80"
+    volumes:
+      - marreta_cache:/app/cache
+      - marreta_logs:/app/logs
+    environment:
+      - SITE_NAME=${SITE_NAME:-}
+      - SITE_DESCRIPTION=${SITE_DESCRIPTION:-}
+      - SITE_URL=${SITE_URL:-}
+      - DNS_SERVERS=${DNS_SERVERS:-}
+    restart: unless-stopped
+
+volumes:
+  marreta_cache:
+  marreta_logs:
