@@ -74,7 +74,7 @@ cp app/.env.sample app/.env
 3. Configura do seu jeito no `app/.env`:
 ```env
 SITE_NAME="Marreta"
-SITE_DESCRIPTION="Sua arma secreta contra sites sovinas!"
+SITE_DESCRIPTION="Chapéu de paywall é marreta!"
 SITE_URL=http://localhost
 DNS_SERVERS=94.140.14.14, 94.140.15.15
 ```

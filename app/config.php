@@ -21,7 +21,7 @@ $dotenv->load();
  * Configurações básicas do sistema
  */
 define('SITE_NAME', isset($_ENV['SITE_NAME']) ? $_ENV['SITE_NAME'] : 'Marreta');
-define('SITE_DESCRIPTION', isset($_ENV['SITE_DESCRIPTION']) ? $_ENV['SITE_DESCRIPTION'] : 'Sua arma secreta contra sites sovinas!');
+define('SITE_DESCRIPTION', isset($_ENV['SITE_DESCRIPTION']) ? $_ENV['SITE_DESCRIPTION'] : 'Chapéu de paywall é marreta!');
 define('SITE_URL', isset($_ENV['SITE_URL']) ? $_ENV['SITE_URL'] : 'https://' . $_SERVER['HTTP_HOST']);
 define('MAX_ATTEMPTS', 3);  // Número máximo de tentativas para acessar uma URL
 define('DNS_SERVERS', isset($_ENV['DNS_SERVERS']) ? $_ENV['DNS_SERVERS'] : '94.140.14.14, 94.140.15.15');
