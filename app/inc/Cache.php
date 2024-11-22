@@ -5,6 +5,7 @@
  * Esta classe implementa funcionalidades para armazenar e recuperar
  * conteúdo em cache, utilizando o sistema de arquivos como storage.
  * O cache é organizado por URLs convertidas em IDs únicos usando SHA-256.
+ * O conteúdo é comprimido usando gzip para economizar espaço em disco.
  */
 class Cache {
     /**
@@ -45,7 +46,7 @@ class Cache {
      */
     public function exists($url) {
         $id = $this->generateId($url);
-        $cachePath = $this->cacheDir . '/' . $id . '.html';
+        $cachePath = $this->cacheDir . '/' . $id . '.gz';
         return file_exists($cachePath);
     }
 
@@ -60,8 +61,15 @@ class Cache {
             return null;
         }
         $id = $this->generateId($url);
-        $cachePath = $this->cacheDir . '/' . $id . '.html';
-        return file_get_contents($cachePath);
+        $cachePath = $this->cacheDir . '/' . $id . '.gz';
+        
+        // Lê e descomprime o conteúdo
+        $compressedContent = file_get_contents($cachePath);
+        if ($compressedContent === false) {
+            return null;
+        }
+        
+        return gzdecode($compressedContent);
     }
 
     /**
@@ -69,10 +77,18 @@ class Cache {
      * 
      * @param string $url URL associada ao conteúdo
      * @param string $content Conteúdo a ser armazenado em cache
+     * @return bool True se o cache foi salvo com sucesso, False caso contrário
      */
     public function set($url, $content) {
         $id = $this->generateId($url);
-        $cachePath = $this->cacheDir . '/' . $id . '.html';
-        file_put_contents($cachePath, $content);
+        $cachePath = $this->cacheDir . '/' . $id . '.gz';
+        
+        // Comprime o conteúdo usando gzip
+        $compressedContent = gzencode($content, 3);
+        if ($compressedContent === false) {
+            return false;
+        }
+        
+        return file_put_contents($cachePath, $compressedContent) !== false;
     }
 }

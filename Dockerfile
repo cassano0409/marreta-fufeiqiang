@@ -1,6 +1,15 @@
 FROM php:8.0-fpm
 
-RUN apt-get update && apt-get install -y nginx nano procps unzip git htop
+# Instala dependências e extensões do PHP
+RUN apt-get update && apt-get install -y \
+    nginx \
+    nano \
+    procps \
+    zip \
+    git \
+    htop \
+    libzip-dev \
+    && docker-php-ext-install zip
 	
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 
@@ -12,13 +21,13 @@ COPY app/ /app/
 WORKDIR /app
 RUN composer install --no-interaction --optimize-autoloader
 
-# Copy and set permissions for entrypoint script
+# Copia e configura permissões do script de inicialização
 COPY docker-entrypoint.sh /usr/local/bin/
 RUN chmod +x /usr/local/bin/docker-entrypoint.sh
 
 RUN mkdir -p /app/cache /app/logs
 
-# Set base permissions for /app
+# Configura permissões base para o diretório /app
 RUN chown -R www-data:www-data /app \
     && chmod -R 755 /app
 
