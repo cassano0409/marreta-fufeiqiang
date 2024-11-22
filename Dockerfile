@@ -18,8 +18,12 @@ RUN chmod +x /usr/local/bin/env.sh
 COPY start.sh /usr/local/bin/start.sh
 RUN chmod +x /usr/local/bin/start.sh
 
-RUN mkdir -p /app/cache /app/logs
-RUN chown -R www-data:www-data /app && chmod -R 755 /app
+RUN mkdir -p /app/cache /app/logs \
+    && chown -R www-data:www-data /app/cache /app/logs \
+    && chmod -R 775 /app/cache /app/logs
+
+RUN chown -R www-data:www-data /app \
+    && chmod -R 755 /app
 
 VOLUME ["/app/cache", "/app/logs"]
 
