@@ -117,42 +117,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['url'])) {
             </p>
         </div>
 
-        <!-- Documentação da API -->
-        <div class="bg-white rounded-xl shadow-lg p-8 mt-8">
-            <h2 class="text-xl font-semibold text-gray-800 mb-6 flex items-center">
-                <img src="assets/svg/code.svg" class="w-6 h-6 mr-3" alt="API REST">
-                API REST
-            </h2>
-            <div class="space-y-4">
-                <p class="text-gray-600">
-                    O <?php echo SITE_NAME; ?> disponibiliza uma API REST para integração com outros sistemas:
-                </p>
-                <div class="bg-gray-50 rounded-lg p-4">
-                    <h3 class="font-medium text-gray-800 mb-2">Endpoint:</h3>
-                    <pre class="bg-gray-100 p-3 rounded-lg text-sm overflow-x-auto">GET <?php echo SITE_URL; ?>/api/https://exemplo.com</pre>
-                </div>
-                <div class="bg-gray-50 rounded-lg p-4">
-                    <h3 class="font-medium text-gray-800 mb-2">Resposta de sucesso:</h3>
-                    <pre class="bg-gray-100 p-3 rounded-lg text-sm overflow-x-auto">
-{
-    "status": 200,
-    "url": "<?php echo SITE_URL; ?>/p/https://exemplo.com"
-}</pre>
-                </div>
-                <div class="bg-gray-50 rounded-lg p-4">
-                    <h3 class="font-medium text-gray-800 mb-2">Resposta de erro:</h3>
-                    <pre class="bg-gray-100 p-3 rounded-lg text-sm overflow-x-auto">
-{
-    "status": 400,
-    "error": {
-        "code": "INVALID_URL",
-        "message": "URL inválida"
-    }
-}</pre>
-                </div>
-            </div>
-        </div>
-
         <!-- Seção de Bookmarklet -->
         <div class="bg-white rounded-xl shadow-lg p-8 mt-8 mb-8">
             <h2 class="text-xl font-semibold text-gray-800 mb-6 flex items-center">
@@ -195,6 +159,52 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['url'])) {
                         <div class="font-medium text-lg text-gray-800">12ft.io</div>
                     </div>
                 </a>
+            </div>
+        </div>
+
+        <!-- Desenvolvimento -->
+        <div class="bg-white rounded-xl shadow-lg p-8 mt-8">
+            <h2 class="text-xl font-semibold text-gray-800 mb-6 flex items-center">
+                <img src="assets/svg/code.svg" class="w-6 h-6 mr-3" alt="API REST">
+                API REST
+            </h2>
+            <div class="space-y-4">
+                <p class="text-gray-600">
+                    O <?php echo SITE_NAME; ?> disponibiliza uma API REST para integração com outros sistemas:
+                </p>
+                <div class="bg-gray-50 rounded-lg p-4">
+                    <h3 class="font-medium text-gray-800 mb-2">Endpoint:</h3>
+                    <pre class="bg-gray-100 p-3 rounded-lg text-sm overflow-x-auto">GET <?php echo SITE_URL; ?>/api/https://exemplo.com</pre>
+                </div>
+                <div class="bg-gray-50 rounded-lg p-4">
+                    <h3 class="font-medium text-gray-800 mb-2">Resposta de sucesso:</h3>
+                    <pre class="bg-gray-100 p-3 rounded-lg text-sm overflow-x-auto">
+{
+    "status": 200,
+    "url": "<?php echo SITE_URL; ?>/p/https://exemplo.com"
+}</pre>
+                </div>
+                <div class="bg-gray-50 rounded-lg p-4">
+                    <h3 class="font-medium text-gray-800 mb-2">Resposta de erro:</h3>
+                    <pre class="bg-gray-100 p-3 rounded-lg text-sm overflow-x-auto">
+{
+    "status": 400,
+    "error": {
+        "code": "INVALID_URL",
+        "message": "URL inválida"
+    }
+}</pre>
+                </div>
+            </div>
+            <h2 class="text-xl font-semibold text-gray-800 mt-6 mb-6 flex items-center">
+                <img src="assets/svg/code.svg" class="w-6 h-6 mr-3" alt="Open Source">
+                Projeto Open Source 
+            </h2>
+            <div>
+                <p class="text-gray-600">
+                    Este é um projeto de <a href="https://github.com/manualdousuario/marreta/" class="underline" target="_blank">código aberto</a> feito com ❤️!<br/>
+                    Você pode contribuir, reportar problemas ou fazer sugestões através do <a href="https://github.com/manualdousuario/marreta/" class="underline" target="_blank">GitHub</a>.
+                </p>
             </div>
         </div>
     </div>
