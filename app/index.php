@@ -59,6 +59,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['url'])) {
                 <?php echo SITE_NAME; ?>
             </h1>
             <p class="text-gray-600 text-lg"><?php echo SITE_DESCRIPTION; ?></p>
+            <p class="text-gray-600 text-lg">
+                <span class="font-bold text-blue-600">
+                    <?php echo count(glob("cache/*.gz")); ?>
+                </span>
+                <span>paredes derrubadas!</span>
+            </p>
         </div>
 
         <!-- Formulário principal de análise de URLs -->
