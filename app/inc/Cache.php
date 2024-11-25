@@ -6,6 +6,8 @@
  * conteúdo em cache, utilizando o sistema de arquivos como storage.
  * O cache é organizado por URLs convertidas em IDs únicos usando SHA-256.
  * O conteúdo é comprimido usando gzip para economizar espaço em disco.
+ * 
+ * Quando o modo DEBUG está ativo, todas as operações de cache são desativadas.
  */
 class Cache {
     /**
@@ -45,6 +47,11 @@ class Cache {
      * @return bool True se existir cache, False caso contrário
      */
     public function exists($url) {
+        // Se DEBUG está ativo, sempre retorna false
+        if (DEBUG) {
+            return false;
+        }
+
         $id = $this->generateId($url);
         $cachePath = $this->cacheDir . '/' . $id . '.gz';
         return file_exists($cachePath);
@@ -57,6 +64,11 @@ class Cache {
      * @return string|null Conteúdo em cache ou null se não existir
      */
     public function get($url) {
+        // Se DEBUG está ativo, sempre retorna null
+        if (DEBUG) {
+            return null;
+        }
+
         if (!$this->exists($url)) {
             return null;
         }
@@ -80,6 +92,11 @@ class Cache {
      * @return bool True se o cache foi salvo com sucesso, False caso contrário
      */
     public function set($url, $content) {
+        // Se DEBUG está ativo, não gera cache
+        if (DEBUG) {
+            return true;
+        }
+
         $id = $this->generateId($url);
         $cachePath = $this->cacheDir . '/' . $id . '.gz';
         

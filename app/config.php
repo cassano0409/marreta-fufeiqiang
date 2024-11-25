@@ -26,6 +26,7 @@ define('SITE_URL', isset($_ENV['SITE_URL']) ? $_ENV['SITE_URL'] : 'https://' . $
 define('MAX_ATTEMPTS', 3);  // Número máximo de tentativas para acessar uma URL
 define('DNS_SERVERS', isset($_ENV['DNS_SERVERS']) ? $_ENV['DNS_SERVERS'] : '94.140.14.14, 94.140.15.15');
 define('CACHE_DIR', __DIR__ . '/cache');
+define('DEBUG', isset($_ENV['DEBUG']) ? filter_var($_ENV['DEBUG'], FILTER_VALIDATE_BOOLEAN) : false);
 
 /**
  * Mensagens do sistema
