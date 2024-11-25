@@ -117,15 +117,21 @@ define('USER_AGENTS', array_column(BOT_CONFIGS, 'user_agent'));
  */
 define('BLOCKED_DOMAINS', [
     // Sites de notícias
-    'wsj.com',
-    'bloomberg.com',
-    'piaui.folha.uol.com.br',
-    'jota.info',
-    'haaretz.com',
-    'haaretz.co.il',
-    'washingtonpost.com',
-    'gauchazh.clicrbs.com.br',
-    'economist.com',
+    'wsj.com', // Hard
+    'bloomberg.com', // Bloqueio
+    'piaui.folha.uol.com.br', // Hard
+    'jota.info', // Hard
+    'haaretz.com', // Hard
+    'haaretz.co.il', // Hard
+    'washingtonpost.com', // Bloqueio
+    'gauchazh.clicrbs.com.br', // Hard
+    'barrons.com', // Bloqueio
+    'economist.com', // Hard
+    'liberation.fr', // Bloqueio
+    'lesoir.be', // Bloqueio
+    'doi.org', // Hard
+    'utppublishing', // Hard
+    'tab.uol.com.br', // Bloqueio
     // Tracking
     'metaffiliation.com',
     'google-analytics.com',
@@ -152,6 +158,7 @@ define('BLOCKED_DOMAINS', [
     'instagram.com',
     'twitter.com',
     'x.com',
+    't.co',
     'linkedin.com',
     'tiktok.com',
     'pinterest.com',
@@ -185,6 +192,8 @@ define('BLOCKED_DOMAINS', [
     'xvideos.com',
     'xnxx.com',
     'onlyfans.com',
+    'privacy.com.br',
+    'fatalmodel.com',
     // Apostas e jogos
     'bet365.com',
     'betfair.com',
@@ -193,5 +202,17 @@ define('BLOCKED_DOMAINS', [
     // Outros sites populares
     'github.com',
     'stackoverflow.com',
-    'wikipedia.org'
+    'wikipedia.org',
+    'shs.cairn.info',
+    'exemplo.com',
+    'brainly.com.br',
+    'scribd.com',
+    'google.com',
+    'google.com.br',
+    'msn.com',
+    'archive.is',
+    'archive.today',
+    '12ft.io',
+    'jusbrasil.com.br',
+    'glassdoor.com.br'
 ]);
