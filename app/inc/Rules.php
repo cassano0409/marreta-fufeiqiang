@@ -55,7 +55,7 @@ class Rules {
             'clearStorage' => true
         ],
         'estadao.com.br' => [
-            'idElementRemove' => ['paywall', 'paywall-container'],
+            'idElementRemove' => ['paywall', 'paywall-container', 'softwall'],
             'classElementRemove' => ['paywall-content', 'signin-wall', 'pay-wall'],
             'scriptTagRemove' => ['paywall.js', 'pywll.js'],
             'cookies' => [
@@ -232,7 +232,8 @@ class Rules {
                 'tinypass.js',
                 'tinypass.min.js',
                 'tp.min.js',
-                'premium.js'
+                'premium.js',
+                'amp-access-0.1.js'
             ],
             'cookies' => [
                 'cookie',

@@ -240,6 +240,11 @@ class URLAnalyzer {
         $url = strtolower($url);
         $url = trim($url);
         
+        // Detecta e converte URLs AMP
+        if (preg_match('#https://([^.]+)\.cdn\.ampproject\.org/v/s/([^/]+)(.*)#', $url, $matches)) {
+            $url = 'https://' . $matches[2] . $matches[3];
+        }
+        
         $parsedUrl = parse_url($url);
         
         if (!isset($parsedUrl['scheme'])) {
@@ -309,29 +314,47 @@ class URLAnalyzer {
      */
     private function isTrackingParam($param) {
         $trackingPatterns = [
-            '/^utm_/',      // Google Analytics
-            '/^fbclid$/',   // Facebook
-            '/^gclid$/',    // Google Ads
-            '/^msclkid$/',  // Microsoft
-            '/^mc_/',       // Mailchimp
-            '/^pk_/',       // Piwik/Matomo
-            '/^n_/',        // Navegg
-            '/^dclid$/',    // DoubleClick
-            '/^_hs/',       // HubSpot
+            // Google Analytics e AMP
+            '/^utm_/',      // Universal Analytics
             '/^_ga/',       // Google Analytics
             '/^_gl/',       // Google Analytics linker
+            '/^gclid$/',    // Google Ads Click ID
+            '/^dclid$/',    // DoubleClick Click ID
+            '/^amp_/',      // AMP parameters
+            '/^usqp$/',     // Google AMP Cache
+            '/^__amp_source_origin$/', // AMP source origin
+            '/^amp_latest_update_time$/', // AMP update time
+            '/^amp_cb$/',   // AMP callback
+            '/^amp_gsa$/',  // AMP Google Search App
+            '/^amp_js_v$/', // AMP JavaScript version
+            '/^amp_r$/',    // AMP referrer
+            '/^aoh$/',      // AMP origin header
+            
+            // Social Media
+            '/^fbclid$/',   // Facebook Click ID
+            '/^msclkid$/',  // Microsoft Click ID
+            '/^igshid$/',   // Instagram
+            '/^yclid$/',    // Yandex Click ID
+            
+            // Email Marketing
+            '/^mc_/',       // Mailchimp
+            '/^_hs/',       // HubSpot
+            '/^_hsenc$/',   // HubSpot encoded
+            '/^_hsmi$/',    // HubSpot message ID
+            '/^mkt_tok$/',  // Marketo
+            
+            // Analytics e Tracking
+            '/^pk_/',       // Piwik/Matomo
+            '/^n_/',        // Navegg
+            '/^_openstat$/', // OpenStat
+            
+            // Outros
             '/^ref$/',      // Referrer
             '/^source$/',   // Source tracking
             '/^medium$/',   // Medium tracking
             '/^campaign$/', // Campaign tracking
             '/^affiliate$/', // Affiliate tracking
             '/^partner$/',  // Partner tracking
-            '/^_openstat$/', // OpenStat
-            '/^yclid$/',    // Yandex
-            '/^_hsenc$/',   // HubSpot
-            '/^_hsmi$/',    // HubSpot
-            '/^mkt_tok$/',  // Marketo
-            '/^igshid$/',   // Instagram
         ];
         
         foreach ($trackingPatterns as $pattern) {
