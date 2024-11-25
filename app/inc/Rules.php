@@ -72,6 +72,9 @@ class Rules {
         'em.com.br' => [
             'fixRelativeUrls' => true,
         ],
+        'businessinsider.com' => [
+            'fixRelativeUrls' => true,
+        ],
         'opovo.com.br' => [
             'fixRelativeUrls' => true,
             'classElementRemove' => ['screen-loading', 'overlay-advise'],
