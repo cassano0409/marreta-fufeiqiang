@@ -77,6 +77,7 @@ SITE_NAME="Marreta"
 SITE_DESCRIPTION="Chapéu de paywall é marreta!"
 SITE_URL=http://localhost
 DNS_SERVERS=94.140.14.14, 94.140.15.15
+DEBUG=true
 ```
 
 4. Roda tudo:
@@ -85,6 +86,8 @@ docker-compose up -d
 ```
 
 Pronto! Vai estar rodando em `http://localhost` 🎉
+
+A opção de `DEBUG` quando `true` não irá gerar cache!
 
 ## ⚙️ Personalizando
 
