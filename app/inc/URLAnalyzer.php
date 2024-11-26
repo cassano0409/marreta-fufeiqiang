@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Classe responsável pela análise e processamento de URLs
  * 
@@ -13,7 +14,8 @@
 require_once 'Rules.php';
 require_once 'Cache.php';
 
-class URLAnalyzer {
+class URLAnalyzer
+{
     /**
      * @var array Lista de User Agents disponíveis para requisições
      */
@@ -43,7 +45,8 @@ class URLAnalyzer {
      * Construtor da classe
      * Inicializa as dependências necessárias
      */
-    public function __construct() {
+    public function __construct()
+    {
         $this->userAgents = USER_AGENTS;
         $this->maxAttempts = MAX_ATTEMPTS;
         $this->dnsServers = explode(',', DNS_SERVERS);
@@ -57,7 +60,8 @@ class URLAnalyzer {
      * @param string $url URL que gerou o erro
      * @param string $error Mensagem de erro
      */
-    private function logError($url, $error) {
+    private function logError($url, $error)
+    {
         $timestamp = date('Y-m-d H:i:s');
         $logEntry = "[{$timestamp}] URL: {$url} - Error: {$error}" . PHP_EOL;
         file_put_contents(__DIR__ . '/../logs/error.log', $logEntry, FILE_APPEND);
@@ -70,45 +74,47 @@ class URLAnalyzer {
      * @return string Conteúdo processado da URL
      * @throws Exception Em caso de erros durante o processamento
      */
-    public function analyze($url) {
+    public function analyze($url)
+    {
         try {
             $cleanUrl = $this->cleanUrl($url);
-            
+
             if ($this->cache->exists($cleanUrl)) {
                 return $this->cache->get($cleanUrl);
             }
-            
+
             $parsedUrl = parse_url($cleanUrl);
             $domain = $parsedUrl['host'];
-            
+
             // Verificação de domínios bloqueados
             foreach (BLOCKED_DOMAINS as $blockedDomain) {
-                if (strpos($domain, $blockedDomain) !== false) {
+                // Verifica apenas correspondência exata do domínio
+                if ($domain === $blockedDomain) {
                     $error = 'Este domínio está bloqueado para extração.';
                     $this->logError($cleanUrl, $error);
                     throw new Exception($error);
                 }
             }
-            
+
             $resolvedIp = $this->resolveDns($cleanUrl);
             if (!$resolvedIp) {
                 $error = 'Falha ao resolver DNS para o domínio';
                 $this->logError($cleanUrl, $error);
                 throw new Exception($error);
             }
-            
+
             $content = $this->fetchWithMultipleAttempts($cleanUrl, $resolvedIp);
-            
+
             if (empty($content)) {
                 $error = 'Não foi possível obter o conteúdo. Tente usar serviços de arquivo.';
                 $this->logError($cleanUrl, $error);
                 throw new Exception($error);
             }
-            
+
             $content = $this->processContent($content, $domain, $cleanUrl);
-            
+
             $this->cache->set($cleanUrl, $content);
-            
+
             return $content;
         } catch (Exception $e) {
             $this->logError($url, $e->getMessage());
@@ -124,13 +130,20 @@ class URLAnalyzer {
      * @return string Conteúdo obtido
      * @throws Exception Se todas as tentativas falharem
      */
-    private function fetchWithMultipleAttempts($url, $resolvedIp) {
+    private function fetchWithMultipleAttempts($url, $resolvedIp)
+    {
         $attempts = 0;
         $errors = [];
 
+        // Array com as chaves dos user agents para rotação
+        $userAgentKeys = array_keys($this->userAgents);
+        $totalUserAgents = count($userAgentKeys);
+
         while ($attempts < $this->maxAttempts) {
-            try {               
-                $content = $this->fetchWithCurl($url, $resolvedIp, $attempts);
+            try {
+                // Seleciona um user agent de forma rotativa
+                $currentUserAgentKey = $userAgentKeys[$attempts % $totalUserAgents];
+                $content = $this->fetchWithCurl($url, $resolvedIp, $currentUserAgentKey);
                 if (!empty($content)) {
                     return $content;
                 }
@@ -150,20 +163,20 @@ class URLAnalyzer {
      * 
      * @param string $url URL para requisição
      * @param string $resolvedIp IP resolvido do domínio
-     * @param int $attempts Número da tentativa atual
+     * @param string $userAgentKey Chave do user agent a ser utilizado
      * @return string Conteúdo obtido
      * @throws Exception Em caso de erro na requisição
      */
-    private function fetchWithCurl($url, $resolvedIp, $attempts) {
+    private function fetchWithCurl($url, $resolvedIp, $userAgentKey)
+    {
         $parsedUrl = parse_url($url);
         $host = $parsedUrl['host'];
 
         $domainRules = $this->getDomainRules(parse_url($url, PHP_URL_HOST));
 
-        $userAgent = $this->userAgents[$attempts % count($this->userAgents)];
-        if (isset($domainRules['userAgent'])) {
-            $userAgent = $domainRules['userAgent'];
-        }
+        // Obtém a configuração do user agent
+        $userAgentConfig = $this->userAgents[$userAgentKey];
+        $userAgent = $userAgentConfig['user_agent'];
 
         $curlOptions = [
             CURLOPT_URL => $url,
@@ -178,25 +191,32 @@ class URLAnalyzer {
             CURLOPT_DNS_SERVERS => implode(',', $this->dnsServers)
         ];
 
-        if (!isset($domainRules['headers'])) {
-            $headers = [
-                'Host: ' . $host,
-                'Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
-                'Accept-Language: pt-BR,pt;q=0.9,en-US;q=0.8,en;q=0.7',
-                'Cache-Control: no-cache',
-                'Pragma: no-cache'
-            ];
+        // Prepara os headers
+        $headers = [
+            'Host: ' . $host,
+            'Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+            'Accept-Language: pt-BR,pt;q=0.9,en-US;q=0.8,en;q=0.7',
+            'Cache-Control: no-cache',
+            'Pragma: no-cache'
+        ];
 
-            if ($domainRules !== null && isset($domainRules['customHeaders'])) {
-                foreach ($domainRules['customHeaders'] as $headerName => $headerValue) {
-                    $headers[] = $headerName . ': ' . $headerValue;
-                }
+        // Adiciona os headers específicos do user agent
+        if (isset($userAgentConfig['headers'])) {
+            foreach ($userAgentConfig['headers'] as $headerName => $headerValue) {
+                $headers[] = $headerName . ': ' . $headerValue;
             }
-
-            $curlOptions[CURLOPT_HTTPHEADER] = $headers;
-            $curlOptions[CURLOPT_COOKIESESSION] = true;
-            $curlOptions[CURLOPT_FRESH_CONNECT] = true;
         }
+
+        // Adiciona headers específicos do domínio se existirem
+        if ($domainRules !== null && isset($domainRules['customHeaders'])) {
+            foreach ($domainRules['customHeaders'] as $headerName => $headerValue) {
+                $headers[] = $headerName . ': ' . $headerValue;
+            }
+        }
+
+        $curlOptions[CURLOPT_HTTPHEADER] = $headers;
+        $curlOptions[CURLOPT_COOKIESESSION] = true;
+        $curlOptions[CURLOPT_FRESH_CONNECT] = true;
 
         if ($domainRules !== null && isset($domainRules['cookies'])) {
             $cookies = [];
@@ -216,7 +236,7 @@ class URLAnalyzer {
         $content = curl_exec($ch);
         $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
         $error = curl_error($ch);
-        
+
         curl_close($ch);
 
         if ($error) {
@@ -226,7 +246,7 @@ class URLAnalyzer {
         if ($httpCode >= 400) {
             throw new Exception("Erro HTTP: " . $httpCode);
         }
-        
+
         return $content;
     }
 
@@ -236,39 +256,40 @@ class URLAnalyzer {
      * @param string $url URL para limpar
      * @return string URL limpa e normalizada
      */
-    private function cleanUrl($url) {
+    private function cleanUrl($url)
+    {
         $url = strtolower($url);
         $url = trim($url);
-        
+
         // Detecta e converte URLs AMP
         if (preg_match('#https://([^.]+)\.cdn\.ampproject\.org/v/s/([^/]+)(.*)#', $url, $matches)) {
             $url = 'https://' . $matches[2] . $matches[3];
         }
-        
+
         $parsedUrl = parse_url($url);
-        
+
         if (!isset($parsedUrl['scheme'])) {
             $url = 'https://' . $url;
             $parsedUrl = parse_url($url);
         }
-        
+
         $cleanUrl = $parsedUrl['scheme'] . '://' . $parsedUrl['host'];
-        
+
         if (isset($parsedUrl['path'])) {
             $path = preg_replace('#/+#', '/', $parsedUrl['path']);
             $cleanUrl .= $path;
         }
-        
+
         if (isset($parsedUrl['query'])) {
             parse_str($parsedUrl['query'], $params);
             $params = $this->filterUrlParams($params);
-            
+
             if (!empty($params)) {
                 ksort($params);
                 $cleanUrl .= '?' . http_build_query($params);
             }
         }
-        
+
         return rtrim($cleanUrl, '/');
     }
 
@@ -278,31 +299,32 @@ class URLAnalyzer {
      * @param array $params Parâmetros da URL
      * @return array Parâmetros filtrados
      */
-    private function filterUrlParams($params) {
+    private function filterUrlParams($params)
+    {
         $filteredParams = [];
-        
+
         foreach ($params as $key => $value) {
             if (empty($value) && $value !== '0') {
                 continue;
             }
-            
+
             if ($this->isTrackingParam($key)) {
                 continue;
             }
-            
+
             if ($this->isSessionParam($key)) {
                 continue;
             }
-            
+
             if ($this->isCacheParam($key)) {
                 continue;
             }
-            
+
             if ($this->isContentParam($key)) {
                 $filteredParams[$key] = $value;
             }
         }
-        
+
         return $filteredParams;
     }
 
@@ -312,7 +334,8 @@ class URLAnalyzer {
      * @param string $param Nome do parâmetro
      * @return bool True se for parâmetro de tracking
      */
-    private function isTrackingParam($param) {
+    private function isTrackingParam($param)
+    {
         $trackingPatterns = [
             // Google Analytics e AMP
             '/^utm_/',      // Universal Analytics
@@ -329,25 +352,25 @@ class URLAnalyzer {
             '/^amp_js_v$/', // AMP JavaScript version
             '/^amp_r$/',    // AMP referrer
             '/^aoh$/',      // AMP origin header
-            
+
             // Social Media
             '/^fbclid$/',   // Facebook Click ID
             '/^msclkid$/',  // Microsoft Click ID
             '/^igshid$/',   // Instagram
             '/^yclid$/',    // Yandex Click ID
-            
+
             // Email Marketing
             '/^mc_/',       // Mailchimp
             '/^_hs/',       // HubSpot
             '/^_hsenc$/',   // HubSpot encoded
             '/^_hsmi$/',    // HubSpot message ID
             '/^mkt_tok$/',  // Marketo
-            
+
             // Analytics e Tracking
             '/^pk_/',       // Piwik/Matomo
             '/^n_/',        // Navegg
             '/^_openstat$/', // OpenStat
-            
+
             // Outros
             '/^ref$/',      // Referrer
             '/^source$/',   // Source tracking
@@ -356,13 +379,13 @@ class URLAnalyzer {
             '/^affiliate$/', // Affiliate tracking
             '/^partner$/',  // Partner tracking
         ];
-        
+
         foreach ($trackingPatterns as $pattern) {
             if (preg_match($pattern, $param)) {
                 return true;
             }
         }
-        
+
         return false;
     }
 
@@ -372,7 +395,8 @@ class URLAnalyzer {
      * @param string $param Nome do parâmetro
      * @return bool True se for parâmetro de sessão
      */
-    private function isSessionParam($param) {
+    private function isSessionParam($param)
+    {
         $sessionPatterns = [
             '/sess(ion)?[_-]?id/i',
             '/^sid$/',
@@ -388,13 +412,13 @@ class URLAnalyzer {
             '/^auth[_-]?token$/',
             '/^access[_-]?token$/',
         ];
-        
+
         foreach ($sessionPatterns as $pattern) {
             if (preg_match($pattern, $param)) {
                 return true;
             }
         }
-        
+
         return false;
     }
 
@@ -404,7 +428,8 @@ class URLAnalyzer {
      * @param string $param Nome do parâmetro
      * @return bool True se for parâmetro de cache
      */
-    private function isCacheParam($param) {
+    private function isCacheParam($param)
+    {
         $cachePatterns = [
             '/^v$/',
             '/^ver$/',
@@ -419,13 +444,13 @@ class URLAnalyzer {
             '/^[0-9]+$/',
             '/^_=[0-9]+$/',
         ];
-        
+
         foreach ($cachePatterns as $pattern) {
             if (preg_match($pattern, $param)) {
                 return true;
             }
         }
-        
+
         return false;
     }
 
@@ -435,7 +460,8 @@ class URLAnalyzer {
      * @param string $param Nome do parâmetro
      * @return bool True se for parâmetro de conteúdo
      */
-    private function isContentParam($param) {
+    private function isContentParam($param)
+    {
         $contentPatterns = [
             '/^id$/',
             '/^page$/',
@@ -464,17 +490,17 @@ class URLAnalyzer {
             '/^topic$/',
             '/^section$/',
         ];
-        
+
         foreach ($contentPatterns as $pattern) {
             if (preg_match($pattern, $param)) {
                 return true;
             }
         }
-        
+
         if (preg_match('/^[a-z0-9]{4,}$/i', $param)) {
             return true;
         }
-        
+
         return false;
     }
 
@@ -484,10 +510,11 @@ class URLAnalyzer {
      * @param string $url URL para resolver DNS
      * @return string|false IP resolvido ou false em caso de falha
      */
-    private function resolveDns($url) {
+    private function resolveDns($url)
+    {
         $parsedUrl = parse_url($url);
         $domain = $parsedUrl['host'];
-        
+
         foreach ($this->dnsServers as $dnsServer) {
             $dnsQuery = [
                 'name' => $domain,
@@ -533,7 +560,8 @@ class URLAnalyzer {
      * @param string $domain Domínio para buscar regras
      * @return array|null Regras do domínio ou null se não encontrar
      */
-    private function getDomainRules($domain) {
+    private function getDomainRules($domain)
+    {
         return $this->rules->getDomainRules($domain);
     }
 
@@ -543,16 +571,17 @@ class URLAnalyzer {
      * @param DOMElement $element Elemento DOM
      * @param array $classesToRemove Classes a serem removidas
      */
-    private function removeClassNames($element, $classesToRemove) {
+    private function removeClassNames($element, $classesToRemove)
+    {
         if (!$element->hasAttribute('class')) {
             return;
         }
-        
+
         $classes = explode(' ', $element->getAttribute('class'));
-        $newClasses = array_filter($classes, function($class) use ($classesToRemove) {
+        $newClasses = array_filter($classes, function ($class) use ($classesToRemove) {
             return !in_array(trim($class), $classesToRemove);
         });
-        
+
         if (empty($newClasses)) {
             $element->removeAttribute('class');
         } else {
@@ -567,7 +596,8 @@ class URLAnalyzer {
      * @param DOMXPath $xpath Objeto XPath
      * @param string $baseUrl URL base para correção
      */
-    private function fixRelativeUrls($dom, $xpath, $baseUrl) {
+    private function fixRelativeUrls($dom, $xpath, $baseUrl)
+    {
         $parsedBase = parse_url($baseUrl);
         $baseHost = $parsedBase['scheme'] . '://' . $parsedBase['host'];
 
@@ -606,15 +636,16 @@ class URLAnalyzer {
      * @param string $url URL completa
      * @return string Conteúdo processado
      */
-    private function processContent($content, $domain, $url) {
+    private function processContent($content, $domain, $url)
+    {
         $dom = new DOMDocument();
         $dom->preserveWhiteSpace = true;
         libxml_use_internal_errors(true);
         @$dom->loadHTML(mb_convert_encoding($content, 'HTML-ENTITIES', 'UTF-8'), LIBXML_HTML_NOIMPLIED | LIBXML_HTML_NODEFDTD);
         libxml_clear_errors();
-        
+
         $xpath = new DOMXPath($dom);
-        
+
         $domainRules = $this->getDomainRules($domain);
         if ($domainRules !== null) {
             if (isset($domainRules['fixRelativeUrls']) && $domainRules['fixRelativeUrls'] === true) {
