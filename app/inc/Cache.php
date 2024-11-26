@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Classe responsável pelo gerenciamento de cache do sistema
  * 
@@ -9,7 +10,8 @@
  * 
  * Quando o modo DEBUG está ativo, todas as operações de cache são desativadas.
  */
-class Cache {
+class Cache
+{
     /**
      * @var string Diretório onde os arquivos de cache serão armazenados
      */
@@ -20,7 +22,8 @@ class Cache {
      * 
      * Inicializa o diretório de cache e cria-o se não existir
      */
-    public function __construct() {
+    public function __construct()
+    {
         $this->cacheDir = CACHE_DIR;
         if (!file_exists($this->cacheDir)) {
             mkdir($this->cacheDir, 0777, true);
@@ -33,7 +36,8 @@ class Cache {
      * @param string $url URL para qual será gerado o ID
      * @return string Hash SHA-256 da URL normalizada
      */
-    public function generateId($url) {
+    public function generateId($url)
+    {
         // Remove protocolo e www
         $url = preg_replace('#^https?://(www\.)?#', '', $url);
         // Gera ID único usando SHA-256
@@ -46,7 +50,8 @@ class Cache {
      * @param string $url URL a ser verificada
      * @return bool True se existir cache, False caso contrário
      */
-    public function exists($url) {
+    public function exists($url)
+    {
         // Se DEBUG está ativo, sempre retorna false
         if (DEBUG) {
             return false;
@@ -63,7 +68,8 @@ class Cache {
      * @param string $url URL do conteúdo a ser recuperado
      * @return string|null Conteúdo em cache ou null se não existir
      */
-    public function get($url) {
+    public function get($url)
+    {
         // Se DEBUG está ativo, sempre retorna null
         if (DEBUG) {
             return null;
@@ -74,13 +80,13 @@ class Cache {
         }
         $id = $this->generateId($url);
         $cachePath = $this->cacheDir . '/' . $id . '.gz';
-        
+
         // Lê e descomprime o conteúdo
         $compressedContent = file_get_contents($cachePath);
         if ($compressedContent === false) {
             return null;
         }
-        
+
         return gzdecode($compressedContent);
     }
 
@@ -91,7 +97,8 @@ class Cache {
      * @param string $content Conteúdo a ser armazenado em cache
      * @return bool True se o cache foi salvo com sucesso, False caso contrário
      */
-    public function set($url, $content) {
+    public function set($url, $content)
+    {
         // Se DEBUG está ativo, não gera cache
         if (DEBUG) {
             return true;
@@ -99,13 +106,13 @@ class Cache {
 
         $id = $this->generateId($url);
         $cachePath = $this->cacheDir . '/' . $id . '.gz';
-        
+
         // Comprime o conteúdo usando gzip
         $compressedContent = gzencode($content, 3);
         if ($compressedContent === false) {
             return false;
         }
-        
+
         return file_put_contents($cachePath, $compressedContent) !== false;
     }
 }

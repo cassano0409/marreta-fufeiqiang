@@ -91,9 +91,13 @@ A opção de `DEBUG` quando `true` não irá gerar cache!
 
 ## ⚙️ Personalizando
 
-No `Rules.php` você pode configurar regras diferentes pra cada site e regras globais
+As configurações estão organizadas em `data/`:
 
-Em `config.php` você tem a lista os sites que não quer permitir ou não permitem extrair dados e configurações de User Agents
+- `domain_rules.php`: Regras específicas para cada site
+- `global_rules.php`: Regras que se aplicam a todos os sites
+- `blocked_domains.php`: Lista de sites bloqueados
+- `user_agents.php`: Configurações de User Agents
+- `messages.php`: Mensagens do sistema
 
 ## 🛠️ Manutenção
 

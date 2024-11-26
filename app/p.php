@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Processador de URLs
  * 
@@ -22,7 +23,7 @@ $prefix = '/p/';
 if (strpos($path, $prefix) === 0) {
     // Remove o prefixo e decodifica a URL
     $url = urldecode(substr($path, strlen($prefix)));
-    
+
     // Valida o formato da URL
     if (filter_var($url, FILTER_VALIDATE_URL)) {
         $analyzer = new URLAnalyzer();
@@ -35,7 +36,7 @@ if (strpos($path, $prefix) === 0) {
         } catch (Exception $e) {
             $errorMessage = $e->getMessage();
             $errorType = 'GENERIC_ERROR'; // Tipo padrão de erro
-            
+
             // Mapeia a mensagem de erro para um tipo específico
             if (strpos($errorMessage, 'bloqueado') !== false) {
                 $errorType = 'BLOCKED_DOMAIN';
@@ -48,7 +49,7 @@ if (strpos($path, $prefix) === 0) {
             } elseif (strpos($errorMessage, 'obter conteúdo') !== false) {
                 $errorType = 'CONTENT_ERROR';
             }
-            
+
             // Redireciona para a página inicial com mensagem de erro
             header('Location: /?message=' . $errorType);
             exit;

@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Classe responsável pelo gerenciamento de regras de manipulação de conteúdo
  * 
@@ -7,7 +8,8 @@
  * Inclui funcionalidades para remoção de paywalls, elementos específicos,
  * manipulação de cookies e execução de códigos customizados.
  */
-class Rules {
+class Rules
+{
     /**
      * Array associativo contendo regras específicas para cada domínio
      * 
@@ -37,7 +39,8 @@ class Rules {
      * @param string $domain Domínio completo
      * @return string Domínio base sem www
      */
-    private function getBaseDomain($domain) {
+    private function getBaseDomain($domain)
+    {
         return preg_replace('/^www\./', '', $domain);
     }
 
@@ -47,19 +50,20 @@ class Rules {
      * @param string $domain Domínio a ser dividido
      * @return array Array com todas as combinações possíveis do domínio
      */
-    private function getDomainParts($domain) {
+    private function getDomainParts($domain)
+    {
         $domain = $this->getBaseDomain($domain);
         $parts = explode('.', $domain);
-        
+
         $combinations = [];
         for ($i = 0; $i < count($parts) - 1; $i++) {
             $combinations[] = implode('.', array_slice($parts, $i));
         }
-        
-        usort($combinations, function($a, $b) {
+
+        usort($combinations, function ($a, $b) {
             return strlen($b) - strlen($a);
         });
-        
+
         return $combinations;
     }
 
@@ -69,15 +73,16 @@ class Rules {
      * @param string $domain Domínio para buscar regras
      * @return array|null Array com regras mescladas ou null se não encontrar
      */
-    public function getDomainRules($domain) {
+    public function getDomainRules($domain)
+    {
         $domainParts = $this->getDomainParts($domain);
-        
+
         foreach ($this->domainRules as $pattern => $rules) {
             if ($this->getBaseDomain($domain) === $this->getBaseDomain($pattern)) {
                 return $this->mergeWithGlobalRules($rules);
             }
         }
-        
+
         foreach ($domainParts as $part) {
             foreach ($this->domainRules as $pattern => $rules) {
                 if ($part === $this->getBaseDomain($pattern)) {
@@ -85,7 +90,7 @@ class Rules {
                 }
             }
         }
-        
+
         return null;
     }
 
@@ -95,7 +100,8 @@ class Rules {
      * @param array $rules Regras específicas do domínio
      * @return array Regras mescladas
      */
-    private function mergeWithGlobalRules($rules) {
+    private function mergeWithGlobalRules($rules)
+    {
         $globalRules = $this->getGlobalRules();
 
         if (isset($rules['excludeGlobalRules']) && is_array($rules['excludeGlobalRules'])) {
@@ -130,7 +136,8 @@ class Rules {
      * 
      * @return array Array com todas as regras globais
      */
-    public function getGlobalRules() {
+    public function getGlobalRules()
+    {
         return $this->globalRules;
     }
 }

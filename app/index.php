@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Página principal do sistema
  * 
@@ -38,6 +39,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['url'])) {
 ?>
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -50,6 +52,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['url'])) {
     <meta property="og:image" content="<?php echo SITE_URL; ?>/assets/opengraph.png" />
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
+
 <body class="bg-gray-50 min-h-screen">
     <div class="container mx-auto px-4 py-8 max-w-4xl">
         <!-- Cabeçalho da página -->
@@ -75,18 +78,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['url'])) {
                         <span class="inline-flex items-center px-5 rounded-l-lg border border-r-0 border-gray-300 bg-gray-50 text-gray-500">
                             <img src="assets/svg/link.svg" class="w-6 h-6" alt="Link">
                         </span>
-                        <input type="url" 
-                               name="url" 
-                               id="url" 
-                               class="flex-1 block w-full rounded-none rounded-r-lg text-lg py-4 border border-l-0 border-gray-300 bg-gray-50 focus:border-blue-500 focus:ring-blue-500 shadow-sm bg-gray-50"
-                               placeholder="Digite a URL (ex: https://exemplo.com)" 
-                               value="<?php echo htmlspecialchars($url); ?>"
-                               required 
-                               pattern="https?://.+"
-                               title="Por favor, insira uma URL válida começando com http:// ou https://">
+                        <input type="url"
+                            name="url"
+                            id="url"
+                            class="flex-1 block w-full rounded-none rounded-r-lg text-lg py-4 border border-l-0 border-gray-300 bg-gray-50 focus:border-blue-500 focus:ring-blue-500 shadow-sm bg-gray-50"
+                            placeholder="Digite a URL (ex: https://exemplo.com)"
+                            value="<?php echo htmlspecialchars($url); ?>"
+                            required
+                            pattern="https?://.+"
+                            title="Por favor, insira uma URL válida começando com http:// ou https://">
                     </div>
-                    <button type="submit" 
-                            class="mt-4 w-full inline-flex justify-center items-center px-6 py-4 border border-transparent text-lg font-medium rounded-lg text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200">
+                    <button type="submit"
+                        class="mt-4 w-full inline-flex justify-center items-center px-6 py-4 border border-transparent text-lg font-medium rounded-lg text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200">
                         <img src="assets/svg/search.svg" class="w-6 h-6 mr-3" alt="Search">
                         Analisar
                     </button>
@@ -113,13 +116,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['url'])) {
                 </div>
             <?php endif; ?>
         </div>
-        
+
         <!-- Exemplo de uso direto -->
         <div class="mt-8 text-center text-base text-gray-500">
             <p>
                 <img src="assets/svg/code.svg" class="inline-block w-5 h-5 mr-2" alt="Acesso direito">
-                Acesso direto: 
-                <pre class="bg-gray-100 p-3 rounded-lg text-sm overflow-x-auto"><?php echo SITE_URL; ?>/p/https://exemplo.com</pre>
+                Acesso direto:
+            <pre class="bg-gray-100 p-3 rounded-lg text-sm overflow-x-auto"><?php echo SITE_URL; ?>/p/https://exemplo.com</pre>
             </p>
         </div>
 
@@ -134,9 +137,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['url'])) {
                     Arraste o botão abaixo para sua barra de favoritos para acessar o <?php echo SITE_NAME; ?> rapidamente em qualquer página:
                 </p>
                 <div class="flex justify-center">
-                    <a href="javascript:(function(){let currentUrl=window.location.href;window.location.href='<?php echo SITE_URL; ?>/p/'+encodeURIComponent(currentUrl);})()" 
-                       class="inline-flex items-center px-6 py-3 border-2 border-blue-500 font-medium rounded-lg text-blue-600 bg-white hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200 cursor-move"
-                       onclick="return false;">
+                    <a href="javascript:(function(){let currentUrl=window.location.href;window.location.href='<?php echo SITE_URL; ?>/p/'+encodeURIComponent(currentUrl);})()"
+                        class="inline-flex items-center px-6 py-3 border-2 border-blue-500 font-medium rounded-lg text-blue-600 bg-white hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200 cursor-move"
+                        onclick="return false;">
                         <img src="assets/svg/marreta.svg" class="w-5 h-5 mr-2" alt="Marreta">
                         Abrir no <?php echo SITE_NAME; ?>
                     </a>
@@ -151,15 +154,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['url'])) {
                 Serviços alternativos
             </h2>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <a href="https://archive.today" target="_blank" 
-                   class="flex items-center p-4 rounded-lg border-2 border-gray-200 hover:border-blue-500 hover:bg-blue-50 transition-all duration-200">
+                <a href="https://archive.today" target="_blank"
+                    class="flex items-center p-4 rounded-lg border-2 border-gray-200 hover:border-blue-500 hover:bg-blue-50 transition-all duration-200">
                     <img src="assets/svg/archive.svg" class="w-8 h-8 mr-4" alt="Archive.today">
                     <div>
                         <div class="font-medium text-lg text-gray-800">archive.today</div>
                     </div>
                 </a>
                 <a href="https://12ft.io" target="_blank"
-                   class="flex items-center p-4 rounded-lg border-2 border-gray-200 hover:border-green-500 hover:bg-green-50 transition-all duration-200">
+                    class="flex items-center p-4 rounded-lg border-2 border-gray-200 hover:border-green-500 hover:bg-green-50 transition-all duration-200">
                     <img src="assets/svg/bypass.svg" class="w-8 h-8 mr-4" alt="12ft.io">
                     <div>
                         <div class="font-medium text-lg text-gray-800">12ft.io</div>
@@ -204,11 +207,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['url'])) {
             </div>
             <h2 class="text-xl font-semibold text-gray-800 mt-6 mb-6 flex items-center">
                 <img src="assets/svg/code.svg" class="w-6 h-6 mr-3" alt="Open Source">
-                Projeto Open Source 
+                Projeto Open Source
             </h2>
             <div>
                 <p class="text-gray-600">
-                    Este é um projeto de <a href="https://github.com/manualdousuario/marreta/" class="underline" target="_blank">código aberto</a> feito com ❤️!<br/>
+                    Este é um projeto de <a href="https://github.com/manualdousuario/marreta/" class="underline" target="_blank">código aberto</a> feito com ❤️!<br />
                     Você pode contribuir, reportar problemas ou fazer sugestões através do <a href="https://github.com/manualdousuario/marreta/" class="underline" target="_blank">GitHub</a>.
                 </p>
             </div>
@@ -218,4 +221,5 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['url'])) {
     <!-- Scripts JavaScript -->
     <script src="assets/js/scripts.js"></script>
 </body>
+
 </html>

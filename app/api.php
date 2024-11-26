@@ -1,4 +1,5 @@
 <?php
+
 /**
  * API para análise de URLs
  * 
@@ -28,25 +29,26 @@ $prefix = '/api/';
 
 if (strpos($path, $prefix) === 0) {
     $url = urldecode(substr($path, strlen($prefix)));
-    
+
     /**
      * Função para enviar resposta JSON padronizada
      * 
      * @param array $data Dados a serem enviados na resposta
      * @param int $statusCode Código de status HTTP
      */
-    function sendResponse($data, $statusCode = 200) {
+    function sendResponse($data, $statusCode = 200)
+    {
         http_response_code($statusCode);
         $response = [
             'status' => $statusCode
         ];
-        
+
         if (isset($data['error'])) {
             $response['error'] = $data['error'];
         } else if (isset($data['url'])) {
             $response['url'] = $data['url'];
         }
-        
+
         echo json_encode($response);
         exit;
     }
@@ -64,21 +66,20 @@ if (strpos($path, $prefix) === 0) {
     try {
         // Instancia o analisador de URLs
         $analyzer = new URLAnalyzer();
-        
+
         // Tenta analisar a URL fornecida
         $analyzer->analyze($url);
-        
+
         // Se a análise for bem-sucedida, retorna a URL processada
         sendResponse([
             'url' => SITE_URL . '/p/' . $url
         ], 200);
-
     } catch (Exception $e) {
         // Tratamento de erros com mapeamento para códigos HTTP apropriados
         $message = $e->getMessage();
         $statusCode = 400;
         $errorCode = 'GENERIC_ERROR';
-        
+
         // Mapeia a mensagem de erro para o código e status apropriados
         foreach (MESSAGES as $key => $value) {
             if (strpos($message, $value['message']) !== false) {
@@ -87,10 +88,10 @@ if (strpos($path, $prefix) === 0) {
                 break;
             }
         }
-        
+
         // Adiciona header de erro para melhor tratamento no cliente
         header('X-Error-Message: ' . $message);
-        
+
         sendResponse([
             'error' => [
                 'code' => $errorCode,
