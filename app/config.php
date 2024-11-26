@@ -130,7 +130,7 @@ define('BLOCKED_DOMAINS', [
     'liberation.fr', // Bloqueio
     'lesoir.be', // Bloqueio
     'doi.org', // Hard
-    'utppublishing', // Hard
+    'utppublishing.com', // Hard
     'tab.uol.com.br', // Bloqueio
     // Tracking
     'metaffiliation.com',
