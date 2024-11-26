@@ -25,6 +25,7 @@ return [
     'tab.uol.com.br', // Bloqueio
     'chronicle.com', // Hard
     'latercera.com', // Bloqueio
+    'nexojornal.com', // Hard
     // Tracking
     'metaffiliation.com',
     'google-analytics.com',
