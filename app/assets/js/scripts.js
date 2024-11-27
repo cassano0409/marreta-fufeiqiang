@@ -51,7 +51,7 @@ function validateForm() {
         Analisando...
     `;
 
-    return false;
+    return true;
 }
 
 /**
