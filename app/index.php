@@ -50,7 +50,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['url'])) {
     <meta property="og:title" content="<?php echo SITE_NAME; ?>" />
     <meta property="og:description" content="<?php echo htmlspecialchars(SITE_DESCRIPTION); ?>" />
     <meta property="og:image" content="<?php echo SITE_URL; ?>/assets/opengraph.png" />
-    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.tailwindcss.com/3.4.15"></script>
 </head>
 
 <body class="bg-gray-50 min-h-screen">
