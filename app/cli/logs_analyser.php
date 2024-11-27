@@ -26,7 +26,7 @@ if (php_sapi_name() !== 'cli') {
 }
 
 // Caminho para o arquivo de log
-$logFile = __DIR__ . '/error.log';
+$logFile = __DIR__ . '/../logs/error.log';
 
 // Verifica se o arquivo de log existe
 if (!file_exists($logFile)) {

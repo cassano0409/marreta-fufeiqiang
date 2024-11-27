@@ -1,9 +1,8 @@
 vendor/
 composer.lock
 .env
-app/logs/*.log
-app/cache/*.html
-app/cache/*.gz
+app/logs
+app/cache
 TODO.md
 
 # Created by https://www.toptal.com/developers/gitignore/api/composer,windows,macos,linux
