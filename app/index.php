@@ -219,7 +219,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['url'])) {
     </div>
 
     <!-- Scripts JavaScript -->
-    <script src="assets/js/scripts.js"></script>
+    <script>
+    <?php
+    $js_file = 'assets/js/scripts.js';
+    if (file_exists($js_file)) {
+        echo file_get_contents($js_file);
+    }
+    ?>
+    </script>
 </body>
 
 </html>

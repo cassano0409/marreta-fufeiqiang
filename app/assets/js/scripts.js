@@ -14,6 +14,7 @@
  */
 function validateForm() {
     const urlInput = document.getElementById('url');
+    const submitButton = document.querySelector('button[type="submit"]');
     const url = urlInput.value.trim();
     
     // Verifica se a URL não está vazia
@@ -36,7 +37,21 @@ function validateForm() {
         return false;
     }
 
-    return true;
+    // Desabilita o input e o botão
+    urlInput.disabled = true;
+    submitButton.disabled = true;
+    
+    // Adiciona classes de disabled do Tailwind
+    submitButton.classList.add('cursor-not-allowed', 'disabled:bg-blue-400');
+    submitButton.classList.remove('hover:bg-blue-700');
+
+    // Adiciona estado de loading ao botão
+    submitButton.innerHTML = `
+        <img src="/assets/svg/refresh.svg" class="animate-spin w-5 h-5 mr-2">
+        Analisando...
+    `;
+
+    return false;
 }
 
 /**
