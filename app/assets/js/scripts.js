@@ -38,16 +38,18 @@ function validateForm() {
     }
 
     // Desabilita o input e o botão
-    urlInput.disabled = true;
+    urlInput.readonly = true;
     submitButton.disabled = true;
     
     // Adiciona classes de disabled do Tailwind
-    submitButton.classList.add('cursor-not-allowed', 'disabled:bg-blue-400');
+    submitButton.classList.add('cursor-wait', 'disabled:bg-blue-400');
     submitButton.classList.remove('hover:bg-blue-700');
+
+    urlInput.classList.add('cursor-wait', 'disabled:bg-gray-50', 'focus:outline-none');
 
     // Adiciona estado de loading ao botão
     submitButton.innerHTML = `
-        <img src="/assets/svg/refresh.svg" class="animate-spin w-5 h-5 mr-2">
+        <img src="assets/svg/search.svg" class="w-6 h-6 mr-3" alt="Search">
         Analisando...
     `;
 
