@@ -1,32 +1,45 @@
 <?php
 
+use Inc\Cache\CacheStorageInterface;
+use Inc\Cache\DiskStorage;
+use Inc\Cache\S3Storage;
+
 /**
  * Classe responsável pelo gerenciamento de cache do sistema
  * 
  * Esta classe implementa funcionalidades para armazenar e recuperar
- * conteúdo em cache, utilizando o sistema de arquivos como storage.
+ * conteúdo em cache, suportando múltiplos backends de armazenamento (disco ou S3).
  * O cache é organizado por URLs convertidas em IDs únicos usando SHA-256.
- * O conteúdo é comprimido usando gzip para economizar espaço em disco.
- * 
- * Quando o modo DEBUG está ativo, todas as operações de cache são desativadas.
+ * O conteúdo é comprimido usando gzip para economizar espaço.
  */
 class Cache
 {
     /**
-     * @var string Diretório onde os arquivos de cache serão armazenados
+     * @var CacheStorageInterface Implementação de storage para o cache
      */
-    private $cacheDir;
+    private $storage;
 
     /**
      * Construtor da classe
      * 
-     * Inicializa o diretório de cache e cria-o se não existir
+     * Inicializa o storage apropriado baseado na configuração
      */
     public function __construct()
     {
-        $this->cacheDir = CACHE_DIR;
-        if (!file_exists($this->cacheDir)) {
-            mkdir($this->cacheDir, 0777, true);
+        // Se S3 está configurado e ativo, usa S3Storage
+        if (defined('S3_CACHE_ENABLED') && S3_CACHE_ENABLED === true) {
+            $this->storage = new S3Storage([
+                'key'      => S3_ACCESS_KEY,
+                'secret'   => S3_SECRET_KEY,
+                'bucket'   => S3_BUCKET,
+                'region'   => S3_REGION ?? 'us-east-1',
+                'prefix'   => S3_PREFIX ?? 'cache/',
+                'acl'      => S3_ACL ?? 'private',
+                'endpoint' => defined('S3_ENDPOINT') ? S3_ENDPOINT : null
+            ]);
+        } else {
+            // Caso contrário, usa o storage em disco
+            $this->storage = new DiskStorage(CACHE_DIR);
         }
     }
 
@@ -57,9 +70,7 @@ class Cache
             return false;
         }
 
-        $id = $this->generateId($url);
-        $cachePath = $this->cacheDir . '/' . $id . '.gz';
-        return file_exists($cachePath);
+        return $this->storage->exists($this->generateId($url));
     }
 
     /**
@@ -75,19 +86,7 @@ class Cache
             return null;
         }
 
-        if (!$this->exists($url)) {
-            return null;
-        }
-        $id = $this->generateId($url);
-        $cachePath = $this->cacheDir . '/' . $id . '.gz';
-
-        // Lê e descomprime o conteúdo
-        $compressedContent = file_get_contents($cachePath);
-        if ($compressedContent === false) {
-            return null;
-        }
-
-        return gzdecode($compressedContent);
+        return $this->storage->get($this->generateId($url));
     }
 
     /**
@@ -104,15 +103,6 @@ class Cache
             return true;
         }
 
-        $id = $this->generateId($url);
-        $cachePath = $this->cacheDir . '/' . $id . '.gz';
-
-        // Comprime o conteúdo usando gzip
-        $compressedContent = gzencode($content, 3);
-        if ($compressedContent === false) {
-            return false;
-        }
-
-        return file_put_contents($cachePath, $compressedContent) !== false;
+        return $this->storage->set($this->generateId($url), $content);
     }
 }
