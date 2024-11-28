@@ -33,7 +33,7 @@ class Cache
                 'secret'   => S3_SECRET_KEY,
                 'bucket'   => S3_BUCKET,
                 'region'   => S3_REGION ?? 'us-east-1',
-                'prefix'   => S3_PREFIX ?? 'cache/',
+                'prefix'   => S3_FOLDER ?? 'cache/',
                 'acl'      => S3_ACL ?? 'private',
                 'endpoint' => defined('S3_ENDPOINT') ? S3_ENDPOINT : null
             ]);

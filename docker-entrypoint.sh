@@ -73,8 +73,8 @@ if [ -n "${S3_REGION}" ]; then
     echo "S3_REGION=${S3_REGION}" >> /app/.env
 fi
 
-if [ -n "${S3_PREFIX}" ]; then
-    echo "S3_PREFIX=${S3_PREFIX}" >> /app/.env
+if [ -n "${S3_FOLDER}" ]; then
+    echo "S3_FOLDER=${S3_FOLDER}" >> /app/.env
 fi
 
 if [ -n "${S3_ACL}" ]; then

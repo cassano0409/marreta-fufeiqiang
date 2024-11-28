@@ -39,7 +39,7 @@ if (S3_CACHE_ENABLED) {
     define('S3_SECRET_KEY', $_ENV['S3_SECRET_KEY'] ?? '');
     define('S3_BUCKET', $_ENV['S3_BUCKET'] ?? '');
     define('S3_REGION', $_ENV['S3_REGION'] ?? 'us-east-1');
-    define('S3_PREFIX', $_ENV['S3_PREFIX'] ?? 'cache/');
+    define('S3_FOLDER', $_ENV['S3_FOLDER'] ?? 'cache/');
     define('S3_ACL', $_ENV['S3_ACL'] ?? 'private');
     define('S3_ENDPOINT', $_ENV['S3_ENDPOINT'] ?? null);
 }
