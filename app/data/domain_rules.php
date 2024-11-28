@@ -14,15 +14,13 @@
  * - scriptTagRemove: Array de scripts que devem ser removidos (partial match)
  * - cookies: Array associativo de cookies a serem definidos (null remove o cookie)
  * - classAttrRemove: Array de classes a serem removidas de elementos
- * - clearStorage: Boolean indicando se deve limpar o storage do navegador
  * - fixRelativeUrls: Boolean para habilitar correção de URLs relativas
  * - customCode: String contendo código JavaScript personalizado para execução
  * - excludeGlobalRules: Array de regras globais que devem ser ignoradas
  */
 return [
     'nsctotal.com.br' => [
-        'userAgent' => '',
-        'headers' => ''
+        'userAgent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36'
     ],
     'globo.com' => [
         'idElementRemove' => ['cookie-banner-lgpd', 'paywall-cpt', 'mc-read-more-wrapper', 'paywall-cookie-content', 'paywall-cpt'],
@@ -33,8 +31,7 @@ return [
             'piano_if' => null,
             'piano_user_id' => null
         ],
-        'classAttrRemove' => ['wall', 'protected-content', 'cropped-block'],
-        'clearStorage' => true,
+        'classAttrRemove' => ['wall', 'protected-content', 'cropped-block']
     ],
     'folha.uol.com.br' => [
         'idElementRemove' => ['paywall-flutuante', 'paywall', 'paywall-signup'],
@@ -44,8 +41,7 @@ return [
             'paywall_visit' => null,
             'folha_id' => null,
             'paywall_access' => 'true'
-        ],
-        'clearStorage' => true
+        ]
     ],
     'estadao.com.br' => [
         'idElementRemove' => ['paywall', 'paywall-container', 'softwall'],
@@ -53,8 +49,7 @@ return [
         'scriptTagRemove' => ['paywall.js', 'pywll.js'],
         'cookies' => [
             'estadao_paywall' => null
-        ],
-        'clearStorage' => true
+        ]
     ],
     'exame.com' => [
         'fixRelativeUrls' => true,
@@ -102,7 +97,6 @@ return [
             'next-flags' => null,
             'next:ads' => null
         ],
-        'clearStorage' => true,
         'customHeaders' => [
             'Referer' => 'https://www.google.com.br/'
         ]
@@ -111,8 +105,7 @@ return [
         'cookies' => [
             'nyt-gdpr' => '1',
             'nyt-purr' => 'cfh'
-        ],
-        'clearStorage' => true
+        ]
     ],
     'correio24horas.com.br' => [
         'idElementRemove' => ['paywall'],
@@ -133,9 +126,6 @@ return [
     'foreignpolicy.com' => [
         'idElementRemove' => ['paywall_bg'],
         'classAttrRemove' => ['overlay-no-scroll', 'overlay-no-scroll'],
-    ],
-    'wired.com' => [
-        'clearStorage' => true
     ],
     'dgabc.com.br' => [
         'customCode' => '
@@ -169,7 +159,6 @@ return [
             '__tbc' => null,
             '__pvi' => null,
             '_pctx' => null
-        ],
-        'clearStorage' => true
+        ]
     ]
 ];
