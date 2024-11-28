@@ -10,6 +10,7 @@
  * - Mensagens do sistema
  * - Configurações de bots e user agents
  * - Lista de domínios bloqueados
+ * - Configurações de cache S3
  */
 
 require_once __DIR__ . '/vendor/autoload.php';
@@ -28,6 +29,20 @@ define('MAX_ATTEMPTS', 3);  // Número máximo de tentativas para acessar uma UR
 define('DNS_SERVERS', isset($_ENV['DNS_SERVERS']) ? $_ENV['DNS_SERVERS'] : '94.140.14.14, 94.140.15.15');
 define('CACHE_DIR', __DIR__ . '/cache');
 define('DEBUG', isset($_ENV['DEBUG']) ? filter_var($_ENV['DEBUG'], FILTER_VALIDATE_BOOLEAN) : false);
+
+/**
+ * Configurações de Cache S3
+ */
+define('S3_CACHE_ENABLED', isset($_ENV['S3_CACHE_ENABLED']) ? filter_var($_ENV['S3_CACHE_ENABLED'], FILTER_VALIDATE_BOOLEAN) : false);
+if (S3_CACHE_ENABLED) {
+    define('S3_ACCESS_KEY', $_ENV['S3_ACCESS_KEY'] ?? '');
+    define('S3_SECRET_KEY', $_ENV['S3_SECRET_KEY'] ?? '');
+    define('S3_BUCKET', $_ENV['S3_BUCKET'] ?? '');
+    define('S3_REGION', $_ENV['S3_REGION'] ?? 'us-east-1');
+    define('S3_PREFIX', $_ENV['S3_PREFIX'] ?? 'cache/');
+    define('S3_ACL', $_ENV['S3_ACL'] ?? 'private');
+    define('S3_ENDPOINT', $_ENV['S3_ENDPOINT'] ?? null);
+}
 
 /**
  * Carrega as configurações do sistema
