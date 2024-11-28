@@ -1,6 +1,7 @@
 # 🛠️ Marreta
 
 [![pt-br](https://img.shields.io/badge/lang-pt--br-green.svg)](https://github.com/manualdousuario/marreta/blob/master/README.md)
+[![en](https://img.shields.io/badge/lang-en-red.svg)](https://github.com/manualdousuario/marreta/blob/master/README.en.md)
 
 Marreta é uma ferramenta para analisar URLs e acessar conteúdo na web sem dor de cabeça.
 
@@ -98,6 +99,44 @@ As configurações estão organizadas em `data/`:
 - `blocked_domains.php`: Lista de sites bloqueados
 - `user_agents.php`: Configurações de User Agents
 - `messages.php`: Mensagens do sistema
+
+### Cache S3
+
+Suporte de armazenamento do cache em S3. Configure as seguintes variáveis no seu `.env`:
+
+```env
+S3_CACHE_ENABLED=true
+
+S3_ACCESS_KEY=access_key
+S3_SECRET_KEY=secret_key
+S3_BUCKET=nome_do_bucket
+S3_REGION=us-east-1
+S3_FOLDER_=cache/
+S3_ACL=private
+S3_ENDPOINT=
+```
+
+Configurações possiveis:
+
+```
+## R2
+S3_ACCESS_KEY=access_key
+S3_SECRET_KEY=secret_key
+S3_BUCKET=nome_do_bucket
+S3_ENDPOINT=https://{TOKEN}.r2.cloudflarestorage.com
+S3_REGION=auto
+S3_FOLDER_=cache/
+S3_ACL=private
+
+## DigitalOcean
+S3_ACCESS_KEY=access_key
+S3_SECRET_KEY=secret_key
+S3_BUCKET=nome_do_bucket
+S3_ENDPOINT=https://{REGIAO}.digitaloceanspaces.com
+S3_REGION=auto
+S3_FOLDER_=cache/
+S3_ACL=private
+```
 
 ## 🛠️ Manutenção
 
