@@ -9,10 +9,16 @@ RUN apt-get update && apt-get install -y \
     git \
     htop \
     libzip-dev \
-    && docker-php-ext-install zip
-	
+    && docker-php-ext-install zip opcache \
+    && docker-php-ext-enable opcache
+
+# Copia a configuração do OPCache
+COPY opcache.ini /usr/local/etc/php/conf.d/opcache.ini
+
+# Instala o Composer
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 
+# Copia a configuração do webservice
 COPY default.conf /etc/nginx/sites-available/default
 
 RUN mkdir -p /app
