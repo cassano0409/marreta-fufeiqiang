@@ -54,6 +54,7 @@ return [
     ],
     'scriptTagRemove' => [
         'tracking' => [
+            'gtm.js',
             'ga.js',
             'fbevents.js',
             'pixel.js',

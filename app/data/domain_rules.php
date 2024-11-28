@@ -14,7 +14,6 @@
  * - scriptTagRemove: Array de scripts que devem ser removidos (partial match)
  * - cookies: Array associativo de cookies a serem definidos (null remove o cookie)
  * - classAttrRemove: Array de classes a serem removidas de elementos
- * - fixRelativeUrls: Boolean para habilitar correção de URLs relativas
  * - customCode: String contendo código JavaScript personalizado para execução
  * - excludeGlobalRules: Array de regras globais que devem ser ignoradas
  */
@@ -51,24 +50,8 @@ return [
             'estadao_paywall' => null
         ]
     ],
-    'exame.com' => [
-        'fixRelativeUrls' => true,
-    ],
-    'diarinho.net' => [
-        'fixRelativeUrls' => true,
-    ],
-    'em.com.br' => [
-        'fixRelativeUrls' => true,
-    ],
-    'businessinsider.com' => [
-        'fixRelativeUrls' => true,
-    ],
     'opovo.com.br' => [
-        'fixRelativeUrls' => true,
-        'classElementRemove' => ['screen-loading', 'overlay-advise'],
-    ],
-    'folhadelondrina.com.br' => [
-        'fixRelativeUrls' => true,
+        'classElementRemove' => ['screen-loading', 'overlay-advise']
     ],
     'crusoe.com.br' => [
         'cookies' => [
@@ -125,7 +108,7 @@ return [
     ],
     'foreignpolicy.com' => [
         'idElementRemove' => ['paywall_bg'],
-        'classAttrRemove' => ['overlay-no-scroll', 'overlay-no-scroll'],
+        'classAttrRemove' => ['overlay-no-scroll', 'overlay-no-scroll']
     ],
     'dgabc.com.br' => [
         'customCode' => '
@@ -135,8 +118,7 @@ return [
                 $(".linhaSuperBanner").show();
                 $(".footer").show();
                 $(".NoticiaExclusivaLogado").show();
-            ',
-        'fixRelativeUrls' => true,
+            '
     ],
     'forbes.com' => [
         'classElementRemove' => ['zephr-backdrop', 'zephr-generic-modal'],
@@ -149,7 +131,7 @@ return [
         ],
     ],
     'seudinheiro.com' => [
-        'idElementRemove' => ['premium-paywall'],
+        'idElementRemove' => ['premium-paywall']
     ],
     'technologyreview.com' => [
         'cookies' => [

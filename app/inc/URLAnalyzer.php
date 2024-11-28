@@ -611,6 +611,9 @@ class URLAnalyzer
             foreach ($elements as $element) {
                 if ($element instanceof DOMElement) {
                     $src = $element->getAttribute('src');
+                    if (strpos($src, 'base64') !== false) {
+                        continue;
+                    }
                     if (strpos($src, 'http') !== 0 && strpos($src, '//') !== 0) {
                         $src = ltrim($src, '/');
                         $element->setAttribute('src', $baseHost . '/' . $src);
@@ -624,7 +627,13 @@ class URLAnalyzer
             foreach ($elements as $element) {
                 if ($element instanceof DOMElement) {
                     $href = $element->getAttribute('href');
-                    if (strpos($href, 'http') !== 0 && strpos($href, '//') !== 0 && strpos($href, '#') !== 0 && strpos($href, 'mailto:') !== 0) {
+                    if (strpos($href, 'mailto:') === 0 || 
+                        strpos($href, 'tel:') === 0 || 
+                        strpos($href, 'javascript:') === 0 || 
+                        strpos($href, '#') === 0) {
+                        continue;
+                    }
+                    if (strpos($href, 'http') !== 0 && strpos($href, '//') !== 0) {
                         $href = ltrim($href, '/');
                         $element->setAttribute('href', $baseHost . '/' . $href);
                     }
@@ -651,12 +660,11 @@ class URLAnalyzer
 
         $xpath = new DOMXPath($dom);
 
+        // Sempre aplica a correção de URLs relativas
+        $this->fixRelativeUrls($dom, $xpath, $url);
+
         $domainRules = $this->getDomainRules($domain);
         if ($domainRules !== null) {
-            if (isset($domainRules['fixRelativeUrls']) && $domainRules['fixRelativeUrls'] === true) {
-                $this->fixRelativeUrls($dom, $xpath, $url);
-            }
-
             if (isset($domainRules['customStyle'])) {
                 $styleElement = $dom->createElement('style');
                 $styleContent = '';
