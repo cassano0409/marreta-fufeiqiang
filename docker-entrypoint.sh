@@ -52,6 +52,39 @@ if [ -n "${DNS_SERVERS}" ]; then
     echo "DNS_SERVERS=${DNS_SERVERS}" >> /app/.env
 fi
 
+# Configurações S3
+if [ -n "${S3_CACHE_ENABLED}" ]; then
+    echo "S3_CACHE_ENABLED=${S3_CACHE_ENABLED}" >> /app/.env
+fi
+
+if [ -n "${S3_ACCESS_KEY}" ]; then
+    echo "S3_ACCESS_KEY=${S3_ACCESS_KEY}" >> /app/.env
+fi
+
+if [ -n "${S3_SECRET_KEY}" ]; then
+    echo "S3_SECRET_KEY=${S3_SECRET_KEY}" >> /app/.env
+fi
+
+if [ -n "${S3_BUCKET}" ]; then
+    echo "S3_BUCKET=${S3_BUCKET}" >> /app/.env
+fi
+
+if [ -n "${S3_REGION}" ]; then
+    echo "S3_REGION=${S3_REGION}" >> /app/.env
+fi
+
+if [ -n "${S3_PREFIX}" ]; then
+    echo "S3_PREFIX=${S3_PREFIX}" >> /app/.env
+fi
+
+if [ -n "${S3_ACL}" ]; then
+    echo "S3_ACL=${S3_ACL}" >> /app/.env
+fi
+
+if [ -n "${S3_ENDPOINT}" ]; then
+    echo "S3_ENDPOINT=${S3_ENDPOINT}" >> /app/.env
+fi
+
 log_success "Variáveis de ambiente configuradas"
 
 # === Ajuste de Permissões ===
