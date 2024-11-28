@@ -208,6 +208,11 @@ class URLAnalyzer
         }
 
         // Adiciona headers específicos do domínio se existirem
+        if ($domainRules !== null && isset($domainRules['userAgent'])) {
+            $curlOptions[CURLOPT_USERAGENT] = $domainRules['userAgent'];
+        }
+
+        // Adiciona headers específicos do domínio se existirem
         if ($domainRules !== null && isset($domainRules['customHeaders'])) {
             foreach ($domainRules['customHeaders'] as $headerName => $headerValue) {
                 $headers[] = $headerName . ': ' . $headerValue;
