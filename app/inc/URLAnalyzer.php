@@ -744,9 +744,20 @@ class URLAnalyzer
 
             if (isset($domainRules['scriptTagRemove'])) {
                 foreach ($domainRules['scriptTagRemove'] as $script) {
-                    $elements = $xpath->query("//script[contains(@src, '$script')] | //script[contains(text(), '$script')]");
-                    if ($elements !== false) {
-                        foreach ($elements as $element) {
+                    // Busca por tags script com src ou conteúdo contendo o script
+                    $scriptElements = $xpath->query("//script[contains(@src, '$script')] | //script[contains(text(), '$script')]");
+                    if ($scriptElements !== false) {
+                        foreach ($scriptElements as $element) {
+                            if ($element->parentNode) {
+                                $element->parentNode->removeChild($element);
+                            }
+                        }
+                    }
+
+                    // Busca por tags link que são scripts
+                    $linkElements = $xpath->query("//link[@as='script' and contains(@href, '$script') and @type='application/javascript']");
+                    if ($linkElements !== false) {
+                        foreach ($linkElements as $element) {
                             if ($element->parentNode) {
                                 $element->parentNode->removeChild($element);
                             }
