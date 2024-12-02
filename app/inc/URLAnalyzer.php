@@ -660,6 +660,25 @@ class URLAnalyzer
 
         $xpath = new DOMXPath($dom);
 
+        // Processa tags canônicas
+        $canonicalLinks = $xpath->query("//link[@rel='canonical']");
+        if ($canonicalLinks !== false) {
+            // Remove todas as tags canônicas existentes
+            foreach ($canonicalLinks as $link) {
+                if ($link->parentNode) {
+                    $link->parentNode->removeChild($link);
+                }
+            }
+        }
+        // Adiciona nova tag canônica com a URL original
+        $head = $xpath->query('//head')->item(0);
+        if ($head) {
+            $newCanonical = $dom->createElement('link');
+            $newCanonical->setAttribute('rel', 'canonical');
+            $newCanonical->setAttribute('href', $url);
+            $head->appendChild($newCanonical);
+        }
+
         // Sempre aplica a correção de URLs relativas
         $this->fixRelativeUrls($dom, $xpath, $url);
 
