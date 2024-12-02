@@ -778,6 +778,17 @@ class URLAnalyzer
             }
         }
 
+        // Adiciona CTA Marreta 
+        $body = $xpath->query('//body')->item(0);
+        if ($body) {
+            $marretaDiv = $dom->createElement('div');
+            $marretaDiv->setAttribute('style', 'z-index: 99999; position: fixed; bottom: 0; right: 4px; background: rgb(37,99,235); color: #fff; font-size: 13px; line-height: 1em; padding: 6px; margin: 0px; overflow: hidden; border-top-left-radius: 3px; border-top-right-radius: 3px; font-family: Tahoma, sans-serif;');
+            $marretaHtml = $dom->createDocumentFragment();
+            $marretaHtml->appendXML('Chapéu de paywall é <a href="'.SITE_URL.'" style="color: #fff; text-decoration: underline; font-weight: bold;" target="_blank">Marreta</a>!');
+            $marretaDiv->appendChild($marretaHtml);
+            $body->appendChild($marretaDiv);
+        }
+
         return $dom->saveHTML();
     }
 }
