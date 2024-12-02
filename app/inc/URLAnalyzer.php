@@ -55,6 +55,39 @@ class URLAnalyzer
     }
 
     /**
+     * Verifica se uma URL tem redirecionamentos e retorna a URL final
+     * 
+     * @param string $url URL para verificar redirecionamentos
+     * @return array Array com a URL final e se houve redirecionamento
+     */
+    public function checkRedirects($url)
+    {
+        $ch = curl_init();
+        curl_setopt_array($ch, [
+            CURLOPT_URL => $url,
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_HEADER => true,
+            CURLOPT_NOBODY => true,
+            CURLOPT_FOLLOWLOCATION => true,
+            CURLOPT_MAXREDIRS => 5,
+            CURLOPT_TIMEOUT => 5,
+            CURLOPT_USERAGENT => $this->userAgents[array_rand($this->userAgents)]['user_agent'],
+            CURLOPT_SSL_VERIFYPEER => false
+        ]);
+
+        $response = curl_exec($ch);
+        $finalUrl = curl_getinfo($ch, CURLINFO_EFFECTIVE_URL);
+        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        curl_close($ch);
+
+        return [
+            'finalUrl' => $finalUrl,
+            'hasRedirect' => ($finalUrl !== $url),
+            'httpCode' => $httpCode
+        ];
+    }
+
+    /**
      * Registra erros no arquivo de log
      * 
      * @param string $url URL que gerou o erro
@@ -182,8 +215,8 @@ class URLAnalyzer
             CURLOPT_URL => $url,
             CURLOPT_RETURNTRANSFER => true,
             CURLOPT_FOLLOWLOCATION => true,
-            CURLOPT_MAXREDIRS => 5,
-            CURLOPT_TIMEOUT => 30,
+            CURLOPT_MAXREDIRS => 2,
+            CURLOPT_TIMEOUT => 10,
             CURLOPT_ENCODING => '',
             CURLOPT_USERAGENT => $userAgent,
             CURLOPT_SSL_VERIFYPEER => false,
@@ -263,7 +296,6 @@ class URLAnalyzer
      */
     private function cleanUrl($url)
     {
-        $url = strtolower($url);
         $url = trim($url);
 
         // Detecta e converte URLs AMP

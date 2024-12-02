@@ -28,6 +28,17 @@ if (strpos($path, $prefix) === 0) {
     if (filter_var($url, FILTER_VALIDATE_URL)) {
         $analyzer = new URLAnalyzer();
         try {
+            // Verifica se há redirecionamentos
+            $redirectInfo = $analyzer->checkRedirects($url);
+            
+            // Se houver redirecionamento e a URL final for diferente
+            if ($redirectInfo['hasRedirect'] && $redirectInfo['finalUrl'] !== $url) {
+                // Redireciona para a URL final
+                header('Location: ' . SITE_URL . '/p/' . urlencode($redirectInfo['finalUrl']));
+                exit;
+            }
+
+            // Se não houver redirecionamento ou se já estiver na URL final
             // Tenta analisar e processar a URL
             $content = $analyzer->analyze($url);
             // Exibe o conteúdo processado
