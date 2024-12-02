@@ -60,6 +60,7 @@ return [
             'pixel.js',
             'chartbeat',
             'analytics.js',
+            'cmp.js',
         ],
         'paywall' => [
             'wall.js',
@@ -77,7 +78,8 @@ return [
             'tinypass.min.js',
             'tp.min.js',
             'premium.js',
-            'amp-access-0.1.js'
+            'amp-access-0.1.js',
+            'zephrBarriersScripts',
         ],
         'cookies' => [
             'cookie',
