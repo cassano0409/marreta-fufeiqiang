@@ -33,8 +33,10 @@ class Rules
         'scriptTagRemove',
         'cookies',
         'classAttrRemove',
-        'customCode'
+        'customCode',
+        'excludeGlobalRules'
     ];
+
 
     /**
      * Obtém o domínio base removendo o prefixo www
@@ -94,7 +96,8 @@ class Rules
             }
         }
 
-        return null;
+        // Se não encontrou regras específicas, retorna apenas as regras globais
+        return $this->getGlobalRules();
     }
 
     /**
@@ -106,55 +109,54 @@ class Rules
     private function mergeWithGlobalRules($rules)
     {
         $globalRules = $this->getGlobalRules();
-        $mergedRules = $rules;
+        $mergedRules = [];
 
-        // Processa excludeGlobalRules primeiro
-        $excludedRules = [];
-        if (isset($rules['excludeGlobalRules']) && is_array($rules['excludeGlobalRules'])) {
-            foreach ($rules['excludeGlobalRules'] as $ruleType => $excluded) {
-                if (isset($excluded) && is_array($excluded)) {
-                    foreach ($excluded as $category => $items) {
-                        $excludedRules[$ruleType] = array_merge(
-                            $excludedRules[$ruleType] ?? [],
-                            (array)$items
-                        );
-                    }
-                }
+        // Processa as exclusões de regras globais
+        $excludeGlobalRules = isset($rules['excludeGlobalRules']) ? $rules['excludeGlobalRules'] : [];
+        unset($rules['excludeGlobalRules']); // Remove do array de regras para não ser processado como regra normal
+
+        // Primeiro, adiciona todas as regras globais, exceto as excluídas
+        foreach ($globalRules as $ruleType => $globalTypeRules) {
+            if (!in_array($ruleType, $this->supportedRuleTypes)) {
+                continue;
             }
-        }
 
-        // Mescla cada tipo de regra suportado
-        foreach ($this->supportedRuleTypes as $ruleType) {
-            if (isset($globalRules[$ruleType])) {
-                if (!isset($mergedRules[$ruleType])) {
-                    $mergedRules[$ruleType] = [];
-                }
-
-                // Garante que estamos trabalhando com arrays
-                $domainTypeRules = (array)$mergedRules[$ruleType];
-                $globalTypeRules = (array)$globalRules[$ruleType];
-
-                // Aplica exclusões se existirem para este tipo
-                if (isset($excludedRules[$ruleType])) {
-                    $globalTypeRules = array_diff($globalTypeRules, $excludedRules[$ruleType]);
-                }
-
-                // Mescla as regras
-                if (in_array($ruleType, ['cookies', 'headers'])) {
-                    // Para cookies e headers, preserva as chaves
-                    $mergedRules[$ruleType] = array_merge($globalTypeRules, $domainTypeRules);
+            if (isset($excludeGlobalRules[$ruleType])) {
+                // Se o tipo de regra é um array associativo (como cookies ou headers)
+                if (is_array($globalTypeRules) && array_keys($globalTypeRules) !== range(0, count($globalTypeRules) - 1)) {
+                    $mergedRules[$ruleType] = array_diff_key($globalTypeRules, array_flip($excludeGlobalRules[$ruleType]));
                 } else {
-                    // Para outros tipos, mescla como arrays simples
-                    $mergedRules[$ruleType] = array_values(array_unique(array_merge(
-                        $domainTypeRules,
-                        $globalTypeRules
-                    )));
+                    // Para arrays simples (como classElementRemove)
+                    $mergedRules[$ruleType] = array_diff($globalTypeRules, $excludeGlobalRules[$ruleType]);
                 }
+            } else {
+                $mergedRules[$ruleType] = $globalTypeRules;
             }
         }
 
-        // Remove excludeGlobalRules do resultado final
-        unset($mergedRules['excludeGlobalRules']);
+        // Depois, mescla com as regras específicas do domínio
+        foreach ($rules as $ruleType => $domainTypeRules) {
+            if (!in_array($ruleType, $this->supportedRuleTypes)) {
+                continue;
+            }
+
+            if (!isset($mergedRules[$ruleType])) {
+                $mergedRules[$ruleType] = $domainTypeRules;
+                continue;
+            }
+
+            // Se o tipo de regra já existe, mescla apropriadamente
+            if (in_array($ruleType, ['cookies', 'headers'])) {
+                // Para cookies e headers, preserva as chaves
+                $mergedRules[$ruleType] = array_merge($mergedRules[$ruleType], $domainTypeRules);
+            } else {
+                // Para outros tipos, mescla como arrays simples
+                $mergedRules[$ruleType] = array_values(array_unique(array_merge(
+                    $mergedRules[$ruleType],
+                    (array)$domainTypeRules
+                )));
+            }
+        }
 
         return $mergedRules;
     }

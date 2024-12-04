@@ -15,7 +15,12 @@
  * - cookies: Array associativo de cookies a serem definidos (null remove o cookie)
  * - classAttrRemove: Array de classes a serem removidas de elementos
  * - customCode: String contendo código JavaScript personalizado para execução
- * - excludeGlobalRules: Array de regras globais que devem ser ignoradas
+ * - excludeGlobalRules: Array associativo de regras globais a serem excluídas para este domínio
+ *   Exemplo:
+ *   'excludeGlobalRules' => [
+ *       'scriptTagRemove' => ['gtm.js', 'ga.js'],  // Exclui scripts específicos das regras globais
+ *       'classElementRemove' => ['subscription']    // Exclui classes específicas das regras globais
+ *   ]
  */
 return [
     'nsctotal.com.br' => [
@@ -41,6 +46,10 @@ return [
             'folha_id' => null,
             'paywall_access' => 'true'
         ]
+    ],
+    'uol.com.br' => [
+        'scriptTagRemove' => ['me.jsuol.com.br', 'c.jsuol.com.br'],
+        'classElementRemove' => ['header-top-wrapper'],
     ],
     'estadao.com.br' => [
         'idElementRemove' => ['paywall', 'paywall-container', 'softwall'],
@@ -123,12 +132,8 @@ return [
     'forbes.com' => [
         'classElementRemove' => ['zephr-backdrop', 'zephr-generic-modal'],
         'excludeGlobalRules' => [
-            'classElementRemove' => [
-                'paywall' => [
-                    'premium-article',
-                ],
-            ],
-        ],
+            'classElementRemove' => ['premium-article'],
+        ]
     ],
     'seudinheiro.com' => [
         'idElementRemove' => ['premium-paywall']
