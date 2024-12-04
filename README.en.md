@@ -158,4 +158,6 @@ docker-compose exec app rm -rf /app/cache/*
 
 Made with ❤️! If you have questions or suggestions, open an issue and we'll help! 😉
 
+Thanks to the project [https://github.com/burlesco/burlesco](Burlesco) which served as the basis for several rules!
+
 Public instance at [marreta.pcdomanual.com](https://marreta.pcdomanual.com)!
