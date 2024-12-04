@@ -8,24 +8,19 @@
  */
 return [
     // Sites de notícias
-    'wsj.com', // Hard
-    'bloomberg.com', // Bloqueio
-    'piaui.folha.uol.com.br', // Hard
-    'jota.info', // Hard
-    'haaretz.com', // Hard
-    'haaretz.co.il', // Hard
-    'washingtonpost.com', // Bloqueio
-    'gauchazh.clicrbs.com.br', // Hard
-    'barrons.com', // Bloqueio
-    'economist.com', // Hard
-    'liberation.fr', // Bloqueio
-    'lesoir.be', // Bloqueio
-    'doi.org', // Hard
-    'utppublishing.com', // Hard
-    'tab.uol.com.br', // Bloqueio
-    'chronicle.com', // Hard
-    'latercera.com', // Bloqueio
-    'nexojornal.com', // Hard
+    //-- Conteudo fica atras de um acesso de login
+    'wsj.com',
+    'piaui.folha.uol.com.br',
+    'economist.com',
+    'doi.org',
+    'utppublishing.com',
+    'chronicle.com',
+    'nexojornal.com',
+    'lesoir.be',
+    'barrons.com',
+    //-- Bloqueio tecnico de acesso ao conteudo
+    'bloomberg.com',
+    'gauchazh.clicrbs.com.br', 
     // Tracking
     'metaffiliation.com',
     'google-analytics.com',

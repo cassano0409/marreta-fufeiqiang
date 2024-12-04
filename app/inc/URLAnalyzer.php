@@ -9,6 +9,7 @@
  * - Resolução DNS
  * - Requisições HTTP com múltiplas tentativas
  * - Processamento de conteúdo baseado em regras específicas por domínio
+ * - Suporte a Wayback Machine como fallback
  */
 
 require_once 'Rules.php';
@@ -188,7 +189,91 @@ class URLAnalyzer
             usleep(500000); // 0.5 segundo de espera entre tentativas
         }
 
-        throw new Exception("Falha ao obter conteúdo após {$this->maxAttempts} tentativas. Erros: " . implode(', ', $errors));
+        // Se todas as tentativas falharem, tenta buscar do Wayback Machine
+        try {
+            $content = $this->fetchFromWaybackMachine($url);
+            if (!empty($content)) {
+                return $content;
+            }
+        } catch (Exception $e) {
+            $errors[] = "Wayback Machine: " . $e->getMessage();
+        }
+
+        throw new Exception("Falha ao obter conteúdo após {$this->maxAttempts} tentativas e Wayback Machine. Erros: " . implode(', ', $errors));
+    }
+
+    /**
+     * Tenta obter o conteúdo da URL do Internet Archive's Wayback Machine
+     * 
+     * @param string $url URL original
+     * @return string|null Conteúdo do arquivo ou null se falhar
+     */
+    private function fetchFromWaybackMachine($url)
+    {
+        // Remove o protocolo (http/https) da URL
+        $cleanUrl = preg_replace('#^https?://#', '', $url);
+        
+        // Primeiro, verifica a disponibilidade de snapshots
+        $availabilityUrl = "https://archive.org/wayback/available?url=" . urlencode($cleanUrl);
+        
+        $ch = curl_init();
+        curl_setopt_array($ch, [
+            CURLOPT_URL => $availabilityUrl,
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_FOLLOWLOCATION => true,
+            CURLOPT_TIMEOUT => 10,
+            CURLOPT_USERAGENT => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+            CURLOPT_SSL_VERIFYPEER => false
+        ]);
+
+        $response = curl_exec($ch);
+        $error = curl_error($ch);
+        curl_close($ch);
+
+        if ($error || empty($response)) {
+            return null;
+        }
+
+        $data = json_decode($response, true);
+        if (!isset($data['archived_snapshots']['closest']['url'])) {
+            return null;
+        }
+
+        // Obtém o snapshot mais recente
+        $archiveUrl = $data['archived_snapshots']['closest']['url'];
+        
+        // Busca o conteúdo do snapshot
+        $ch = curl_init();
+        curl_setopt_array($ch, [
+            CURLOPT_URL => $archiveUrl,
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_FOLLOWLOCATION => true,
+            CURLOPT_MAXREDIRS => 2,
+            CURLOPT_TIMEOUT => 30,
+            CURLOPT_ENCODING => '',
+            CURLOPT_USERAGENT => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+            CURLOPT_SSL_VERIFYPEER => false,
+            CURLOPT_HTTPHEADER => [
+                'Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+                'Accept-Language: en-US,en;q=0.5',
+                'Cache-Control: no-cache',
+                'Pragma: no-cache'
+            ]
+        ]);
+
+        $content = curl_exec($ch);
+        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        $error = curl_error($ch);
+        curl_close($ch);
+
+        if ($error || $httpCode >= 400 || empty($content)) {
+            return null;
+        }
+
+        // Remove o toolbar do Wayback Machine
+        $content = preg_replace('/<!-- BEGIN WAYBACK TOOLBAR INSERT -->.*?<!-- END WAYBACK TOOLBAR INSERT -->/s', '', $content);
+        
+        return $content;
     }
 
     /**
