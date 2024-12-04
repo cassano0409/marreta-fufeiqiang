@@ -15,23 +15,26 @@ class Rules
      * 
      * Configurações possíveis para cada domínio:
      * @var array
-     * 
-     * - idElementRemove: IDs de elementos HTML que devem ser removidos
-     * - classElementRemove: Classes de elementos HTML que devem ser removidos
-     * - scriptTagRemove: Scripts que devem ser removidos
-     * - cookies: Cookies que devem ser definidos ou removidos
-     * - classAttrRemove: Classes que devem ser removidas de elementos
-     * - clearStorage: Se deve limpar o storage do navegador
-     * - customCode: Código JavaScript personalizado para execução
-     * - excludeGlobalRules: Array de regras globais a serem excluídas
-     * - userAgent: User Agent personalizado
-     * - headers: Headers HTTP personalizados
-     * - fixRelativeUrls: Habilita correção de URLs relativas
      */
     private $domainRules = DOMAIN_RULES;
 
     // Regras globais expandidas
     private $globalRules = GLOBAL_RULES;
+
+    /**
+     * Lista de tipos de regras suportados
+     * @var array
+     */
+    private $supportedRuleTypes = [
+        'userAgent',
+        'headers',
+        'idElementRemove',
+        'classElementRemove',
+        'scriptTagRemove',
+        'cookies',
+        'classAttrRemove',
+        'customCode'
+    ];
 
     /**
      * Obtém o domínio base removendo o prefixo www
@@ -103,32 +106,57 @@ class Rules
     private function mergeWithGlobalRules($rules)
     {
         $globalRules = $this->getGlobalRules();
+        $mergedRules = $rules;
 
+        // Processa excludeGlobalRules primeiro
+        $excludedRules = [];
         if (isset($rules['excludeGlobalRules']) && is_array($rules['excludeGlobalRules'])) {
-            foreach ($rules['excludeGlobalRules'] as $ruleType => $categories) {
-                if (isset($globalRules[$ruleType])) {
-                    foreach ($categories as $category => $itemsToExclude) {
-                        if (isset($globalRules[$ruleType][$category])) {
-                            $globalRules[$ruleType][$category] = array_diff(
-                                $globalRules[$ruleType][$category],
-                                $itemsToExclude
-                            );
-                        }
+            foreach ($rules['excludeGlobalRules'] as $ruleType => $excluded) {
+                if (isset($excluded) && is_array($excluded)) {
+                    foreach ($excluded as $category => $items) {
+                        $excludedRules[$ruleType] = array_merge(
+                            $excludedRules[$ruleType] ?? [],
+                            (array)$items
+                        );
                     }
                 }
             }
         }
 
-        foreach ($globalRules as $ruleType => $categories) {
-            if (!isset($rules[$ruleType])) {
-                $rules[$ruleType] = [];
-            }
-            foreach ($categories as $category => $items) {
-                $rules[$ruleType] = array_merge($rules[$ruleType], $items);
+        // Mescla cada tipo de regra suportado
+        foreach ($this->supportedRuleTypes as $ruleType) {
+            if (isset($globalRules[$ruleType])) {
+                if (!isset($mergedRules[$ruleType])) {
+                    $mergedRules[$ruleType] = [];
+                }
+
+                // Garante que estamos trabalhando com arrays
+                $domainTypeRules = (array)$mergedRules[$ruleType];
+                $globalTypeRules = (array)$globalRules[$ruleType];
+
+                // Aplica exclusões se existirem para este tipo
+                if (isset($excludedRules[$ruleType])) {
+                    $globalTypeRules = array_diff($globalTypeRules, $excludedRules[$ruleType]);
+                }
+
+                // Mescla as regras
+                if (in_array($ruleType, ['cookies', 'headers'])) {
+                    // Para cookies e headers, preserva as chaves
+                    $mergedRules[$ruleType] = array_merge($globalTypeRules, $domainTypeRules);
+                } else {
+                    // Para outros tipos, mescla como arrays simples
+                    $mergedRules[$ruleType] = array_values(array_unique(array_merge(
+                        $domainTypeRules,
+                        $globalTypeRules
+                    )));
+                }
             }
         }
 
-        return $rules;
+        // Remove excludeGlobalRules do resultado final
+        unset($mergedRules['excludeGlobalRules']);
+
+        return $mergedRules;
     }
 
     /**

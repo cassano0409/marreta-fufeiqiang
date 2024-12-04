@@ -804,7 +804,7 @@ class URLAnalyzer
             foreach ($elements as $element) {
                 if ($element instanceof DOMElement) {
                     $style = $element->getAttribute('style');
-                    $style = preg_replace('/(max-height|height|overflow|position|display)\s*:\s*[^;]+;?/', '', $style);
+                    $style = preg_replace('/(max-height|height|overflow|position|display|visibility)\s*:\s*[^;]+;?/', '', $style);
                     $element->setAttribute('style', $style);
                 }
             }
