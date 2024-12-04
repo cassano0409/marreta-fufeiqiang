@@ -40,6 +40,7 @@ https://mais.opovo.com.br/colunistas/ariadne-araujo/2024/11/20/quem-quer-casar-c
 https://www.folhadelondrina.com.br/folha-2/cena-musical-em-londrina-idosos-no-palco-e-na-plateia-3267044e.html?d=1
 https://www.uol.com.br/esporte/futebol/ultimas-noticias/2024/11/20/bahia-x-palmeiras-campeonato-brasileiro-2024-rodada-34.htm
 https://www.opovo.com.br/noticias/politica/2024/11/21/atuacao-de-faccoes-nas-eleicoes-teve-compra-de-votos-e-ate-enviado-do-rj-para-intimidacoes-no-ceara.html
+https://flatout.com.br/o-impossivel-acidente-de-dan-wheldon-uma-analise-medica/
 https://*.cdn.ampproject.org/v/s/*
 
 ## Internacional
@@ -50,3 +51,4 @@ https://www.wired.com/story/waymo-robotaxi-driverless-future/
 https://www.forbes.com/sites/cyrusfarivar/2024/11/20/under-trump-tariffs-made-in-vietnam-will-be-the-new-made-in-china/
 https://observador.pt/especiais/mais-formacao-investimento-na-frota-reforco-dos-tecnicos-de-emergencia-e-autonomia-o-que-precisa-o-inem-segundo-varios-especialistas/
 https://www.businessinsider.com/bluesky-user-growth-social-coo-servers-twitter-elon-musk-x-2024-11
+https://cooking.nytimes.com/recipes/1016583-perfect-instant-ramen?smid=bsky-nytimes
