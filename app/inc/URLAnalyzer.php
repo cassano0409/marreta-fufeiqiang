@@ -104,84 +104,52 @@ class URLAnalyzer
      */
     public function analyze($url)
     {
-        try {
-            $cleanUrl = $this->cleanUrl($url);
+        $cleanUrl = $this->cleanUrl($url);
 
-            if ($this->cache->exists($cleanUrl)) {
-                return $this->cache->get($cleanUrl);
-            }
+        if ($this->cache->exists($cleanUrl)) {
+            return $this->cache->get($cleanUrl);
+        }
 
-            $parsedUrl = parse_url($cleanUrl);
-            $domain = $parsedUrl['host'];
+        $parsedUrl = parse_url($cleanUrl);
+        $domain = $parsedUrl['host'];
 
-            // Verificação de domínios bloqueados
-            foreach (BLOCKED_DOMAINS as $blockedDomain) {
-                // Verifica apenas correspondência exata do domínio
-                if ($domain === $blockedDomain) {
-                    $error = 'Este domínio está bloqueado para extração.';
-                    $this->logError($cleanUrl, $error);
-                    throw new Exception($error);
-                }
-            }
-
-            $content = $this->fetchWithMultipleAttempts($cleanUrl);
-
-            if (empty($content)) {
-                $error = 'Não foi possível obter o conteúdo. Tente usar serviços de arquivo.';
+        // Verificação de domínios bloqueados
+        foreach (BLOCKED_DOMAINS as $blockedDomain) {
+            // Verifica apenas correspondência exata do domínio
+            if ($domain === $blockedDomain) {
+                $error = 'Este domínio está bloqueado para extração.';
                 $this->logError($cleanUrl, $error);
                 throw new Exception($error);
             }
+        }
 
+        $content = null;
+
+        // Primeiro, tenta buscar o conteúdo diretamente
+        try {
+            $content = $this->fetchContent($url);
+        } catch (Exception $e) {
+            // Se falhar, registra o erro de busca direta
+            $this->logError($url, "Direct fetch error: " . $e->getMessage());
+        }
+
+        // Se a busca direta falhar, tenta o Wayback Machine
+        if (empty($content)) {
+            try {
+                $content = $this->fetchFromWaybackMachine($url);
+            } catch (Exception $e) {
+                // Se o Wayback Machine também falhar, lança uma exceção
+                throw new Exception("Wayback Machine: " . $e->getMessage());
+            }
+        }
+
+        if (!empty($content)) {
             $content = $this->processContent($content, $domain, $cleanUrl);
-
             $this->cache->set($cleanUrl, $content);
-
             return $content;
-        } catch (Exception $e) {
-            $this->logError($url, $e->getMessage());
-            throw $e;
         }
-    }
-
-    /**
-     * Tenta obter o conteúdo da URL com múltiplas tentativas
-     * 
-     * @param string $url URL para buscar conteúdo
-     * @param string $resolvedIp IP resolvido do domínio
-     * @return string Conteúdo obtido
-     * @throws Exception Se todas as tentativas falharem
-     */
-    private function fetchWithMultipleAttempts($url)
-    {
-        $attempts = 0;
-        $errors = [];
-
-        // Array com as chaves dos user agents para rotação
-        $userAgentKeys = array_keys($this->userAgents);
-        $totalUserAgents = count($userAgentKeys);
-
-        try {
-            // Seleciona um user agent de forma rotativa
-            $currentUserAgentKey = $userAgentKeys[$attempts % $totalUserAgents];
-            $content = $this->fetchContent($url, $currentUserAgentKey);
-            if (!empty($content)) {
-                return $content;
-            }
-        } catch (Exception $e) {
-            $errors[] = $e->getMessage();
-        }
-
-        // Se todas as tentativas falharem, tenta buscar do Wayback Machine
-        try {
-            $content = $this->fetchFromWaybackMachine($url);
-            if (!empty($content)) {
-                return $content;
-            }
-        } catch (Exception $e) {
-            $errors[] = "Wayback Machine: " . $e->getMessage();
-        }
-
-        throw new Exception("Falha ao obter conteúdo. Erros: " . implode(', ', $errors));
+        
+        return null;
     }
 
     /**
@@ -201,7 +169,6 @@ class URLAnalyzer
         $curl = new Curl();
         $curl->setOpt(CURLOPT_FOLLOWLOCATION, true);
         $curl->setOpt(CURLOPT_TIMEOUT, 10);
-        $curl->setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36');
         $curl->setOpt(CURLOPT_SSL_VERIFYPEER, false);
 
         $curl->get($availabilityUrl);
@@ -210,26 +177,19 @@ class URLAnalyzer
             return null;
         }
 
-        $data = json_decode($curl->response, true);
-        if (!isset($data['archived_snapshots']['closest']['url'])) {
+        $data = $curl->response;
+        if (!isset($data->archived_snapshots->closest->url)) {
             return null;
         }
 
         // Obtém o snapshot mais recente
-        $archiveUrl = $data['archived_snapshots']['closest']['url'];
+        $archiveUrl = $data->archived_snapshots->closest->url;
         
         // Busca o conteúdo do snapshot
         $curl = new Curl();
         $curl->setOpt(CURLOPT_FOLLOWLOCATION, true);
-        $curl->setOpt(CURLOPT_MAXREDIRS, 2);
-        $curl->setOpt(CURLOPT_TIMEOUT, 30);
-        $curl->setOpt(CURLOPT_ENCODING, '');
-        $curl->setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36');
+        $curl->setOpt(CURLOPT_TIMEOUT, 10);
         $curl->setOpt(CURLOPT_SSL_VERIFYPEER, false);
-        $curl->setHeader('Accept', 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8');
-        $curl->setHeader('Accept-Language', 'en-US,en;q=0.5');
-        $curl->setHeader('Cache-Control', 'no-cache');
-        $curl->setHeader('Pragma', 'no-cache');
 
         $curl->get($archiveUrl);
 
@@ -249,11 +209,10 @@ class URLAnalyzer
      * Realiza requisição HTTP usando Curl Class
      * 
      * @param string $url URL para requisição
-     * @param string $userAgentKey Chave do user agent a ser utilizado
      * @return string Conteúdo obtido
      * @throws Exception Em caso de erro na requisição
      */
-    private function fetchContent($url, $userAgentKey)
+    private function fetchContent($url)
     {
         $parsedUrl = parse_url($url);
         $host = $parsedUrl['host'];
@@ -264,8 +223,7 @@ class URLAnalyzer
         $curl = new Curl();
         $curl->setOpt(CURLOPT_FOLLOWLOCATION, true);
         $curl->setOpt(CURLOPT_MAXREDIRS, 2);
-        $curl->setOpt(CURLOPT_TIMEOUT, 10);
-        $curl->setOpt(CURLOPT_ENCODING, '');
+        $curl->setOpt(CURLOPT_TIMEOUT, 5);
         $curl->setUserAgent($this->userAgents[array_rand($this->userAgents)]);
         $curl->setOpt(CURLOPT_SSL_VERIFYPEER, false);
         $curl->setOpt(CURLOPT_DNS_SERVERS, implode(',', $this->dnsServers));
@@ -279,19 +237,14 @@ class URLAnalyzer
             'Pragma' => 'no-cache'
         ];
 
-        // Adiciona os headers específicos do user agent
-        if (isset($userAgentConfig['headers'])) {
-            $headers = array_merge($headers, $userAgentConfig['headers']);
-        }
-
         // Adiciona headers específicos do domínio se existirem
         if ($domainRules !== null && isset($domainRules['userAgent'])) {
             $curl->setUserAgent($domainRules['userAgent']);
         }
 
         // Adiciona headers específicos do domínio se existirem
-        if ($domainRules !== null && isset($domainRules['customHeaders'])) {
-            $headers = array_merge($headers, $domainRules['customHeaders']);
+        if ($domainRules !== null && isset($domainRules['headers'])) {
+            $headers = array_merge($headers, $domainRules['headers']);
         }
 
         $curl->setHeaders($headers);
