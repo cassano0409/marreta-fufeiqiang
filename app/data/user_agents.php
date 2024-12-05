@@ -3,8 +3,7 @@
 /**
  * Configurações dos bots
  * 
- * Define os user agents e headers específicos para diferentes bots
- * que podem ser utilizados para fazer requisições
+ * Define os user agents que podem ser utilizados para fazer requisições
  */
 return [
     'Googlebot-News',
