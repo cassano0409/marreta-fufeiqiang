@@ -5,7 +5,6 @@ piaui.folha.uol.com.br
 jota.info
 haaretz.com
 haaretz.co.il
-washingtonpost.com
 gauchazh.clicrbs.com.br
 economist.com
 liberation.fr
@@ -15,6 +14,9 @@ utppublishing.com
 chronicle.com
 latercera.com
 nexojornal.com
+nydailynews.com
+weeklytimesnow.com.au
+brasilenergia.com.br
 
 # Testados:
 ## Brasil
@@ -45,7 +47,11 @@ https://www.opovo.com.br/noticias/politica/2024/11/21/atuacao-de-faccoes-nas-ele
 https://flatout.com.br/o-impossivel-acidente-de-dan-wheldon-uma-analise-medica/
 https://tab.uol.com.br/noticias/redacao/2024/11/27/roubos-suicidios-e-assassinatos-casos-extremos-do-vicio-em-apostas.htm
 https://www.jota.info/coberturas-especiais/g20-brasil/presidente-sul-africano-quer-modelo-de-consenso-amplo-para-g20-na-era-trump
-https://*.cdn.ampproject.org/v/s/*
+https://quatrorodas.abril.com.br/noticias/chinesa-gac-investe-r-120-milhoes-para-produzir-motor-hibrido-flex-no-brasil/
+https://www.intercept.com.br/2024/12/05/uerj-curso-brasil-paralelo/
+https://www.agazeta.com.br/concursos-e-empregos/concursos/prefeitura-de-cariacica-vai-abrir-concurso-com-salario-de-ate-r-78-mil-1224
+https://natelinha.uol.com.br/televisao/2024/12/05/boninho-fecha-com-o-sbt-para-novo-reality-show-219855.php
+https://gamarevista.uol.com.br/semana/deu-vontade-de-ter-outra-vida/novas-formas-abandonar/
 
 ## Internacional
 https://www.nytimes.com/2024/11/20/us/politics/matt-gaetz-venmo-payments-sex.html
@@ -58,6 +64,27 @@ https://www.businessinsider.com/bluesky-user-growth-social-coo-servers-twitter-e
 https://cooking.nytimes.com/recipes/1016583-perfect-instant-ramen?smid=bsky-nytimes
 https://www.latercera.com/nacional/noticia/gracias-por-arruinar-mi-vida-maldito-el-contenido-de-los-25-correos-que-boric-entrego-a-fiscal-que-investiga-denuncia/HL44T5EN55H6DHADGMORNCCNBY/
 https://www.liberation.fr/culture/cinema/les-nouveaux-films-de-monstres-de-plus-en-plus-repugnangnan-20241106_BMQANPKL3FEPNLFIAXP5HIUSIQ/
-https://www.washingtonpost.com/world/2024/12/03/martial-law-south-korea-explained/
 https://www.haaretz.com/israel-news/2024-12-04/ty-article-live/idf-claims-hezbollah-liaison-to-syrian-army-killed-in-damascus-airstrike/00000193-8fa5-d2e5-a9b3-bfffbbc70000
 https://www.haaretz.co.il/news/politics/2024-11-20/ty-article/.premium/00000193-4b4c-d383-abbb-ebffe90d0000
+https://www.ajc.com/news/crime/six-more-ysl-defendants-may-slip-charges/CWUGV7CVHRCMZGDFSWEMQLLGWM/
+https://expresso.pt/arquivo/Expresso/Economia/2024-12-05-tap-esta-num-ano-extremamente-positivo-mas-luis-rodrigues-anteve-desafios-significativos-para-2025-5f0d0733
+
+# Validar
+https://opopular.com.br/cidades/ex-secretario-de-saude-de-goiania-deixa-hospital-e-volta-para-a-cadeia-1.3207162
+https://www.npr.org/2024/12/05/nx-s1-5218167/california-earthquake-tsunami-warning-eureka
+https://www.sportskeeda.com/baseball/news-yankees-free-agency-rumors-new-york-talks-high-profile-starters-pivot-willy-adames-miss-juan-soto-reports
+https://www.kansascity.com/news/business/health-care/article296635489.html
+https://jornaldebrasilia.com.br/noticias/economia/dolar-cai-pelo-3o-dia-consecutivo-e-bolsa-dispara-com-regime-de-urgencia-para-pacote-fiscal/
+https://www.latercera.com/la-tercera-pm/noticia/duro-reves-al-nuevo-criterio-de-dorothy-perez-en-la-antesala-de-cambios-de-equipos-municipales-y-ceses-de-contrata-la-corte-manda-mensaje-a-contralora/G5ADQKPSSBBANAGDVK6TETP3RU/
+https://www.ole.com.ar/internacional/puede-darse-super-mundial-clubes-boca-river_0_jeW5E3QN2R.html
+https://tecnoblog.net/noticias/cor-do-ano-esta-em-celulares-da-motorola-que-serao-vendidos-no-brasil/
+https://oantagonista.com.br/economia/crusoe-lula-nao-ganhou-nem-10-do-mercado/
+https://www.reuters.com/world/us/internet-sleuths-hunt-clues-murder-unitedhealths-brian-thompson-2024-12-05/
+https://adage.com/article/marketing-news-strategy/brands-address-athletes-mental-health-powerade-corona-and-rhone/2594356
+https://www.wired.com/story/operation-destabilise-money-laundering/
+https://www.expressnews.com/politics/article/dan-patrick-thc-marijuana-texas-19961909.php
+https://www.washingtonpost.com/politics/2024/12/05/white-house-weighs-preemptive-pardons-for-potential-trump-targets/?itid=hp-top-table-main_p001_f001
+https://www.foreignaffairs.com/india/india-hoping-trump-bump
+https://www.fastcompany.com/91239721/why-this-austin-suburb-made-a-library-the-centerpiece-of-its-new-downtown
+https://leparisien.fr/politique/le-gouvernement-barnier-censure-emmanuel-macron-de-nouveau-face-a-une-impasse-05-12-2024-KNZVD5MGOJGIPEONBQEYSACOLI.php
+https://diplomatique.org.br/ebc-entrega-radio-nacional-do-alto-solimoes-para-governo-que-apoia-garimpo/
