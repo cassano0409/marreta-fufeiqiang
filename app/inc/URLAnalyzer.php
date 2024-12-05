@@ -25,11 +25,6 @@ class URLAnalyzer
     private $userAgents;
 
     /**
-     * @var int Número máximo de tentativas para obter conteúdo
-     */
-    private $maxAttempts;
-
-    /**
      * @var array Lista de servidores DNS para resolução
      */
     private $dnsServers;
@@ -51,7 +46,6 @@ class URLAnalyzer
     public function __construct()
     {
         $this->userAgents = USER_AGENTS;
-        $this->maxAttempts = MAX_ATTEMPTS;
         $this->dnsServers = explode(',', DNS_SERVERS);
         $this->rules = new Rules();
         $this->cache = new Cache();
@@ -166,20 +160,15 @@ class URLAnalyzer
         $userAgentKeys = array_keys($this->userAgents);
         $totalUserAgents = count($userAgentKeys);
 
-        while ($attempts < $this->maxAttempts) {
-            try {
-                // Seleciona um user agent de forma rotativa
-                $currentUserAgentKey = $userAgentKeys[$attempts % $totalUserAgents];
-                $content = $this->fetchContent($url, $currentUserAgentKey);
-                if (!empty($content)) {
-                    return $content;
-                }
-            } catch (Exception $e) {
-                $errors[] = $e->getMessage();
+        try {
+            // Seleciona um user agent de forma rotativa
+            $currentUserAgentKey = $userAgentKeys[$attempts % $totalUserAgents];
+            $content = $this->fetchContent($url, $currentUserAgentKey);
+            if (!empty($content)) {
+                return $content;
             }
-
-            $attempts++;
-            usleep(500000); // 0.5 segundo de espera entre tentativas
+        } catch (Exception $e) {
+            $errors[] = $e->getMessage();
         }
 
         // Se todas as tentativas falharem, tenta buscar do Wayback Machine
@@ -192,7 +181,7 @@ class URLAnalyzer
             $errors[] = "Wayback Machine: " . $e->getMessage();
         }
 
-        throw new Exception("Falha ao obter conteúdo após {$this->maxAttempts} tentativas e Wayback Machine. Erros: " . implode(', ', $errors));
+        throw new Exception("Falha ao obter conteúdo. Erros: " . implode(', ', $errors));
     }
 
     /**
