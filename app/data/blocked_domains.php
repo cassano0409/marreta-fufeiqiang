@@ -103,5 +103,13 @@ return [
     'archive.today',
     '12ft.io',
     'jusbrasil.com.br',
-    'glassdoor.com.br'
+    'glassdoor.com.br',
+    'gov.br',
+    'medium.com',
+    'stackoverflow.com',
+    'hoteis.com',
+    'amazon.com',
+    'amazon.com.br',
+    'msn.com',
+    'archive.ph'
 ];

@@ -110,8 +110,8 @@ class URLAnalyzer
             return $this->cache->get($cleanUrl);
         }
 
-        $parsedUrl = parse_url($cleanUrl);
-        $domain = $parsedUrl['host'];
+        $domain = parse_url($cleanUrl, PHP_URL_HOST);
+        $domain = preg_replace('/^www\./', '', $domain);
 
         // Verificação de domínios bloqueados
         foreach (BLOCKED_DOMAINS as $blockedDomain) {
