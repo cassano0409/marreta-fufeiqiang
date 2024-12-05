@@ -65,8 +65,8 @@ class Cache
      */
     public function exists($url)
     {
-        // Se DEBUG está ativo, sempre retorna false
-        if (DEBUG) {
+        // Se DISABLE_CACHE está ativo, sempre retorna false
+        if (DISABLE_CACHE) {
             return false;
         }
 
@@ -81,8 +81,8 @@ class Cache
      */
     public function get($url)
     {
-        // Se DEBUG está ativo, sempre retorna null
-        if (DEBUG) {
+        // Se DISABLE_CACHE está ativo, sempre retorna null
+        if (DISABLE_CACHE) {
             return null;
         }
 
@@ -98,8 +98,8 @@ class Cache
      */
     public function set($url, $content)
     {
-        // Se DEBUG está ativo, não gera cache
-        if (DEBUG) {
+        // Se DISABLE_CACHE está ativo, não gera cache
+        if (DISABLE_CACHE) {
             return true;
         }
 
