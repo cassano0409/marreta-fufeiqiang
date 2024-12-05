@@ -14,39 +14,33 @@
 
 require_once 'Rules.php';
 require_once 'Cache.php';
-require_once 'Curl.php';
 
 class URLAnalyzer
 {
     /**
      * @var array Lista de User Agents disponíveis para requisições
      */
-    protected $userAgents;
+    private $userAgents;
 
     /**
      * @var int Número máximo de tentativas para obter conteúdo
      */
-    protected $maxAttempts;
+    private $maxAttempts;
 
     /**
      * @var array Lista de servidores DNS para resolução
      */
-    protected $dnsServers;
+    private $dnsServers;
 
     /**
      * @var Rules Instância da classe de regras
      */
-    protected $rules;
+    private $rules;
 
     /**
      * @var Cache Instância da classe de cache
      */
-    protected $cache;
-
-    /**
-     * @var Curl Instância da classe de curl
-     */
-    protected $curl;
+    private $cache;
 
     /**
      * Construtor da classe
@@ -59,7 +53,6 @@ class URLAnalyzer
         $this->dnsServers = explode(',', DNS_SERVERS);
         $this->rules = new Rules();
         $this->cache = new Cache();
-        $this->curl = new Curl();
     }
 
     /**
@@ -70,22 +63,29 @@ class URLAnalyzer
      */
     public function checkRedirects($url)
     {
-        $this->curl->setUserAgent($this->userAgents[array_rand($this->userAgents)]['user_agent']);
-        
-        try {
-            $response = $this->curl->head($url);
-            return [
-                'finalUrl' => $response['info']['url'],
-                'hasRedirect' => ($response['info']['url'] !== $url),
-                'httpCode' => $response['info']['http_code']
-            ];
-        } catch (Exception $e) {
-            return [
-                'finalUrl' => $url,
-                'hasRedirect' => false,
-                'httpCode' => 0
-            ];
-        }
+        $ch = curl_init();
+        curl_setopt_array($ch, [
+            CURLOPT_URL => $url,
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_HEADER => true,
+            CURLOPT_NOBODY => true,
+            CURLOPT_FOLLOWLOCATION => true,
+            CURLOPT_MAXREDIRS => 5,
+            CURLOPT_TIMEOUT => 5,
+            CURLOPT_USERAGENT => $this->userAgents[array_rand($this->userAgents)]['user_agent'],
+            CURLOPT_SSL_VERIFYPEER => false
+        ]);
+
+        $response = curl_exec($ch);
+        $finalUrl = curl_getinfo($ch, CURLINFO_EFFECTIVE_URL);
+        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        curl_close($ch);
+
+        return [
+            'finalUrl' => $finalUrl,
+            'hasRedirect' => ($finalUrl !== $url),
+            'httpCode' => $httpCode
+        ];
     }
 
     /**
@@ -153,6 +153,7 @@ class URLAnalyzer
      * Tenta obter o conteúdo da URL com múltiplas tentativas
      * 
      * @param string $url URL para buscar conteúdo
+     * @param string $resolvedIp IP resolvido do domínio
      * @return string Conteúdo obtido
      * @throws Exception Se todas as tentativas falharem
      */
@@ -165,27 +166,13 @@ class URLAnalyzer
         $userAgentKeys = array_keys($this->userAgents);
         $totalUserAgents = count($userAgentKeys);
 
-        $this->curl->setMaxRetries($this->maxAttempts);
-        $this->curl->setRetryDelay(500000); // 0.5 segundo entre tentativas
-
         while ($attempts < $this->maxAttempts) {
             try {
                 // Seleciona um user agent de forma rotativa
                 $currentUserAgentKey = $userAgentKeys[$attempts % $totalUserAgents];
-                $result = $this->fetchContent($url, $currentUserAgentKey);
-                
-                // Se o HTTP code não for 200
-                if ($result['http_code'] !== 200) {
-                    try {
-                        $content = $this->fetchFromWaybackMachine($url);
-                        if (!empty($content)) {
-                            return $content;
-                        }
-                    } catch (Exception $e) {
-                        $errors[] = "Wayback Machine: " . $e->getMessage();
-                    }
-                } else if (!empty($result['content'])) {
-                    return $result['content'];
+                $content = $this->fetchContent($url, $currentUserAgentKey);
+                if (!empty($content)) {
+                    return $content;
                 }
             } catch (Exception $e) {
                 $errors[] = $e->getMessage();
@@ -195,7 +182,7 @@ class URLAnalyzer
             usleep(500000); // 0.5 segundo de espera entre tentativas
         }
 
-        // Se todas as tentativas falharem, tenta buscar do Wayback Machine uma última vez
+        // Se todas as tentativas falharem, tenta buscar do Wayback Machine
         try {
             $content = $this->fetchFromWaybackMachine($url);
             if (!empty($content)) {
@@ -222,40 +209,73 @@ class URLAnalyzer
         // Primeiro, verifica a disponibilidade de snapshots
         $availabilityUrl = "https://archive.org/wayback/available?url=" . urlencode($cleanUrl);
         
-        try {
-            $this->curl->setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36');
-            $response = $this->curl->get($availabilityUrl);
-            
-            $data = json_decode($response['content'], true);
-            if (!isset($data['archived_snapshots']['closest']['url'])) {
-                return null;
-            }
+        $ch = curl_init();
+        curl_setopt_array($ch, [
+            CURLOPT_URL => $availabilityUrl,
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_FOLLOWLOCATION => true,
+            CURLOPT_TIMEOUT => 10,
+            CURLOPT_USERAGENT => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+            CURLOPT_SSL_VERIFYPEER => false
+        ]);
 
-            // Obtém o snapshot mais recente
-            $archiveUrl = $data['archived_snapshots']['closest']['url'];
-            
-            $response = $this->curl->get($archiveUrl);
-            $content = $response['content'];
-            
-            if (empty($content)) {
-                return null;
-            }
+        $response = curl_exec($ch);
+        $error = curl_error($ch);
+        curl_close($ch);
 
-            // Remove o toolbar do Wayback Machine
-            $content = preg_replace('/<!-- BEGIN WAYBACK TOOLBAR INSERT -->.*?<!-- END WAYBACK TOOLBAR INSERT -->/s', '', $content);
-            
-            return $content;
-        } catch (Exception $e) {
+        if ($error || empty($response)) {
             return null;
         }
+
+        $data = json_decode($response, true);
+        if (!isset($data['archived_snapshots']['closest']['url'])) {
+            return null;
+        }
+
+        // Obtém o snapshot mais recente
+        $archiveUrl = $data['archived_snapshots']['closest']['url'];
+        
+        // Busca o conteúdo do snapshot
+        $ch = curl_init();
+        curl_setopt_array($ch, [
+            CURLOPT_URL => $archiveUrl,
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_FOLLOWLOCATION => true,
+            CURLOPT_MAXREDIRS => 2,
+            CURLOPT_TIMEOUT => 30,
+            CURLOPT_ENCODING => '',
+            CURLOPT_USERAGENT => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+            CURLOPT_SSL_VERIFYPEER => false,
+            CURLOPT_HTTPHEADER => [
+                'Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+                'Accept-Language: en-US,en;q=0.5',
+                'Cache-Control: no-cache',
+                'Pragma: no-cache'
+            ]
+        ]);
+
+        $content = curl_exec($ch);
+        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        $error = curl_error($ch);
+        curl_close($ch);
+
+        if ($error || $httpCode >= 400 || empty($content)) {
+            return null;
+        }
+
+        // Remove o toolbar do Wayback Machine
+        $content = preg_replace('/<!-- BEGIN WAYBACK TOOLBAR INSERT -->.*?<!-- END WAYBACK TOOLBAR INSERT -->/s', '', $content);
+        
+        return $content;
     }
 
     /**
      * Realiza requisição HTTP usando cURL
      * 
      * @param string $url URL para requisição
+     * @param string $resolvedIp IP resolvido do domínio
      * @param string $userAgentKey Chave do user agent a ser utilizado
-     * @return array Array com o conteúdo e código HTTP
+     * @return string Conteúdo obtido
      * @throws Exception Em caso de erro na requisição
      */
     private function fetchContent($url, $userAgentKey)
@@ -267,34 +287,82 @@ class URLAnalyzer
 
         // Obtém a configuração do user agent
         $userAgentConfig = $this->userAgents[$userAgentKey];
-        
-        // Configura o curl
-        $this->curl->setUserAgent($userAgentConfig['user_agent']);
-        
-        // Adiciona headers específicos do user agent
+        $userAgent = $userAgentConfig['user_agent'];
+
+        $curlOptions = [
+            CURLOPT_URL => $url,
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_FOLLOWLOCATION => true,
+            CURLOPT_MAXREDIRS => 2,
+            CURLOPT_TIMEOUT => 10,
+            CURLOPT_ENCODING => '',
+            CURLOPT_USERAGENT => $userAgent,
+            CURLOPT_SSL_VERIFYPEER => false,
+            CURLOPT_DNS_SERVERS => implode(',', $this->dnsServers)
+        ];
+
+        // Prepara os headers
+        $headers = [
+            'Host: ' . $host,
+            'Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+            'Accept-Language: pt-BR,pt;q=0.9,en-US;q=0.8,en;q=0.7',
+            'Cache-Control: no-cache',
+            'Pragma: no-cache'
+        ];
+
+        // Adiciona os headers específicos do user agent
         if (isset($userAgentConfig['headers'])) {
-            $this->curl->setHeaders($userAgentConfig['headers']);
+            foreach ($userAgentConfig['headers'] as $headerName => $headerValue) {
+                $headers[] = $headerName . ': ' . $headerValue;
+            }
         }
 
-        // Adiciona headers específicos do domínio
-        if ($domainRules !== null && isset($domainRules['headers'])) {
-            $this->curl->setHeaders($domainRules['headers']);
+        // Adiciona headers específicos do domínio se existirem
+        if ($domainRules !== null && isset($domainRules['userAgent'])) {
+            $curlOptions[CURLOPT_USERAGENT] = $domainRules['userAgent'];
         }
 
-        // Adiciona cookies específicos do domínio
+        // Adiciona headers específicos do domínio se existirem
+        if ($domainRules !== null && isset($domainRules['customHeaders'])) {
+            foreach ($domainRules['customHeaders'] as $headerName => $headerValue) {
+                $headers[] = $headerName . ': ' . $headerValue;
+            }
+        }
+
+        $curlOptions[CURLOPT_HTTPHEADER] = $headers;
+        $curlOptions[CURLOPT_COOKIESESSION] = true;
+        $curlOptions[CURLOPT_FRESH_CONNECT] = true;
+
         if ($domainRules !== null && isset($domainRules['cookies'])) {
-            $this->curl->setCookies($domainRules['cookies']);
+            $cookies = [];
+            foreach ($domainRules['cookies'] as $name => $value) {
+                if ($value !== null) {
+                    $cookies[] = $name . '=' . $value;
+                }
+            }
+            if (!empty($cookies)) {
+                $curlOptions[CURLOPT_COOKIE] = implode('; ', $cookies);
+            }
         }
 
-        try {
-            $response = $this->curl->get($url);
-            return [
-                'content' => $response['content'],
-                'http_code' => $response['info']['http_code']
-            ];
-        } catch (Exception $e) {
-            throw new Exception("Erro ao obter conteúdo: " . $e->getMessage());
+        $ch = curl_init();
+        curl_setopt_array($ch, $curlOptions);
+
+        $content = curl_exec($ch);
+        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        $error = curl_error($ch);
+
+        curl_close($ch);
+
+        if ($error) {
+            throw new Exception("Erro CURL: " . $error);
         }
+
+        if ($httpCode >= 400) {
+            throw new Exception("Erro HTTP: " . $httpCode);
+        }
+
+        return $content;
     }
 
     /**
