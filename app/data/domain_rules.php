@@ -89,7 +89,7 @@ return [
             'next-flags' => null,
             'next:ads' => null
         ],
-        'customHeaders' => [
+        'headers' => [
             'Referer' => 'https://www.google.com.br/'
         ]
     ],

@@ -172,9 +172,20 @@ class URLAnalyzer
             try {
                 // Seleciona um user agent de forma rotativa
                 $currentUserAgentKey = $userAgentKeys[$attempts % $totalUserAgents];
-                $content = $this->fetchContent($url, $currentUserAgentKey);
-                if (!empty($content)) {
-                    return $content;
+                $result = $this->fetchContent($url, $currentUserAgentKey);
+                
+                // Se o HTTP code não for 200
+                if ($result['http_code'] !== 200) {
+                    try {
+                        $content = $this->fetchFromWaybackMachine($url);
+                        if (!empty($content)) {
+                            return $content;
+                        }
+                    } catch (Exception $e) {
+                        $errors[] = "Wayback Machine: " . $e->getMessage();
+                    }
+                } else if (!empty($result['content'])) {
+                    return $result['content'];
                 }
             } catch (Exception $e) {
                 $errors[] = $e->getMessage();
@@ -184,7 +195,7 @@ class URLAnalyzer
             usleep(500000); // 0.5 segundo de espera entre tentativas
         }
 
-        // Se todas as tentativas falharem, tenta buscar do Wayback Machine
+        // Se todas as tentativas falharem, tenta buscar do Wayback Machine uma última vez
         try {
             $content = $this->fetchFromWaybackMachine($url);
             if (!empty($content)) {
@@ -244,7 +255,7 @@ class URLAnalyzer
      * 
      * @param string $url URL para requisição
      * @param string $userAgentKey Chave do user agent a ser utilizado
-     * @return string Conteúdo obtido
+     * @return array Array com o conteúdo e código HTTP
      * @throws Exception Em caso de erro na requisição
      */
     private function fetchContent($url, $userAgentKey)
@@ -266,8 +277,8 @@ class URLAnalyzer
         }
 
         // Adiciona headers específicos do domínio
-        if ($domainRules !== null && isset($domainRules['customHeaders'])) {
-            $this->curl->setHeaders($domainRules['customHeaders']);
+        if ($domainRules !== null && isset($domainRules['headers'])) {
+            $this->curl->setHeaders($domainRules['headers']);
         }
 
         // Adiciona cookies específicos do domínio
@@ -277,7 +288,10 @@ class URLAnalyzer
 
         try {
             $response = $this->curl->get($url);
-            return $response['content'];
+            return [
+                'content' => $response['content'],
+                'http_code' => $response['info']['http_code']
+            ];
         } catch (Exception $e) {
             throw new Exception("Erro ao obter conteúdo: " . $e->getMessage());
         }

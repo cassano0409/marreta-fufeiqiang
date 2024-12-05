@@ -2,48 +2,56 @@
 
 /**
  * Classe para gerenciar requisições HTTP usando cURL
+ * Esta classe fornece uma interface simplificada para realizar requisições HTTP
  */
 class Curl
 {
     /**
      * @var array Configurações padrão do cURL
+     * Armazena as opções básicas que serão utilizadas em todas as requisições
      */
     protected $defaultOptions = [];
 
     /**
-     * @var array Headers HTTP customizados
+     * @var array Cabeçalhos HTTP personalizados
+     * Armazena os headers que serão enviados com as requisições
      */
     protected $headers = [];
 
     /**
      * @var array Cookies para a requisição
+     * Armazena os cookies que serão enviados com as requisições
      */
     protected $cookies = [];
 
     /**
-     * @var string User agent atual
+     * @var string Agente do usuário atual
+     * Identifica o cliente que está fazendo a requisição
      */
     protected $userAgent;
 
     /**
      * @var array Configurações de proxy
+     * Armazena as configurações para uso de proxy nas requisições
      */
     protected $proxy = [];
 
     /**
      * @var int Número máximo de tentativas
+     * Define quantas vezes a requisição será tentada em caso de falha
      */
     protected $maxRetries = 3;
 
     /**
-     * @var int Delay entre tentativas (microssegundos)
+     * @var int Intervalo entre tentativas (em microssegundos)
+     * Define o tempo de espera entre tentativas consecutivas
      */
     protected $retryDelay = 500000; // 0.5 segundos
 
     /**
-     * Construtor
+     * Inicializa uma nova instância da classe Curl
      * 
-     * @param array $options Opções iniciais do cURL
+     * @param array $options Opções iniciais do cURL para personalização
      */
     public function __construct(array $options = [])
     {
@@ -62,7 +70,8 @@ class Curl
     }
 
     /**
-     * Define headers padrão
+     * Define os cabeçalhos HTTP padrão
+     * Configura os headers básicos que serão utilizados em todas as requisições
      */
     protected function setDefaultHeaders()
     {
@@ -75,7 +84,10 @@ class Curl
     }
 
     /**
-     * Define o user agent
+     * Define o agente do usuário para as requisições
+     * 
+     * @param string $userAgent String que identifica o cliente
+     * @return $this Retorna a instância atual para encadeamento de métodos
      */
     public function setUserAgent($userAgent)
     {
@@ -86,14 +98,17 @@ class Curl
     }
 
     /**
-     * Adiciona headers customizados
+     * Define cabeçalhos HTTP personalizados
+     * 
+     * @param array $headers Array associativo com os cabeçalhos
+     * @return $this Retorna a instância atual para encadeamento de métodos
      */
     public function setHeaders(array $headers)
     {
-        // Reset headers to default first
+        // Redefine os headers para o padrão primeiro
         $this->setDefaultHeaders();
         
-        // Add new headers
+        // Adiciona os novos headers
         foreach ($headers as $name => $value) {
             if (!is_string($name) || !is_string($value)) {
                 continue;
@@ -105,6 +120,9 @@ class Curl
 
     /**
      * Define cookies para a requisição
+     * 
+     * @param array $cookies Array associativo com os cookies
+     * @return $this Retorna a instância atual para encadeamento de métodos
      */
     public function setCookies(array $cookies)
     {
@@ -118,7 +136,13 @@ class Curl
     }
 
     /**
-     * Configura proxy para a requisição
+     * Configura um proxy para as requisições
+     * 
+     * @param string $host Endereço do servidor proxy
+     * @param int $port Porta do servidor proxy
+     * @param string|null $username Nome de usuário para autenticação no proxy
+     * @param string|null $password Senha para autenticação no proxy
+     * @return $this Retorna a instância atual para encadeamento de métodos
      */
     public function setProxy($host, $port, $username = null, $password = null)
     {
@@ -134,7 +158,10 @@ class Curl
     }
 
     /**
-     * Define o número máximo de tentativas
+     * Define o número máximo de tentativas para uma requisição
+     * 
+     * @param int $maxRetries Número máximo de tentativas
+     * @return $this Retorna a instância atual para encadeamento de métodos
      */
     public function setMaxRetries($maxRetries)
     {
@@ -143,7 +170,10 @@ class Curl
     }
 
     /**
-     * Define o delay entre tentativas
+     * Define o intervalo entre tentativas de requisição
+     * 
+     * @param int $microseconds Tempo em microssegundos
+     * @return $this Retorna a instância atual para encadeamento de métodos
      */
     public function setRetryDelay($microseconds)
     {
@@ -153,31 +183,36 @@ class Curl
 
     /**
      * Prepara as opções do cURL para a requisição
+     * 
+     * @param string $url URL da requisição
+     * @param array $additionalOptions Opções adicionais do cURL
+     * @return array Retorna array com todas as opções configuradas
+     * @throws InvalidArgumentException Se a URL não for uma string válida
      */
     protected function prepareOptions($url, array $additionalOptions = [])
     {
         if (!is_string($url)) {
-            throw new InvalidArgumentException('URL must be a string');
+            throw new InvalidArgumentException('A URL deve ser uma string');
         }
 
         $options = [];
 
-        // Add default options
+        // Adiciona opções padrão
         foreach ($this->defaultOptions as $key => $value) {
             if (is_int($key)) {
                 $options[$key] = $value;
             }
         }
 
-        // Set URL
+        // Define a URL
         $options[CURLOPT_URL] = $url;
 
-        // Set User Agent
+        // Define o User Agent
         if ($this->userAgent) {
             $options[CURLOPT_USERAGENT] = $this->userAgent;
         }
 
-        // Convert headers array to cURL format
+        // Converte array de headers para o formato do cURL
         $headerLines = [];
         foreach ($this->headers as $name => $value) {
             $headerLines[] = $name . ': ' . $value;
@@ -186,7 +221,7 @@ class Curl
             $options[CURLOPT_HTTPHEADER] = $headerLines;
         }
 
-        // Set Cookies
+        // Define os Cookies
         if (!empty($this->cookies)) {
             $cookieStr = implode('; ', array_filter($this->cookies, 'is_string'));
             if (!empty($cookieStr)) {
@@ -194,7 +229,7 @@ class Curl
             }
         }
 
-        // Set Proxy
+        // Define o Proxy
         if (!empty($this->proxy)) {
             $options[CURLOPT_PROXY] = $this->proxy['host'] . ':' . $this->proxy['port'];
             if (!empty($this->proxy['username']) && !empty($this->proxy['password'])) {
@@ -202,7 +237,7 @@ class Curl
             }
         }
 
-        // Add additional options
+        // Adiciona opções adicionais
         foreach ($additionalOptions as $key => $value) {
             if (is_int($key)) {
                 $options[$key] = $value;
@@ -214,6 +249,11 @@ class Curl
 
     /**
      * Executa uma requisição HTTP
+     * 
+     * @param string $url URL da requisição
+     * @param array $options Opções adicionais do cURL
+     * @return array Retorna array com o conteúdo e informações da requisição
+     * @throws Exception Se a requisição falhar após todas as tentativas
      */
     protected function execute($url, array $options = [])
     {
@@ -227,7 +267,7 @@ class Curl
             if (!curl_setopt_array($ch, $curlOptions)) {
                 $error = curl_error($ch);
                 curl_close($ch);
-                throw new Exception("Failed to set cURL options: " . $error);
+                throw new Exception("Falha ao definir opções do cURL: " . $error);
             }
 
             $content = curl_exec($ch);
@@ -256,6 +296,10 @@ class Curl
 
     /**
      * Executa uma requisição GET
+     * 
+     * @param string $url URL da requisição
+     * @param array $options Opções adicionais do cURL
+     * @return array Retorna array com o conteúdo e informações da requisição
      */
     public function get($url, array $options = [])
     {
@@ -264,6 +308,10 @@ class Curl
 
     /**
      * Executa uma requisição HEAD
+     * 
+     * @param string $url URL da requisição
+     * @param array $options Opções adicionais do cURL
+     * @return array Retorna array com o conteúdo e informações da requisição
      */
     public function head($url, array $options = [])
     {
@@ -273,6 +321,11 @@ class Curl
 
     /**
      * Executa uma requisição POST
+     * 
+     * @param string $url URL da requisição
+     * @param mixed $data Dados a serem enviados no corpo da requisição
+     * @param array $options Opções adicionais do cURL
+     * @return array Retorna array com o conteúdo e informações da requisição
      */
     public function post($url, $data = null, array $options = [])
     {
@@ -287,6 +340,11 @@ class Curl
 
     /**
      * Executa uma requisição PUT
+     * 
+     * @param string $url URL da requisição
+     * @param mixed $data Dados a serem enviados no corpo da requisição
+     * @param array $options Opções adicionais do cURL
+     * @return array Retorna array com o conteúdo e informações da requisição
      */
     public function put($url, $data = null, array $options = [])
     {
@@ -301,6 +359,10 @@ class Curl
 
     /**
      * Executa uma requisição DELETE
+     * 
+     * @param string $url URL da requisição
+     * @param array $options Opções adicionais do cURL
+     * @return array Retorna array com o conteúdo e informações da requisição
      */
     public function delete($url, array $options = [])
     {
