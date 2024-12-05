@@ -202,6 +202,9 @@ class URLAnalyzer
         // Remove o toolbar do Wayback Machine
         $content = preg_replace('/<!-- BEGIN WAYBACK TOOLBAR INSERT -->.*?<!-- END WAYBACK TOOLBAR INSERT -->/s', '', $content);
         
+        // Remove URLs de cache do Wayback Machine
+        $content = preg_replace('/https?:\/\/web\.archive\.org\/web\/\d+im_\//', '', $content);
+        
         return $content;
     }
 
