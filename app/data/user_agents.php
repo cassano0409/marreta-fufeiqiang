@@ -8,7 +8,7 @@
  */
 return [
     'Googlebot' => [
-        'user_agent' => 'Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)',
+        'user_agent' => 'Mozilla/5.0 (compatible; Googlebot/2.1; +https://www.google.com/bot.html)',
         'headers' => [
             'From' => 'googlebot(at)googlebot.com',
             'X-Robots-Tag' => 'noindex'
