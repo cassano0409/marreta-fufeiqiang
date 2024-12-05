@@ -375,247 +375,28 @@ class URLAnalyzer
     {
         $url = trim($url);
 
+        // Verifica se a URL é válida
+        if (!filter_var($url, FILTER_VALIDATE_URL)) {
+            return false;
+        }
+
         // Detecta e converte URLs AMP
         if (preg_match('#https://([^.]+)\.cdn\.ampproject\.org/v/s/([^/]+)(.*)#', $url, $matches)) {
             $url = 'https://' . $matches[2] . $matches[3];
         }
 
-        $parsedUrl = parse_url($url);
-
-        if (!isset($parsedUrl['scheme'])) {
-            $url = 'https://' . $url;
-            $parsedUrl = parse_url($url);
+        // Separa a URL em suas partes componentes
+        $parts = parse_url($url);
+        
+        // Reconstrói a URL base
+        $cleanedUrl = $parts['scheme'] . '://' . $parts['host'];
+        
+        // Adiciona o caminho se existir
+        if (isset($parts['path'])) {
+            $cleanedUrl .= $parts['path'];
         }
-
-        $cleanUrl = $parsedUrl['scheme'] . '://' . $parsedUrl['host'];
-
-        if (isset($parsedUrl['path'])) {
-            $path = preg_replace('#/+#', '/', $parsedUrl['path']);
-            $cleanUrl .= $path;
-        }
-
-        if (isset($parsedUrl['query'])) {
-            parse_str($parsedUrl['query'], $params);
-            $params = $this->filterUrlParams($params);
-
-            if (!empty($params)) {
-                ksort($params);
-                $cleanUrl .= '?' . http_build_query($params);
-            }
-        }
-
-        return rtrim($cleanUrl, '/');
-    }
-
-    /**
-     * Filtra parâmetros da URL removendo tracking e sessão
-     * 
-     * @param array $params Parâmetros da URL
-     * @return array Parâmetros filtrados
-     */
-    private function filterUrlParams($params)
-    {
-        $filteredParams = [];
-
-        foreach ($params as $key => $value) {
-            if (empty($value) && $value !== '0') {
-                continue;
-            }
-
-            if ($this->isTrackingParam($key)) {
-                continue;
-            }
-
-            if ($this->isSessionParam($key)) {
-                continue;
-            }
-
-            if ($this->isCacheParam($key)) {
-                continue;
-            }
-
-            if ($this->isContentParam($key)) {
-                $filteredParams[$key] = $value;
-            }
-        }
-
-        return $filteredParams;
-    }
-
-    /**
-     * Verifica se um parâmetro é de tracking
-     * 
-     * @param string $param Nome do parâmetro
-     * @return bool True se for parâmetro de tracking
-     */
-    private function isTrackingParam($param)
-    {
-        $trackingPatterns = [
-            // Google Analytics e AMP
-            '/^utm_/',      // Universal Analytics
-            '/^_ga/',       // Google Analytics
-            '/^_gl/',       // Google Analytics linker
-            '/^gclid$/',    // Google Ads Click ID
-            '/^dclid$/',    // DoubleClick Click ID
-            '/^amp_/',      // AMP parameters
-            '/^usqp$/',     // Google AMP Cache
-            '/^__amp_source_origin$/', // AMP source origin
-            '/^amp_latest_update_time$/', // AMP update time
-            '/^amp_cb$/',   // AMP callback
-            '/^amp_gsa$/',  // AMP Google Search App
-            '/^amp_js_v$/', // AMP JavaScript version
-            '/^amp_r$/',    // AMP referrer
-            '/^aoh$/',      // AMP origin header
-
-            // Social Media
-            '/^fbclid$/',   // Facebook Click ID
-            '/^msclkid$/',  // Microsoft Click ID
-            '/^igshid$/',   // Instagram
-            '/^yclid$/',    // Yandex Click ID
-
-            // Email Marketing
-            '/^mc_/',       // Mailchimp
-            '/^_hs/',       // HubSpot
-            '/^_hsenc$/',   // HubSpot encoded
-            '/^_hsmi$/',    // HubSpot message ID
-            '/^mkt_tok$/',  // Marketo
-
-            // Analytics e Tracking
-            '/^pk_/',       // Piwik/Matomo
-            '/^n_/',        // Navegg
-            '/^_openstat$/', // OpenStat
-
-            // Outros
-            '/^ref$/',      // Referrer
-            '/^source$/',   // Source tracking
-            '/^medium$/',   // Medium tracking
-            '/^campaign$/', // Campaign tracking
-            '/^affiliate$/', // Affiliate tracking
-            '/^partner$/',  // Partner tracking
-        ];
-
-        foreach ($trackingPatterns as $pattern) {
-            if (preg_match($pattern, $param)) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    /**
-     * Verifica se um parâmetro é de sessão
-     * 
-     * @param string $param Nome do parâmetro
-     * @return bool True se for parâmetro de sessão
-     */
-    private function isSessionParam($param)
-    {
-        $sessionPatterns = [
-            '/sess(ion)?[_-]?id/i',
-            '/^sid$/',
-            '/^s$/',
-            '/_?sess$/',
-            '/^PHPSESSID$/',
-            '/^JSESSIONID$/',
-            '/^ASP\.NET_SessionId$/',
-            '/^CFID$/',
-            '/^CFTOKEN$/',
-            '/^skey$/',
-            '/^token$/',
-            '/^auth[_-]?token$/',
-            '/^access[_-]?token$/',
-        ];
-
-        foreach ($sessionPatterns as $pattern) {
-            if (preg_match($pattern, $param)) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    /**
-     * Verifica se um parâmetro é de cache
-     * 
-     * @param string $param Nome do parâmetro
-     * @return bool True se for parâmetro de cache
-     */
-    private function isCacheParam($param)
-    {
-        $cachePatterns = [
-            '/^v$/',
-            '/^ver$/',
-            '/^version$/',
-            '/^rev$/',
-            '/^revision$/',
-            '/^cache$/',
-            '/^nocache$/',
-            '/^_t$/',
-            '/^timestamp$/',
-            '/^time$/',
-            '/^[0-9]+$/',
-            '/^_=[0-9]+$/',
-        ];
-
-        foreach ($cachePatterns as $pattern) {
-            if (preg_match($pattern, $param)) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    /**
-     * Verifica se um parâmetro é de conteúdo
-     * 
-     * @param string $param Nome do parâmetro
-     * @return bool True se for parâmetro de conteúdo
-     */
-    private function isContentParam($param)
-    {
-        $contentPatterns = [
-            '/^id$/',
-            '/^page$/',
-            '/^category$/',
-            '/^cat$/',
-            '/^tag$/',
-            '/^type$/',
-            '/^format$/',
-            '/^view$/',
-            '/^layout$/',
-            '/^style$/',
-            '/^lang$/',
-            '/^locale$/',
-            '/^currency$/',
-            '/^filter$/',
-            '/^sort$/',
-            '/^order$/',
-            '/^q$/',
-            '/^search$/',
-            '/^query$/',
-            '/^year$/',
-            '/^month$/',
-            '/^day$/',
-            '/^date$/',
-            '/^author$/',
-            '/^topic$/',
-            '/^section$/',
-        ];
-
-        foreach ($contentPatterns as $pattern) {
-            if (preg_match($pattern, $param)) {
-                return true;
-            }
-        }
-
-        if (preg_match('/^[a-z0-9]{4,}$/i', $param)) {
-            return true;
-        }
-
-        return false;
+        
+        return $cleanedUrl;
     }
 
     /**
