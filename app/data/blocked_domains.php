@@ -17,10 +17,13 @@ return [
     'chronicle.com',
     'nexojornal.com',
     'lesoir.be',
+    'weeklytimesnow.com.au',
     'barrons.com',
+    'brasilenergia.com.br',
     //-- Bloqueio tecnico de acesso ao conteudo
     'bloomberg.com',
     'gauchazh.clicrbs.com.br', 
+    'nydailynews.com', // Bloqueio regional
     // Tracking
     'metaffiliation.com',
     'google-analytics.com',
@@ -53,6 +56,7 @@ return [
     'pinterest.com',
     'snapchat.com',
     'reddit.com',
+    'redd.it',
     'bsky.app',
     'threads.net',
     // Streaming
@@ -111,5 +115,10 @@ return [
     'amazon.com',
     'amazon.com.br',
     'msn.com',
-    'archive.ph'
+    'archive.ph',
+    'activision.com',
+    'sciencedirect.com',
+    'focoradical.com.br',
+    'taboola.com',
+    'tandfonline.com'
 ];
