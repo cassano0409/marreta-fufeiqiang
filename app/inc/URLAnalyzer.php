@@ -130,14 +130,7 @@ class URLAnalyzer
                 }
             }
 
-            $resolvedIp = $this->resolveDns($cleanUrl);
-            if (!$resolvedIp) {
-                $error = 'Falha ao resolver DNS para o domínio';
-                $this->logError($cleanUrl, $error);
-                throw new Exception($error);
-            }
-
-            $content = $this->fetchWithMultipleAttempts($cleanUrl, $resolvedIp);
+            $content = $this->fetchWithMultipleAttempts($cleanUrl);
 
             if (empty($content)) {
                 $error = 'Não foi possível obter o conteúdo. Tente usar serviços de arquivo.';
@@ -164,7 +157,7 @@ class URLAnalyzer
      * @return string Conteúdo obtido
      * @throws Exception Se todas as tentativas falharem
      */
-    private function fetchWithMultipleAttempts($url, $resolvedIp)
+    private function fetchWithMultipleAttempts($url)
     {
         $attempts = 0;
         $errors = [];
@@ -177,7 +170,7 @@ class URLAnalyzer
             try {
                 // Seleciona um user agent de forma rotativa
                 $currentUserAgentKey = $userAgentKeys[$attempts % $totalUserAgents];
-                $content = $this->fetchWithCurl($url, $resolvedIp, $currentUserAgentKey);
+                $content = $this->fetchContent($url, $currentUserAgentKey);
                 if (!empty($content)) {
                     return $content;
                 }
@@ -285,7 +278,7 @@ class URLAnalyzer
      * @return string Conteúdo obtido
      * @throws Exception Em caso de erro na requisição
      */
-    private function fetchWithCurl($url, $resolvedIp, $userAgentKey)
+    private function fetchContent($url, $userAgentKey)
     {
         $parsedUrl = parse_url($url);
         $host = $parsedUrl['host'];
@@ -305,7 +298,6 @@ class URLAnalyzer
             CURLOPT_ENCODING => '',
             CURLOPT_USERAGENT => $userAgent,
             CURLOPT_SSL_VERIFYPEER => false,
-            CURLOPT_RESOLVE => ["{$host}:80:{$resolvedIp}", "{$host}:443:{$resolvedIp}"],
             CURLOPT_DNS_SERVERS => implode(',', $this->dnsServers)
         ];
 
@@ -624,56 +616,6 @@ class URLAnalyzer
         }
 
         return false;
-    }
-
-    /**
-     * Resolve DNS para um domínio
-     * 
-     * @param string $url URL para resolver DNS
-     * @return string|false IP resolvido ou false em caso de falha
-     */
-    private function resolveDns($url)
-    {
-        $parsedUrl = parse_url($url);
-        $domain = $parsedUrl['host'];
-
-        foreach ($this->dnsServers as $dnsServer) {
-            $dnsQuery = [
-                'name' => $domain,
-                'type' => 'A',
-                'do' => true,
-                'cd' => false
-            ];
-
-            $ch = curl_init();
-            curl_setopt_array($ch, [
-                CURLOPT_URL => $dnsServer . '?' . http_build_query($dnsQuery),
-                CURLOPT_RETURNTRANSFER => true,
-                CURLOPT_HTTPHEADER => [
-                    'Accept: application/dns-json',
-                ],
-                CURLOPT_SSL_VERIFYPEER => true,
-                CURLOPT_SSL_VERIFYHOST => 2
-            ]);
-
-            $response = curl_exec($ch);
-            $error = curl_error($ch);
-            curl_close($ch);
-
-            if (!$error && $response) {
-                $dnsData = json_decode($response, true);
-                if (isset($dnsData['Answer'])) {
-                    foreach ($dnsData['Answer'] as $record) {
-                        if ($record['type'] === 1) {
-                            return $record['data'];
-                        }
-                    }
-                }
-            }
-        }
-
-        $ip = gethostbyname($domain);
-        return ($ip !== $domain) ? $ip : false;
     }
 
     /**
