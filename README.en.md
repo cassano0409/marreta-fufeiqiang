@@ -55,7 +55,7 @@ services:
 - `SITE_NAME`: Your Marreta's name
 - `SITE_DESCRIPTION`: Tell what it's for
 - `SITE_URL`: Where it will run, full address with `https://`
-- `DNS_SERVERS`: Which DNS servers to use `94.140.14.14, 94.140.15.15`
+- `DNS_SERVERS`: Which DNS servers to use `1.1.1.1, 8.8.8.8`
 
 Now you can run `docker compose up -d`
 
@@ -77,7 +77,7 @@ cp app/.env.sample app/.env
 SITE_NAME="Marreta"
 SITE_DESCRIPTION="Paywall hammer!"
 SITE_URL=http://localhost
-DNS_SERVERS=94.140.14.14, 94.140.15.15
+DNS_SERVERS=1.1.1.1, 8.8.8.8
 DEBUG=true
 ```
 
