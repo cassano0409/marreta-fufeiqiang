@@ -64,7 +64,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['url'])) {
             <p class="text-gray-600 text-lg"><?php echo SITE_DESCRIPTION; ?></p>
             <p class="text-gray-600 text-lg">
                 <span class="font-bold text-blue-600">
-                    <?php echo number_format(count(glob("cache/*.gz")), 0, ',', '.'); ?>
+                    <?php
+                        $cache_folder = iterator_count(new FilesystemIterator('cache/'));
+                        echo number_format($cache_folder, 0, ',', '.');
+                    ?>
                 </span>
                 <span>paredes derrubadas!</span>
             </p>
