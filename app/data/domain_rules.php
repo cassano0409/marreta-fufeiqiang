@@ -15,6 +15,7 @@
  * - cookies: Array associativo de cookies a serem definidos (null remove o cookie)
  * - classAttrRemove: Array de classes a serem removidas de elementos
  * - customCode: String contendo código JavaScript personalizado para execução
+ * - customStyle: String contendo código CSS personalizado para execução
  * - excludeGlobalRules: Array associativo de regras globais a serem excluídas para este domínio
  *   Exemplo:
  *   'excludeGlobalRules' => [
@@ -36,6 +37,27 @@ return [
             'piano_user_id' => null
         ],
         'classAttrRemove' => ['wall', 'protected-content', 'cropped-block']
+    ],
+    'foreignaffairs.com' => [
+        'customCode' => 'document.addEventListener(\'DOMContentLoaded\', function() {
+            const dropcapDiv = document.querySelector(\'.article-dropcap\');
+            if (dropcapDiv) {
+                dropcapDiv.style.height = \'auto\';
+            }
+        });'
+    ],
+    'latercera.com' => [
+        'classElementRemove' => ['pw-frontier'],
+        'customStyle' => '.pw-frontier {
+            display: none !important;
+        }
+        .container-all {
+            position: inherit !important;
+            top: inherit;
+        }
+        .main-header .top-menu, .main-header .alert-news, .main-header .alert-news.sticky {
+            position:inherit !important;
+        }'
     ],
     'folha.uol.com.br' => [
         'idElementRemove' => ['paywall-flutuante', 'paywall', 'paywall-signup'],
