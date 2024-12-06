@@ -110,13 +110,13 @@ class URLAnalyzer
             return $this->cache->get($cleanUrl);
         }
 
-        $domain = parse_url($cleanUrl, PHP_URL_HOST);
-        $domain = preg_replace('/^www\./', '', $domain);
+        $host = parse_url($cleanUrl, PHP_URL_HOST);
+        $host = preg_replace('/^www\./', '', $host);
 
         // Verificação de domínios bloqueados
         foreach (BLOCKED_DOMAINS as $blockedDomain) {
             // Verifica apenas correspondência exata do domínio
-            if ($domain === $blockedDomain) {
+            if ($host === $blockedDomain) {
                 $error = 'Este domínio está bloqueado para extração.';
                 $this->logError($cleanUrl, $error);
                 throw new Exception($error);
@@ -127,10 +127,11 @@ class URLAnalyzer
 
         // Primeiro, tenta buscar o conteúdo diretamente
         try {
-            $content = $this->fetchContent($url);
+            $content = $this->fetchContent($url, $host);
         } catch (Exception $e) {
             // Se falhar, registra o erro de busca direta
             $this->logError($url, "Direct fetch error: " . $e->getMessage());
+            $content = null;
         }
 
         // Se a busca direta falhar, tenta o Wayback Machine
@@ -144,12 +145,11 @@ class URLAnalyzer
         }
 
         if (!empty($content)) {
-            $content = $this->processContent($content, $domain, $cleanUrl);
+            $content = $this->processContent($content, $host, $cleanUrl);
             $this->cache->set($cleanUrl, $content);
-            return $content;
         }
         
-        return null;
+        return $content;
     }
 
     /**
@@ -212,15 +212,11 @@ class URLAnalyzer
      * Realiza requisição HTTP usando Curl Class
      * 
      * @param string $url URL para requisição
-     * @return string Conteúdo obtido
-     * @throws Exception Em caso de erro na requisição
+     * @return array Resultado da requisição com conteúdo e código HTTP
      */
-    private function fetchContent($url)
+    private function fetchContent($url, $host)
     {
-        $parsedUrl = parse_url($url);
-        $host = $parsedUrl['host'];
-
-        $domainRules = $this->getDomainRules(parse_url($url, PHP_URL_HOST));
+        $domainRules = $this->getDomainRules($host);
 
         // Obtém a configuração do user agent
         $curl = new Curl();
@@ -324,6 +320,146 @@ class URLAnalyzer
     }
 
     /**
+     * Processa o conteúdo HTML aplicando regras do domínio
+     * 
+     * @param string $content Conteúdo HTML
+     * @param string $domain Domínio do conteúdo
+     * @param string $url URL completa
+     * @return string Conteúdo processado
+     */
+    private function processContent($content, $host, $url)
+    {
+        $dom = new DOMDocument();
+        $dom->preserveWhiteSpace = true;
+        libxml_use_internal_errors(true);
+        @$dom->loadHTML(mb_convert_encoding($content, 'HTML-ENTITIES', 'UTF-8'), LIBXML_HTML_NOIMPLIED | LIBXML_HTML_NODEFDTD);
+        libxml_clear_errors();
+
+        $xpath = new DOMXPath($dom);
+
+        // Processa tags canônicas
+        $canonicalLinks = $xpath->query("//link[@rel='canonical']");
+        if ($canonicalLinks !== false) {
+            // Remove todas as tags canônicas existentes
+            foreach ($canonicalLinks as $link) {
+                if ($link->parentNode) {
+                    $link->parentNode->removeChild($link);
+                }
+            }
+        }
+        // Adiciona nova tag canônica com a URL original
+        $head = $xpath->query('//head')->item(0);
+        if ($head) {
+            $newCanonical = $dom->createElement('link');
+            $newCanonical->setAttribute('rel', 'canonical');
+            $newCanonical->setAttribute('href', $url);
+            $head->appendChild($newCanonical);
+        }
+
+        // Sempre aplica a correção de URLs relativas
+        $this->fixRelativeUrls($dom, $xpath, $url);
+
+        $domainRules = $this->getDomainRules($host);
+        if (isset($domainRules['customStyle'])) {
+            $styleElement = $dom->createElement('style');
+            $styleElement->appendChild($dom->createTextNode($domainRules['customStyle']));
+            $dom->getElementsByTagName('head')[0]->appendChild($styleElement);
+        }
+
+        if (isset($domainRules['customCode'])) {
+            $scriptElement = $dom->createElement('script');
+            $scriptElement->setAttribute('type', 'text/javascript');
+            $scriptElement->appendChild($dom->createTextNode($domainRules['customCode']));
+            $dom->getElementsByTagName('body')[0]->appendChild($scriptElement);
+        }
+
+        if (isset($domainRules['classAttrRemove'])) {
+            foreach ($domainRules['classAttrRemove'] as $class) {
+                $elements = $xpath->query("//*[contains(@class, '$class')]");
+                if ($elements !== false) {
+                    foreach ($elements as $element) {
+                        $this->removeClassNames($element, [$class]);
+                    }
+                }
+            }
+        }
+
+        if (isset($domainRules['idElementRemove'])) {
+            foreach ($domainRules['idElementRemove'] as $id) {
+                $elements = $xpath->query("//*[@id='$id']");
+                if ($elements !== false) {
+                    foreach ($elements as $element) {
+                        if ($element->parentNode) {
+                            $element->parentNode->removeChild($element);
+                        }
+                    }
+                }
+            }
+        }
+
+        if (isset($domainRules['classElementRemove'])) {
+            foreach ($domainRules['classElementRemove'] as $class) {
+                $elements = $xpath->query("//*[contains(@class, '$class')]");
+                if ($elements !== false) {
+                    foreach ($elements as $element) {
+                        if ($element->parentNode) {
+                            $element->parentNode->removeChild($element);
+                        }
+                    }
+                }
+            }
+        }
+
+        if (isset($domainRules['scriptTagRemove'])) {
+            foreach ($domainRules['scriptTagRemove'] as $script) {
+                // Busca por tags script com src ou conteúdo contendo o script
+                $scriptElements = $xpath->query("//script[contains(@src, '$script')] | //script[contains(text(), '$script')]");
+                if ($scriptElements !== false) {
+                    foreach ($scriptElements as $element) {
+                        if ($element->parentNode) {
+                            $element->parentNode->removeChild($element);
+                        }
+                    }
+                }
+
+                // Busca por tags link que são scripts
+                $linkElements = $xpath->query("//link[@as='script' and contains(@href, '$script') and @type='application/javascript']");
+                if ($linkElements !== false) {
+                    foreach ($linkElements as $element) {
+                        if ($element->parentNode) {
+                            $element->parentNode->removeChild($element);
+                        }
+                    }
+                }
+            }
+        }
+
+        $elements = $xpath->query("//*[@style]");
+        if ($elements !== false) {
+            foreach ($elements as $element) {
+                if ($element instanceof DOMElement) {
+                    $style = $element->getAttribute('style');
+                    $style = preg_replace('/(max-height|height|overflow|position|display|visibility)\s*:\s*[^;]+;?/', '', $style);
+                    $element->setAttribute('style', $style);
+                }
+            }
+        }
+
+        // Adiciona CTA Marreta 
+        $body = $xpath->query('//body')->item(0);
+        if ($body) {
+            $marretaDiv = $dom->createElement('div');
+            $marretaDiv->setAttribute('style', 'z-index: 99999; position: fixed; top: 0; right: 4px; background: rgb(37,99,235); color: #fff; font-size: 13px; line-height: 1em; padding: 6px; margin: 0px; overflow: hidden; border-bottom-left-radius: 3px; border-bottom-right-radius: 3px; font-family: Tahoma, sans-serif;');
+            $marretaHtml = $dom->createDocumentFragment();
+            $marretaHtml->appendXML('Chapéu de paywall é <a href="'.SITE_URL.'" style="color: #fff; text-decoration: underline; font-weight: bold;" target="_blank">Marreta</a>!');
+            $marretaDiv->appendChild($marretaHtml);
+            $body->appendChild($marretaDiv);
+        }
+
+        return $dom->saveHTML();
+    }
+
+    /**
      * Remove classes específicas de um elemento
      * 
      * @param DOMElement $element Elemento DOM
@@ -393,155 +529,5 @@ class URLAnalyzer
                 }
             }
         }
-    }
-
-    /**
-     * Processa o conteúdo HTML aplicando regras do domínio
-     * 
-     * @param string $content Conteúdo HTML
-     * @param string $domain Domínio do conteúdo
-     * @param string $url URL completa
-     * @return string Conteúdo processado
-     */
-    private function processContent($content, $domain, $url)
-    {
-        $dom = new DOMDocument();
-        $dom->preserveWhiteSpace = true;
-        libxml_use_internal_errors(true);
-        @$dom->loadHTML(mb_convert_encoding($content, 'HTML-ENTITIES', 'UTF-8'), LIBXML_HTML_NOIMPLIED | LIBXML_HTML_NODEFDTD);
-        libxml_clear_errors();
-
-        $xpath = new DOMXPath($dom);
-
-        // Processa tags canônicas
-        $canonicalLinks = $xpath->query("//link[@rel='canonical']");
-        if ($canonicalLinks !== false) {
-            // Remove todas as tags canônicas existentes
-            foreach ($canonicalLinks as $link) {
-                if ($link->parentNode) {
-                    $link->parentNode->removeChild($link);
-                }
-            }
-        }
-        // Adiciona nova tag canônica com a URL original
-        $head = $xpath->query('//head')->item(0);
-        if ($head) {
-            $newCanonical = $dom->createElement('link');
-            $newCanonical->setAttribute('rel', 'canonical');
-            $newCanonical->setAttribute('href', $url);
-            $head->appendChild($newCanonical);
-        }
-
-        // Sempre aplica a correção de URLs relativas
-        $this->fixRelativeUrls($dom, $xpath, $url);
-
-        $domainRules = $this->getDomainRules($domain);
-        if ($domainRules !== null) {
-            if (isset($domainRules['customStyle'])) {
-                $styleElement = $dom->createElement('style');
-                $styleContent = '';
-                foreach ($domainRules['customStyle'] as $selector => $rules) {
-                    if (is_array($rules)) {
-                        $styleContent .= $selector . ' { ' . implode('; ', $rules) . ' } ';
-                    } else {
-                        $styleContent .= $selector . ' { ' . $rules . ' } ';
-                    }
-                }
-                $styleElement->appendChild($dom->createTextNode($styleContent));
-                $dom->getElementsByTagName('head')[0]->appendChild($styleElement);
-            }
-
-            if (isset($domainRules['customCode'])) {
-                $scriptElement = $dom->createElement('script');
-                $scriptElement->setAttribute('type', 'text/javascript');
-                $scriptElement->appendChild($dom->createTextNode($domainRules['customCode']));
-                $dom->getElementsByTagName('body')[0]->appendChild($scriptElement);
-            }
-
-            if (isset($domainRules['classAttrRemove'])) {
-                foreach ($domainRules['classAttrRemove'] as $class) {
-                    $elements = $xpath->query("//*[contains(@class, '$class')]");
-                    if ($elements !== false) {
-                        foreach ($elements as $element) {
-                            $this->removeClassNames($element, [$class]);
-                        }
-                    }
-                }
-            }
-
-            if (isset($domainRules['idElementRemove'])) {
-                foreach ($domainRules['idElementRemove'] as $id) {
-                    $elements = $xpath->query("//*[@id='$id']");
-                    if ($elements !== false) {
-                        foreach ($elements as $element) {
-                            if ($element->parentNode) {
-                                $element->parentNode->removeChild($element);
-                            }
-                        }
-                    }
-                }
-            }
-
-            if (isset($domainRules['classElementRemove'])) {
-                foreach ($domainRules['classElementRemove'] as $class) {
-                    $elements = $xpath->query("//*[contains(@class, '$class')]");
-                    if ($elements !== false) {
-                        foreach ($elements as $element) {
-                            if ($element->parentNode) {
-                                $element->parentNode->removeChild($element);
-                            }
-                        }
-                    }
-                }
-            }
-
-            if (isset($domainRules['scriptTagRemove'])) {
-                foreach ($domainRules['scriptTagRemove'] as $script) {
-                    // Busca por tags script com src ou conteúdo contendo o script
-                    $scriptElements = $xpath->query("//script[contains(@src, '$script')] | //script[contains(text(), '$script')]");
-                    if ($scriptElements !== false) {
-                        foreach ($scriptElements as $element) {
-                            if ($element->parentNode) {
-                                $element->parentNode->removeChild($element);
-                            }
-                        }
-                    }
-
-                    // Busca por tags link que são scripts
-                    $linkElements = $xpath->query("//link[@as='script' and contains(@href, '$script') and @type='application/javascript']");
-                    if ($linkElements !== false) {
-                        foreach ($linkElements as $element) {
-                            if ($element->parentNode) {
-                                $element->parentNode->removeChild($element);
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        $elements = $xpath->query("//*[@style]");
-        if ($elements !== false) {
-            foreach ($elements as $element) {
-                if ($element instanceof DOMElement) {
-                    $style = $element->getAttribute('style');
-                    $style = preg_replace('/(max-height|height|overflow|position|display|visibility)\s*:\s*[^;]+;?/', '', $style);
-                    $element->setAttribute('style', $style);
-                }
-            }
-        }
-
-        // Adiciona CTA Marreta 
-        $body = $xpath->query('//body')->item(0);
-        if ($body) {
-            $marretaDiv = $dom->createElement('div');
-            $marretaDiv->setAttribute('style', 'z-index: 99999; position: fixed; bottom: 0; right: 4px; background: rgb(37,99,235); color: #fff; font-size: 13px; line-height: 1em; padding: 6px; margin: 0px; overflow: hidden; border-top-left-radius: 3px; border-top-right-radius: 3px; font-family: Tahoma, sans-serif;');
-            $marretaHtml = $dom->createDocumentFragment();
-            $marretaHtml->appendXML('Chapéu de paywall é <a href="'.SITE_URL.'" style="color: #fff; text-decoration: underline; font-weight: bold;" target="_blank">Marreta</a>!');
-            $marretaDiv->appendChild($marretaHtml);
-            $body->appendChild($marretaDiv);
-        }
-
-        return $dom->saveHTML();
     }
 }
