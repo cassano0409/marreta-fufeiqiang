@@ -104,105 +104,100 @@ class URLAnalyzer
      */
     public function analyze($url)
     {
+        // 1. Limpa a URL
         $cleanUrl = $this->cleanUrl($url);
+        if (!$cleanUrl) {
+            throw new Exception("URL inválida");
+        }
 
+        // 2. Verifica cache
         if ($this->cache->exists($cleanUrl)) {
             return $this->cache->get($cleanUrl);
         }
 
+        // 3. Verifica domínios bloqueados
         $host = parse_url($cleanUrl, PHP_URL_HOST);
         $host = preg_replace('/^www\./', '', $host);
 
-        // Verificação de domínios bloqueados
-        foreach (BLOCKED_DOMAINS as $blockedDomain) {
-            // Verifica apenas correspondência exata do domínio
-            if ($host === $blockedDomain) {
-                $error = 'Este domínio está bloqueado para extração.';
-                $this->logError($cleanUrl, $error);
-                throw new Exception($error);
-            }
+        if (in_array($host, BLOCKED_DOMAINS)) {
+            $error = 'Este domínio está bloqueado para extração.';
+            $this->logError($cleanUrl, $error);
+            throw new Exception($error);
         }
 
-        $content = null;
-
-        // Primeiro, tenta buscar o conteúdo diretamente
+        // 4. Tenta buscar conteúdo diretamente
         try {
-            $content = $this->fetchContent($url, $host);
-        } catch (Exception $e) {
-            // Se falhar, registra o erro de busca direta
-            $this->logError($url, "Direct fetch error: " . $e->getMessage());
-            $content = null;
-        }
-
-        // Se a busca direta falhar, tenta o Wayback Machine
-        if (empty($content)) {
-            try {
-                $content = $this->fetchFromWaybackMachine($url);
-            } catch (Exception $e) {
-                // Se o Wayback Machine também falhar, lança uma exceção
-                throw new Exception("Wayback Machine: " . $e->getMessage());
+            $content = $this->fetchContent($cleanUrl);
+            if (!empty($content)) {
+                $processedContent = $this->processContent($content, $host, $cleanUrl);
+                $this->cache->set($cleanUrl, $processedContent);
+                return $processedContent;
             }
+        } catch (Exception $e) {
+            $this->logError($cleanUrl, "Direct fetch error: " . $e->getMessage());
         }
 
-        if (!empty($content)) {
-            $content = $this->processContent($content, $host, $cleanUrl);
-            $this->cache->set($cleanUrl, $content);
+        // 5. Tenta buscar do Wayback Machine como fallback
+        try {
+            $content = $this->fetchFromWaybackMachine($cleanUrl);
+            if (!empty($content)) {
+                $processedContent = $this->processContent($content, $host, $cleanUrl);
+                $this->cache->set($cleanUrl, $processedContent);
+                return $processedContent;
+            }
+        } catch (Exception $e) {
+            $this->logError($cleanUrl, "Wayback Machine error: " . $e->getMessage());
         }
-        
-        return $content;
+
+        throw new Exception("Não foi possível obter o conteúdo da URL");
     }
 
     /**
      * Tenta obter o conteúdo da URL do Internet Archive's Wayback Machine
      * 
      * @param string $url URL original
-     * @return string|null Conteúdo do arquivo ou null se falhar
+     * @return string|null Conteúdo do arquivo
+     * @throws Exception Em caso de erro na requisição
      */
     private function fetchFromWaybackMachine($url)
     {
-        // Remove o protocolo (http/https) da URL
         $cleanUrl = preg_replace('#^https?://#', '', $url);
-        
-        // Primeiro, verifica a disponibilidade de snapshots
         $availabilityUrl = "https://archive.org/wayback/available?url=" . urlencode($cleanUrl);
         
         $curl = new Curl();
         $curl->setOpt(CURLOPT_FOLLOWLOCATION, true);
         $curl->setOpt(CURLOPT_TIMEOUT, 10);
         $curl->setOpt(CURLOPT_SSL_VERIFYPEER, false);
+        $curl->setUserAgent($this->userAgents[array_rand($this->userAgents)]);
 
         $curl->get($availabilityUrl);
 
-        if ($curl->error) {
-            return null;
+        if ($curl->error || $curl->httpStatusCode !== 200) {
+            throw new Exception("Erro ao verificar disponibilidade no Wayback Machine");
         }
 
         $data = $curl->response;
         if (!isset($data->archived_snapshots->closest->url)) {
-            return null;
+            throw new Exception("Nenhum snapshot encontrado no Wayback Machine");
         }
 
-        // Obtém o snapshot mais recente
         $archiveUrl = $data->archived_snapshots->closest->url;
-        
-        // Busca o conteúdo do snapshot
         $curl = new Curl();
         $curl->setOpt(CURLOPT_FOLLOWLOCATION, true);
         $curl->setOpt(CURLOPT_TIMEOUT, 10);
         $curl->setOpt(CURLOPT_SSL_VERIFYPEER, false);
+        $curl->setUserAgent($this->userAgents[array_rand($this->userAgents)]);
 
         $curl->get($archiveUrl);
 
-        if ($curl->error || $curl->httpStatusCode >= 400 || empty($curl->response)) {
-            return null;
+        if ($curl->error || $curl->httpStatusCode !== 200 || empty($curl->response)) {
+            throw new Exception("Erro ao obter conteúdo do Wayback Machine");
         }
 
         $content = $curl->response;
-
-        // Remove o toolbar do Wayback Machine
-        $content = preg_replace('/<!-- BEGIN WAYBACK TOOLBAR INSERT -->.*?<!-- END WAYBACK TOOLBAR INSERT -->/s', '', $content);
         
-        // Remove URLs de cache do Wayback Machine
+        // Remove o toolbar do Wayback Machine e URLs de cache
+        $content = preg_replace('/<!-- BEGIN WAYBACK TOOLBAR INSERT -->.*?<!-- END WAYBACK TOOLBAR INSERT -->/s', '', $content);
         $content = preg_replace('/https?:\/\/web\.archive\.org\/web\/\d+im_\//', '', $content);
         
         return $content;
@@ -212,22 +207,29 @@ class URLAnalyzer
      * Realiza requisição HTTP usando Curl Class
      * 
      * @param string $url URL para requisição
-     * @return array Resultado da requisição com conteúdo e código HTTP
+     * @return string Conteúdo da página
+     * @throws Exception Em caso de erro na requisição
      */
-    private function fetchContent($url, $host)
+    private function fetchContent($url)
     {
+        $host = parse_url($url, PHP_URL_HOST);
+        $host = preg_replace('/^www\./', '', $host);
         $domainRules = $this->getDomainRules($host);
 
-        // Obtém a configuração do user agent
         $curl = new Curl();
         $curl->setOpt(CURLOPT_FOLLOWLOCATION, true);
         $curl->setOpt(CURLOPT_MAXREDIRS, 2);
-        $curl->setOpt(CURLOPT_TIMEOUT, 5);
-        $curl->setUserAgent($this->userAgents[array_rand($this->userAgents)]);
+        $curl->setOpt(CURLOPT_TIMEOUT, 10);
         $curl->setOpt(CURLOPT_SSL_VERIFYPEER, false);
         $curl->setOpt(CURLOPT_DNS_SERVERS, implode(',', $this->dnsServers));
+        
+        // Define User Agent
+        $userAgent = isset($domainRules['userAgent']) 
+            ? $domainRules['userAgent'] 
+            : $this->userAgents[array_rand($this->userAgents)];
+        $curl->setUserAgent($userAgent);
 
-        // Prepara os headers
+        // Headers padrão
         $headers = [
             'Host' => $host,
             'Accept' => 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
@@ -236,20 +238,14 @@ class URLAnalyzer
             'Pragma' => 'no-cache'
         ];
 
-        // Adiciona headers específicos do domínio se existirem
-        if ($domainRules !== null && isset($domainRules['userAgent'])) {
-            $curl->setUserAgent($domainRules['userAgent']);
-        }
-
-        // Adiciona headers específicos do domínio se existirem
-        if ($domainRules !== null && isset($domainRules['headers'])) {
+        // Adiciona headers específicos do domínio
+        if (isset($domainRules['headers'])) {
             $headers = array_merge($headers, $domainRules['headers']);
         }
-
         $curl->setHeaders($headers);
-        $curl->setOpt(CURLOPT_FRESH_CONNECT, true);
 
-        if ($domainRules !== null && isset($domainRules['cookies'])) {
+        // Adiciona cookies específicos do domínio
+        if (isset($domainRules['cookies'])) {
             $cookies = [];
             foreach ($domainRules['cookies'] as $name => $value) {
                 if ($value !== null) {
@@ -261,14 +257,19 @@ class URLAnalyzer
             }
         }
 
-        $curl->get($url);
-
-        if ($curl->error) {
-            throw new Exception("Erro CURL: " . $curl->errorMessage);
+        // Adiciona referer se especificado
+        if (isset($domainRules['referer'])) {
+            $curl->setHeader('Referer', $domainRules['referer']);
         }
 
-        if ($curl->httpStatusCode >= 400) {
-            throw new Exception("Erro HTTP: " . $curl->httpStatusCode);
+        $curl->get($url);
+
+        if ($curl->error || $curl->httpStatusCode !== 200) {
+            throw new Exception("Erro HTTP " . $curl->httpStatusCode . ": " . $curl->errorMessage);
+        }
+
+        if (empty($curl->response)) {
+            throw new Exception("Resposta vazia do servidor");
         }
 
         return $curl->response;
@@ -278,7 +279,7 @@ class URLAnalyzer
      * Limpa e normaliza uma URL
      * 
      * @param string $url URL para limpar
-     * @return string URL limpa e normalizada
+     * @return string|false URL limpa e normalizada ou false se inválida
      */
     private function cleanUrl($url)
     {
@@ -320,10 +321,82 @@ class URLAnalyzer
     }
 
     /**
+     * Remove classes específicas de um elemento
+     * 
+     * @param DOMElement $element Elemento DOM
+     * @param array $classesToRemove Classes a serem removidas
+     */
+    private function removeClassNames($element, $classesToRemove)
+    {
+        if (!$element->hasAttribute('class')) {
+            return;
+        }
+
+        $classes = explode(' ', $element->getAttribute('class'));
+        $newClasses = array_filter($classes, function ($class) use ($classesToRemove) {
+            return !in_array(trim($class), $classesToRemove);
+        });
+
+        if (empty($newClasses)) {
+            $element->removeAttribute('class');
+        } else {
+            $element->setAttribute('class', implode(' ', $newClasses));
+        }
+    }
+
+    /**
+     * Corrige URLs relativas em um documento DOM
+     * 
+     * @param DOMDocument $dom Documento DOM
+     * @param DOMXPath $xpath Objeto XPath
+     * @param string $baseUrl URL base para correção
+     */
+    private function fixRelativeUrls($dom, $xpath, $baseUrl)
+    {
+        $parsedBase = parse_url($baseUrl);
+        $baseHost = $parsedBase['scheme'] . '://' . $parsedBase['host'];
+
+        $elements = $xpath->query("//*[@src]");
+        if ($elements !== false) {
+            foreach ($elements as $element) {
+                if ($element instanceof DOMElement) {
+                    $src = $element->getAttribute('src');
+                    if (strpos($src, 'base64') !== false) {
+                        continue;
+                    }
+                    if (strpos($src, 'http') !== 0 && strpos($src, '//') !== 0) {
+                        $src = ltrim($src, '/');
+                        $element->setAttribute('src', $baseHost . '/' . $src);
+                    }
+                }
+            }
+        }
+
+        $elements = $xpath->query("//*[@href]");
+        if ($elements !== false) {
+            foreach ($elements as $element) {
+                if ($element instanceof DOMElement) {
+                    $href = $element->getAttribute('href');
+                    if (strpos($href, 'mailto:') === 0 || 
+                        strpos($href, 'tel:') === 0 || 
+                        strpos($href, 'javascript:') === 0 || 
+                        strpos($href, '#') === 0) {
+                        continue;
+                    }
+                    if (strpos($href, 'http') !== 0 && strpos($href, '//') !== 0) {
+                        $href = ltrim($href, '/');
+                        $element->setAttribute('href', $baseHost . '/' . $href);
+                    }
+                }
+            }
+        }
+    }
+
+    /**
      * Processa o conteúdo HTML aplicando regras do domínio
      * 
      * @param string $content Conteúdo HTML
-     * @param string $domain Domínio do conteúdo
+     * @param string $host Nome do host
      * @param string $url URL completa
      * @return string Conteúdo processado
      */
@@ -457,77 +530,5 @@ class URLAnalyzer
         }
 
         return $dom->saveHTML();
-    }
-
-    /**
-     * Remove classes específicas de um elemento
-     * 
-     * @param DOMElement $element Elemento DOM
-     * @param array $classesToRemove Classes a serem removidas
-     */
-    private function removeClassNames($element, $classesToRemove)
-    {
-        if (!$element->hasAttribute('class')) {
-            return;
-        }
-
-        $classes = explode(' ', $element->getAttribute('class'));
-        $newClasses = array_filter($classes, function ($class) use ($classesToRemove) {
-            return !in_array(trim($class), $classesToRemove);
-        });
-
-        if (empty($newClasses)) {
-            $element->removeAttribute('class');
-        } else {
-            $element->setAttribute('class', implode(' ', $newClasses));
-        }
-    }
-
-    /**
-     * Corrige URLs relativas em um documento DOM
-     * 
-     * @param DOMDocument $dom Documento DOM
-     * @param DOMXPath $xpath Objeto XPath
-     * @param string $baseUrl URL base para correção
-     */
-    private function fixRelativeUrls($dom, $xpath, $baseUrl)
-    {
-        $parsedBase = parse_url($baseUrl);
-        $baseHost = $parsedBase['scheme'] . '://' . $parsedBase['host'];
-
-        $elements = $xpath->query("//*[@src]");
-        if ($elements !== false) {
-            foreach ($elements as $element) {
-                if ($element instanceof DOMElement) {
-                    $src = $element->getAttribute('src');
-                    if (strpos($src, 'base64') !== false) {
-                        continue;
-                    }
-                    if (strpos($src, 'http') !== 0 && strpos($src, '//') !== 0) {
-                        $src = ltrim($src, '/');
-                        $element->setAttribute('src', $baseHost . '/' . $src);
-                    }
-                }
-            }
-        }
-
-        $elements = $xpath->query("//*[@href]");
-        if ($elements !== false) {
-            foreach ($elements as $element) {
-                if ($element instanceof DOMElement) {
-                    $href = $element->getAttribute('href');
-                    if (strpos($href, 'mailto:') === 0 || 
-                        strpos($href, 'tel:') === 0 || 
-                        strpos($href, 'javascript:') === 0 || 
-                        strpos($href, '#') === 0) {
-                        continue;
-                    }
-                    if (strpos($href, 'http') !== 0 && strpos($href, '//') !== 0) {
-                        $href = ltrim($href, '/');
-                        $element->setAttribute('href', $baseHost . '/' . $href);
-                    }
-                }
-            }
-        }
     }
 }
