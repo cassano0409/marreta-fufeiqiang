@@ -20,9 +20,22 @@ return [
     'weeklytimesnow.com.au',
     'barrons.com',
     'brasilenergia.com.br',
+    'ole.com.ar',
     //-- Bloqueio tecnico de acesso ao conteudo
     'bloomberg.com',
     'gauchazh.clicrbs.com.br', 
+    'opopular.com.br',
+    'npr.org',
+    'sportskeeda.com',
+    'kansascity.com',
+    'jornaldebrasilia.com.br'.
+    'oantagonista.com.br',
+    'adage.com',
+    'washingtonpost.com',
+    'diplomatique.org.br',
+    'fastcompany.com', // Captcha Delivery
+    'expressnews.com', // Perimitrex
+    'reuters.com', // Captcha Delivery
     'nydailynews.com', // Bloqueio regional
     // Tracking
     'metaffiliation.com',
