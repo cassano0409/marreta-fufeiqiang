@@ -50,12 +50,14 @@ services:
       - SITE_DESCRIPTION=
       - SITE_URL=
       - DNS_SERVERS=
+      - SELENIUM_HOST=
 ```
 
 - `SITE_NAME`: Your Marreta's name
 - `SITE_DESCRIPTION`: Tell what it's for
 - `SITE_URL`: Where it will run, full address with `https://`
 - `DNS_SERVERS`: Which DNS servers to use `1.1.1.1, 8.8.8.8`
+- `SELENIUM_HOST`: Selenium host server:PORT (e.g., selenium-hub:4444)
 
 Now you can run `docker compose up -d`
 
@@ -79,6 +81,7 @@ SITE_DESCRIPTION="Paywall hammer!"
 SITE_URL=http://localhost
 DNS_SERVERS=1.1.1.1, 8.8.8.8
 DEBUG=true
+SELENIUM_HOST=selenium-hub:4444
 ```
 
 4. Run everything:
@@ -137,6 +140,49 @@ S3_REGION=auto
 S3_FOLDER_=cache/
 S3_ACL=private
 ```
+
+### Selenium Integration
+
+Selenium integration for processing websites that require javascript or have more advanced protection barriers. To use this functionality, you need to set up a Selenium environment with Firefox. Add the following configuration to your `docker-compose.yml`:
+
+```yaml
+services:
+  selenium-firefox:
+    container_name: selenium-firefox
+    image: selenium/node-firefox:4.27.0-20241204
+    shm_size: 2gb
+    environment:
+      - SE_EVENT_BUS_HOST=selenium-hub
+      - SE_EVENT_BUS_PUBLISH_PORT=4442
+      - SE_EVENT_BUS_SUBSCRIBE_PORT=4443
+      - SE_ENABLE_TRACING=false
+      - SE_NODE_MAX_SESSIONS=10
+      - SE_NODE_OVERRIDE_MAX_SESSIONS=true
+    entrypoint: bash -c 'SE_OPTS="--host $$HOSTNAME" /opt/bin/entry_point.sh'
+    depends_on:
+      - selenium-hub
+
+  selenium-hub:
+    image: selenium/hub:4.27.0-20241204
+    container_name: selenium-hub
+    environment:
+      - SE_ENABLE_TRACING=false
+      - GRID_MAX_SESSION=10
+      - GRID_BROWSER_TIMEOUT=10
+      - GRID_TIMEOUT=10
+    ports:
+      - 4442:4442
+      - 4443:4443
+      - 4444:4444
+```
+
+Important settings:
+- `shm_size`: Sets the shared memory size for Firefox (2GB recommended)
+- `SE_NODE_MAX_SESSIONS`: Maximum number of concurrent sessions per node
+- `GRID_MAX_SESSION`: Maximum number of concurrent sessions in the hub
+- `GRID_BROWSER_TIMEOUT` and `GRID_TIMEOUT`: Timeouts in seconds
+
+After setting up Selenium, make sure to set the `SELENIUM_HOST` variable in your environment to point to the Selenium hub (typically `selenium-hub:4444`).
 
 ## 🛠️ Maintenance
 

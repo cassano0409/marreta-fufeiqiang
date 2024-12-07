@@ -50,13 +50,15 @@ services:
       - SITE_DESCRIPTION=
       - SITE_URL=
       - DNS_SERVERS=
+      - SELENIUM_HOST=
 ```
 
 - `SITE_NAME`: Nome do seu Marreta
 - `SITE_DESCRIPTION`: Conta pra que serve
 - `SITE_URL`: Onde vai rodar, endereço completo com `https://`
 - `DNS_SERVERS`: Quais servidores DNS usar `1.1.1.1, 8.8.8.8`
-
+- `SELENIUM_HOST`: Servidor:PORTA do host do Selenium (ex: selenium-hub:4444)
+- 
 Agora pode rodar `docker compose up -d`
 
 #### Desenvolvimento
@@ -79,6 +81,7 @@ SITE_DESCRIPTION="Chapéu de paywall é marreta!"
 SITE_URL=http://localhost
 DNS_SERVERS=1.1.1.1, 8.8.8.8
 DEBUG=true
+SELENIUM_HOST=selenium-hub:4444
 ```
 
 4. Roda tudo:
@@ -137,6 +140,49 @@ S3_REGION=auto
 S3_FOLDER_=cache/
 S3_ACL=private
 ```
+
+### Integração com Selenium
+
+Integração com Selenium para processar sites que requerem javascript ou têm algumas barreiras de proteção mais avançadas. Para usar esta funcionalidade, você precisa configurar um ambiente Selenium com Firefox. Adicione a seguinte configuração ao seu `docker-compose.yml`:
+
+```yaml
+services:
+  selenium-firefox:
+    container_name: selenium-firefox
+    image: selenium/node-firefox:4.27.0-20241204
+    shm_size: 2gb
+    environment:
+      - SE_EVENT_BUS_HOST=selenium-hub
+      - SE_EVENT_BUS_PUBLISH_PORT=4442
+      - SE_EVENT_BUS_SUBSCRIBE_PORT=4443
+      - SE_ENABLE_TRACING=false
+      - SE_NODE_MAX_SESSIONS=10
+      - SE_NODE_OVERRIDE_MAX_SESSIONS=true
+    entrypoint: bash -c 'SE_OPTS="--host $$HOSTNAME" /opt/bin/entry_point.sh'
+    depends_on:
+      - selenium-hub
+
+  selenium-hub:
+    image: selenium/hub:4.27.0-20241204
+    container_name: selenium-hub
+    environment:
+      - SE_ENABLE_TRACING=false
+      - GRID_MAX_SESSION=10
+      - GRID_BROWSER_TIMEOUT=10
+      - GRID_TIMEOUT=10
+    ports:
+      - 4442:4442
+      - 4443:4443
+      - 4444:4444
+```
+
+Configurações importantes:
+- `shm_size`: Define o tamanho da memória compartilhada para o Firefox (2GB recomendado)
+- `SE_NODE_MAX_SESSIONS`: Número máximo de sessões simultâneas por nó
+- `GRID_MAX_SESSION`: Número máximo de sessões simultâneas no hub
+- `GRID_BROWSER_TIMEOUT` e `GRID_TIMEOUT`: Timeouts em segundos
+
+Após configurar o Selenium, certifique-se de definir a variável `SELENIUM_HOST` no seu ambiente para apontar para o hub do Selenium (geralmente `selenium-hub:4444`).
 
 ## 🛠️ Manutenção
 

@@ -1,36 +1,4 @@
-# Bloqueados
-wsj.com
-bloomberg.com
-piaui.folha.uol.com.br
-jota.info
-haaretz.com
-haaretz.co.il
-economist.com
-liberation.fr
-lesoir.be
-doi.org
-utppublishing.com
-chronicle.com
-latercera.com
-nexojornal.com
-nydailynews.com
-weeklytimesnow.com.au
-brasilenergia.com.br
-opopular.com.br
-npr.org
-sportskeeda.com
-kansascity.com
-jornaldebrasilia.com.br
-ole.com.ar
-oantagonista.com.br
-reuters.com
-adage.com
-expressnews.com
-washingtonpost.com
-fastcompany.com
-diplomatique.org.br
-
-# Testados:
+# Testados/Validos:
 ## Brasil
 https://www1.folha.uol.com.br/poder/2024/11/justica-argentina-emite-mandados-de-prisao-contra-61-foragidos-do-81.shtml
 https://g1.globo.com/politica/noticia/2024/11/20/pf-devera-concluir-inquerito-contra-atos-do-8-de-janeiro-nesta-semana.ghtml
