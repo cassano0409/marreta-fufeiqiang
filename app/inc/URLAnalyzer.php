@@ -134,45 +134,42 @@ class URLAnalyzer
         // 4. Verifica se deve usar Selenium
         $domainRules = $this->getDomainRules($host);
         if (isset($domainRules['useSelenium']) && $domainRules['useSelenium'] === true) {
-            try {
-                $content = $this->fetchFromSelenium($cleanUrl);
-                if (!empty($content)) {
-                    $processedContent = $this->processContent($content, $host, $cleanUrl);
-                    $this->cache->set($cleanUrl, $processedContent);
-                    return $processedContent;
-                }
-            } catch (Exception $e) {
-                $this->logError($cleanUrl, "Selenium fetch error: " . $e->getMessage());
-            }
-        } else {
-            // 5. Tenta buscar conteúdo diretamente
-            try {
-                $content = $this->fetchContent($cleanUrl);
-                if (!empty($content)) {
-                    $processedContent = $this->processContent($content, $host, $cleanUrl);
-                    $this->cache->set($cleanUrl, $processedContent);
-                    return $processedContent;
-                }
-            } catch (Exception $e) {
-                $this->logError($cleanUrl, "Direct fetch error: " . $e->getMessage());
+            $content = $this->fetchFromSelenium($cleanUrl);
+            if (!empty($content)) {
+                $processedContent = $this->processContent($content, $host, $cleanUrl);
+                $this->cache->set($cleanUrl, $processedContent);
+                return $processedContent;
             }
 
-            // 6. Tenta buscar do Wayback Machine como fallback
-            try {
-                $content = $this->fetchFromWaybackMachine($cleanUrl);
-                if (!empty($content)) {
-                    $processedContent = $this->processContent($content, $host, $cleanUrl);
-                    $this->cache->set($cleanUrl, $processedContent);
-                    return $processedContent;
-                }
-            } catch (Exception $e) {
-                $this->logError($cleanUrl, "Wayback Machine error: " . $e->getMessage());
-            }
-
-            throw new Exception("Não foi possível obter o conteúdo da URL");
+            $this->logError($cleanUrl, "Selenium fetch error: " . $e->getMessage());
+            throw new Exception("Não foi possível obter o conteúdo via Selenium");
         }
 
+        // 5. Tenta buscar conteúdo diretamente
+        try {
+            $content = $this->fetchContent($cleanUrl);
+            if (!empty($content)) {
+                $processedContent = $this->processContent($content, $host, $cleanUrl);
+                $this->cache->set($cleanUrl, $processedContent);
+                return $processedContent;
+            }
+        } catch (Exception $e) {
+            $this->logError($cleanUrl, "Direct fetch error: " . $e->getMessage());
+        }
 
+        // 6. Tenta buscar do Wayback Machine como fallback
+        try {
+            $content = $this->fetchFromWaybackMachine($cleanUrl);
+            if (!empty($content)) {
+                $processedContent = $this->processContent($content, $host, $cleanUrl);
+                $this->cache->set($cleanUrl, $processedContent);
+                return $processedContent;
+            }
+        } catch (Exception $e) {
+            $this->logError($cleanUrl, "Wayback Machine error: " . $e->getMessage());
+        }
+
+        throw new Exception("Não foi possível obter o conteúdo da URL");
     }
 
     /**
@@ -187,8 +184,8 @@ class URLAnalyzer
         $host = 'http://'.SELENIUM_HOST.'/wd/hub';
 
         $profile = new FirefoxProfile();
-        $profile->setPreference("permissions.default.image", 2);
-        $profile->setPreference("javascript.enabled", true);
+        $profile->setPreference("permissions.default.image", 2); // Não carrega imagens
+        $profile->setPreference("javascript.enabled", true); // Mantem habilitado javascripts
 
         $options = new FirefoxOptions();
         $options->setProfile($profile);
