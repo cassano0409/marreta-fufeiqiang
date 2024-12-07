@@ -60,6 +60,12 @@ return [
         'lgpd',
         'push',
         'sw.js',
-        'stats.js'
+        'stats.js',
+        'piano.io',
+        'onesignal.com',
+        'getsitecontrol.com',
+        'navdmp.com',
+        'getblue.io',
+        'smartocto.com'
     ]
 ];

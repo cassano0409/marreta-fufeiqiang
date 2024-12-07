@@ -10,15 +10,21 @@
  * - Requisições HTTP com múltiplas tentativas
  * - Processamento de conteúdo baseado em regras específicas por domínio
  * - Suporte a Wayback Machine como fallback
+ * - Suporte a extração via Selenium quando habilitado por domínio
  */
 
 require_once 'Rules.php';
 require_once 'Cache.php';
 
 use Curl\Curl;
+use Facebook\WebDriver\Remote\DesiredCapabilities;
+use Facebook\WebDriver\Remote\RemoteWebDriver;
+use Facebook\WebDriver\Firefox\FirefoxOptions;
+use Facebook\WebDriver\Firefox\FirefoxProfile;
 
 class URLAnalyzer
 {
+    // Rest of the file content remains exactly the same
     /**
      * @var array Lista de User Agents disponíveis para requisições
      */
@@ -125,31 +131,93 @@ class URLAnalyzer
             throw new Exception($error);
         }
 
-        // 4. Tenta buscar conteúdo diretamente
-        try {
-            $content = $this->fetchContent($cleanUrl);
-            if (!empty($content)) {
-                $processedContent = $this->processContent($content, $host, $cleanUrl);
-                $this->cache->set($cleanUrl, $processedContent);
-                return $processedContent;
+        // 4. Verifica se deve usar Selenium
+        $domainRules = $this->getDomainRules($host);
+        if (isset($domainRules['useSelenium']) && $domainRules['useSelenium'] === true) {
+            try {
+                $content = $this->fetchFromSelenium($cleanUrl);
+                if (!empty($content)) {
+                    $processedContent = $this->processContent($content, $host, $cleanUrl);
+                    $this->cache->set($cleanUrl, $processedContent);
+                    return $processedContent;
+                }
+            } catch (Exception $e) {
+                $this->logError($cleanUrl, "Selenium fetch error: " . $e->getMessage());
             }
-        } catch (Exception $e) {
-            $this->logError($cleanUrl, "Direct fetch error: " . $e->getMessage());
+        } else {
+            // 5. Tenta buscar conteúdo diretamente
+            try {
+                $content = $this->fetchContent($cleanUrl);
+                if (!empty($content)) {
+                    $processedContent = $this->processContent($content, $host, $cleanUrl);
+                    $this->cache->set($cleanUrl, $processedContent);
+                    return $processedContent;
+                }
+            } catch (Exception $e) {
+                $this->logError($cleanUrl, "Direct fetch error: " . $e->getMessage());
+            }
+
+            // 6. Tenta buscar do Wayback Machine como fallback
+            try {
+                $content = $this->fetchFromWaybackMachine($cleanUrl);
+                if (!empty($content)) {
+                    $processedContent = $this->processContent($content, $host, $cleanUrl);
+                    $this->cache->set($cleanUrl, $processedContent);
+                    return $processedContent;
+                }
+            } catch (Exception $e) {
+                $this->logError($cleanUrl, "Wayback Machine error: " . $e->getMessage());
+            }
+
+            throw new Exception("Não foi possível obter o conteúdo da URL");
         }
 
-        // 5. Tenta buscar do Wayback Machine como fallback
-        try {
-            $content = $this->fetchFromWaybackMachine($cleanUrl);
-            if (!empty($content)) {
-                $processedContent = $this->processContent($content, $host, $cleanUrl);
-                $this->cache->set($cleanUrl, $processedContent);
-                return $processedContent;
-            }
-        } catch (Exception $e) {
-            $this->logError($cleanUrl, "Wayback Machine error: " . $e->getMessage());
-        }
 
-        throw new Exception("Não foi possível obter o conteúdo da URL");
+    }
+
+    /**
+     * Tenta obter o conteúdo da URL usando Selenium
+     * 
+     * @param string $url URL para buscar
+     * @return string|null Conteúdo HTML da página
+     * @throws Exception Em caso de erro na requisição
+     */
+    private function fetchFromSelenium($url)
+    {
+        $host = 'http://'.SELENIUM_HOST.'/wd/hub';
+
+        $profile = new FirefoxProfile();
+        $profile->setPreference("permissions.default.image", 2);
+        $profile->setPreference("javascript.enabled", true);
+
+        $options = new FirefoxOptions();
+        $options->setProfile($profile);
+
+        $capabilities = DesiredCapabilities::firefox();
+        $capabilities->setCapability(FirefoxOptions::CAPABILITY, $options);
+
+        try {
+            $driver = RemoteWebDriver::create($host, $capabilities);
+            $driver->manage()->timeouts()->pageLoadTimeout(10);
+            $driver->manage()->timeouts()->setScriptTimeout(5);
+
+            $driver->get($url);
+
+            $htmlSource = $driver->executeScript("return document.documentElement.outerHTML;");
+
+            $driver->quit();
+
+            if (empty($htmlSource)) {
+                throw new Exception("Selenium returned empty content");
+            }
+
+            return $htmlSource;
+        } catch (Exception $e) {
+            if (isset($driver)) {
+                $driver->quit();
+            }
+            throw $e;
+        }
     }
 
     /**

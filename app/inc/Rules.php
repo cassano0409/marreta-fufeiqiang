@@ -34,7 +34,9 @@ class Rules
         'cookies',
         'classAttrRemove',
         'customCode',
-        'excludeGlobalRules'
+        'excludeGlobalRules',
+        'customStyle',
+        'useSelenium'
     ];
 
 

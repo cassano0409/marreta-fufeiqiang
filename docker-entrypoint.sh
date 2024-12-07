@@ -85,6 +85,11 @@ if [ -n "${S3_ENDPOINT}" ]; then
     echo "S3_ENDPOINT=${S3_ENDPOINT}" >> /app/.env
 fi
 
+# Configurações do Selenium
+if [ -n "${SELENIUM_HOST}" ]; then
+    echo "SELENIUM_HOST=${SELENIUM_HOST}" >> /app/.env
+fi
+
 log_success "Variáveis de ambiente configuradas"
 
 # === Ajuste de Permissões ===

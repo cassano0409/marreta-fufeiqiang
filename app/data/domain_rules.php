@@ -22,6 +22,7 @@
  *       'scriptTagRemove' => ['gtm.js', 'ga.js'],  // Exclui scripts específicos das regras globais
  *       'classElementRemove' => ['subscription']    // Exclui classes específicas das regras globais
  *   ]
+ * - useSelenium: Boolean indicando se deve usar Selenium para extração
  */
 return [
     'nsctotal.com.br' => [
@@ -37,6 +38,14 @@ return [
             'piano_user_id' => null
         ],
         'classAttrRemove' => ['wall', 'protected-content', 'cropped-block']
+    ],
+    'gauchazh.clicrbs.com.br' => [
+        'classAttrRemove' => [' m-paid-content', 'paid-content-apply'],
+        'scriptTagRemove' => ['vendors-', 'verdors-'],
+        'excludeGlobalRules' => [
+            'classElementRemove' => ['paid-content']
+        ],
+        'useSelenium' => true
     ],
     'foreignaffairs.com' => [
         'customCode' => 'document.addEventListener(\'DOMContentLoaded\', function() {

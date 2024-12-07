@@ -5,7 +5,6 @@ piaui.folha.uol.com.br
 jota.info
 haaretz.com
 haaretz.co.il
-gauchazh.clicrbs.com.br
 economist.com
 liberation.fr
 lesoir.be
@@ -66,6 +65,7 @@ https://www.agazeta.com.br/concursos-e-empregos/concursos/prefeitura-de-cariacic
 https://natelinha.uol.com.br/televisao/2024/12/05/boninho-fecha-com-o-sbt-para-novo-reality-show-219855.php
 https://gamarevista.uol.com.br/semana/deu-vontade-de-ter-outra-vida/novas-formas-abandonar/
 https://tecnoblog.net/noticias/cor-do-ano-esta-em-celulares-da-motorola-que-serao-vendidos-no-brasil/
+https://gauchazh.clicrbs.com.br/pioneiro/policia/noticia/2024/11/caxias-do-sul-podera-fazer-emprestimo-de-ate-us-40-milhoes-para-melhorias-tecnologicas-em-educacao-seguranca-e-servicos-municipais-cm3q9yn870051014fzz77djqz.html
 
 ## Internacional
 https://www.nytimes.com/2024/11/20/us/politics/matt-gaetz-venmo-payments-sex.html

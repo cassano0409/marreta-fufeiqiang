@@ -23,7 +23,6 @@ return [
     'ole.com.ar',
     //-- Bloqueio tecnico de acesso ao conteudo
     'bloomberg.com',
-    'gauchazh.clicrbs.com.br', 
     'opopular.com.br',
     'npr.org',
     'sportskeeda.com',
