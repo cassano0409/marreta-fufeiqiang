@@ -28,7 +28,8 @@ return [
         'paywall-notification',
         'leaky_paywall_message_wrap',
         'subscribe-form',
-        'signup-overlay'
+        'signup-overlay',
+        'onesignal-slidedown-container'
     ],
     'scriptTagRemove' => [
         'gtm.js',
@@ -66,6 +67,7 @@ return [
         'getsitecontrol.com',
         'navdmp.com',
         'getblue.io',
-        'smartocto.com'
+        'smartocto.com',
+        'cdn.pn.vg'
     ]
 ];

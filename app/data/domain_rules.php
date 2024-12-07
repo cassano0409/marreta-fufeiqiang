@@ -47,6 +47,36 @@ return [
         ],
         'useSelenium' => true
     ],
+    'reuters.com' => [
+        'classElementRemove' => ['leaderboard__container'],
+        'useSelenium' => true
+    ],
+    'diplomatique.org.br' => [
+        'idElementRemove' => ['cboxOverlay'],
+        'useSelenium' => true
+    ],
+    'washingtonpost.com' => [
+        'classElementRemove' => ['paywall-overlay'],
+        'useSelenium' => true
+    ],
+    'oantagonista.com.br' => [
+        'useSelenium' => true
+    ],
+    'jornaldebrasilia.com.br' => [
+        'useSelenium' => true
+    ],
+    'npr.org' => [
+        'classElementRemove' => ['onetrust-pc-dark-filter'],
+        'useSelenium' => true
+    ],
+    'opopular.com.br' => [
+        'useSelenium' => true
+    ],
+    'leparisien.fr' => [
+        'idElementRemove' => ['didomi-popup'],
+        'classAttrRemove' => ['paywall-article-section'],        
+        'useSelenium' => true
+    ],
     'foreignaffairs.com' => [
         'customCode' => 'document.addEventListener(\'DOMContentLoaded\', function() {
             const dropcapDiv = document.querySelector(\'.article-dropcap\');

@@ -21,21 +21,14 @@ return [
     'barrons.com',
     'brasilenergia.com.br',
     'ole.com.ar',
+    'adage.com',
     //-- Bloqueio tecnico de acesso ao conteudo
     'bloomberg.com',
-    'opopular.com.br',
-    'npr.org',
     'sportskeeda.com',
     'kansascity.com',
-    'jornaldebrasilia.com.br'.
-    'oantagonista.com.br',
-    'adage.com',
-    'washingtonpost.com',
-    'diplomatique.org.br',
-    'fastcompany.com', // Captcha Delivery
-    'expressnews.com', // Perimitrex
-    'reuters.com', // Captcha Delivery
-    'nydailynews.com', // Bloqueio regional
+    'fastcompany.com',
+    'expressnews.com',
+    'nydailynews.com',
     // Tracking
     'metaffiliation.com',
     'google-analytics.com',

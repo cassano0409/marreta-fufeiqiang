@@ -66,6 +66,10 @@ https://natelinha.uol.com.br/televisao/2024/12/05/boninho-fecha-com-o-sbt-para-n
 https://gamarevista.uol.com.br/semana/deu-vontade-de-ter-outra-vida/novas-formas-abandonar/
 https://tecnoblog.net/noticias/cor-do-ano-esta-em-celulares-da-motorola-que-serao-vendidos-no-brasil/
 https://gauchazh.clicrbs.com.br/pioneiro/policia/noticia/2024/11/caxias-do-sul-podera-fazer-emprestimo-de-ate-us-40-milhoes-para-melhorias-tecnologicas-em-educacao-seguranca-e-servicos-municipais-cm3q9yn870051014fzz77djqz.html
+https://diplomatique.org.br/saude-unica-em-tempos-de-crise-democratica/
+https://oantagonista.com.br/brasil/lewandowski-insiste-na-pec-da-seguranca/
+https://jornaldebrasilia.com.br/noticias/politica-e-poder/lula-aguarda-pt-para-troca-em-pastas-chefiadas-por-petistas-em-reforma-ministerial/
+https://opopular.com.br/cidades/ex-secretario-de-saude-de-goiania-deixa-hospital-e-volta-para-a-cadeia-1.3207162
 
 ## Internacional
 https://www.nytimes.com/2024/11/20/us/politics/matt-gaetz-venmo-payments-sex.html
@@ -85,6 +89,8 @@ https://expresso.pt/arquivo/Expresso/Economia/2024-12-05-tap-esta-num-ano-extrem
 https://www.foreignaffairs.com/india/india-hoping-trump-bump
 https://www.latercera.com/la-tercera-pm/noticia/duro-reves-al-nuevo-criterio-de-dorothy-perez-en-la-antesala-de-cambios-de-equipos-municipales-y-ceses-de-contrata-la-corte-manda-mensaje-a-contralora/G5ADQKPSSBBANAGDVK6TETP3RU/
 https://www.wired.com/story/operation-destabilise-money-laundering/
-
-# Validar
-https://leparisien.fr/politique/le-gouvernement-barnier-censure-emmanuel-macron-de-nouveau-face-a-une-impasse-05-12-2024-KNZVD5MGOJGIPEONBQEYSACOLI.php
+https://reuters.com/world/us/internet-sleuths-hunt-clues-murder-unitedhealths-brian-thompson-2024-12-05/
+https://www.washingtonpost.com/world/2024/12/03/martial-law-south-korea-explained/
+https://www.npr.org/2024/12/06/nx-s1-5219927/unitedhealthcare-ceo-shooting-new-york
+https://www.bloomberg.com/news/articles/2024-12-07/south-korea-impeachment-vote-drags-on-after-ruling-party-boycott?srnd=homepage-americas
+https://www.leparisien.fr/politique/le-gouvernement-barnier-censure-emmanuel-macron-de-nouveau-face-a-une-impasse-05-12-2024-KNZVD5MGOJGIPEONBQEYSACOLI.php
