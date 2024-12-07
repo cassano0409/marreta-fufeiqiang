@@ -40,7 +40,7 @@ return [
         'classAttrRemove' => ['wall', 'protected-content', 'cropped-block']
     ],
     'gauchazh.clicrbs.com.br' => [
-        'classAttrRemove' => [' m-paid-content', 'paid-content-apply'],
+        'classAttrRemove' => ['m-paid-content', 'paid-content-apply'],
         'scriptTagRemove' => ['vendors-', 'verdors-'],
         'excludeGlobalRules' => [
             'classElementRemove' => ['paid-content']
