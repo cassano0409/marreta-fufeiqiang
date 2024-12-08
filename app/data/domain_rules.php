@@ -113,12 +113,7 @@ return [
         'classElementRemove' => ['header-top-wrapper'],
     ],
     'estadao.com.br' => [
-        'idElementRemove' => ['paywall', 'paywall-container', 'softwall'],
-        'classElementRemove' => ['paywall-content', 'signin-wall', 'pay-wall'],
-        'scriptTagRemove' => ['paywall.js', 'pywll.js'],
-        'cookies' => [
-            'estadao_paywall' => null
-        ]
+        'useSelenium' => true
     ],
     'opovo.com.br' => [
         'classElementRemove' => ['screen-loading', 'overlay-advise']
