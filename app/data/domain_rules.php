@@ -129,16 +129,16 @@ return [
         ],
         'scriptTagRemove' => ['wrapperMessagingWithoutDetection.js'],
         'customCode' => '
-                var artBodyContainer = document.querySelector("article.article");
-                var artBody = artBodyContainer.innerHTML;
-                checkPaywall();
-                function checkPaywall() {
-                    let paywallBox = document.querySelector(".layout-article-regwall");
-                    if (paywallBox) {
-                        artBodyContainer.innerHTML = artBody;
-                    }
+            var artBodyContainer = document.querySelector("article.article");
+            var artBody = artBodyContainer.innerHTML;
+            checkPaywall();
+            function checkPaywall() {
+                let paywallBox = document.querySelector(".layout-article-regwall");
+                if (paywallBox) {
+                    artBodyContainer.innerHTML = artBody;
                 }
-            '
+            }
+        '
     ],
     'ft.com' => [
         'cookies' => [
@@ -150,9 +150,47 @@ return [
         ]
     ],
     'nytimes.com' => [
-        'cookies' => [
-            'nyt-gdpr' => '1',
-            'nyt-purr' => 'cfh'
+        'useSelenium' => true,
+        'excludeGlobalRules' => [
+            'scriptTagRemove' => [
+                'gtm.js',
+                'ga.js',
+                'fbevents.js',
+                'pixel.js',
+                'chartbeat',
+                'analytics.js',
+                'cmp.js',
+                'wall.js',
+                'paywall.js',
+                'subscriber.js',
+                'piano.js',
+                'tiny.js',
+                'pywll.js',
+                'content-gate.js',
+                'signwall.js',
+                'pw.js',
+                'pw-',
+                'piano-',
+                'tinypass',
+                'tp.min.js',
+                'premium.js',
+                'amp-access-0.1.js',
+                'zephrBarriersScripts',
+                'leaky-paywall',
+                'cookie',
+                'gdpr',
+                'lgpd',
+                'push',
+                'sw.js',
+                'stats.js',
+                'piano.io',
+                'onesignal.com',
+                'getsitecontrol.com',
+                'navdmp.com',
+                'getblue.io',
+                'smartocto.com',
+                'cdn.pn.vg'
+            ]
         ]
     ],
     'correio24horas.com.br' => [

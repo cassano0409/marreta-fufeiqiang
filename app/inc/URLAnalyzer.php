@@ -134,15 +134,17 @@ class URLAnalyzer
         // 4. Verifica se deve usar Selenium
         $domainRules = $this->getDomainRules($host);
         if (isset($domainRules['useSelenium']) && $domainRules['useSelenium'] === true) {
-            $content = $this->fetchFromSelenium($cleanUrl);
-            if (!empty($content)) {
-                $processedContent = $this->processContent($content, $host, $cleanUrl);
-                $this->cache->set($cleanUrl, $processedContent);
-                return $processedContent;
+            try {
+                $content = $this->fetchFromSelenium($cleanUrl);
+                if (!empty($content)) {
+                    $processedContent = $this->processContent($content, $host, $cleanUrl);
+                    $this->cache->set($cleanUrl, $processedContent);
+                    return $processedContent;
+                }
+            } catch (Exception $e) {
+                $this->logError($cleanUrl, "Selenium fetch error: " . $e->getMessage());
+                throw new Exception("Não foi possível obter o conteúdo via Selenium");
             }
-
-            $this->logError($cleanUrl, "Selenium fetch error: " . $e->getMessage());
-            throw new Exception("Não foi possível obter o conteúdo via Selenium");
         }
 
         // 5. Tenta buscar conteúdo diretamente
@@ -186,6 +188,10 @@ class URLAnalyzer
         $profile = new FirefoxProfile();
         $profile->setPreference("permissions.default.image", 2); // Não carrega imagens
         $profile->setPreference("javascript.enabled", true); // Mantem habilitado javascripts
+        $profile->setPreference("network.http.referer.defaultPolicy", 0); // Sempre envia referer
+        $profile->setPreference("network.http.referer.defaultReferer", "https://www.google.com.br"); // Define referer padrão
+        $profile->setPreference("network.http.referer.spoofSource", true); // Permite spoofing do referer
+        $profile->setPreference("network.http.referer.trimmingPolicy", 0); // Não corta o referer
 
         $options = new FirefoxOptions();
         $options->setProfile($profile);
