@@ -72,6 +72,9 @@ return [
     'opopular.com.br' => [
         'useSelenium' => true
     ],
+    'businessinsider.com' => [
+        'useSelenium' => true
+    ],
     'leparisien.fr' => [
         'idElementRemove' => ['didomi-popup'],
         'classAttrRemove' => ['paywall-article-section'],        
