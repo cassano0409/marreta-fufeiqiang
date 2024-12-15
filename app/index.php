@@ -12,6 +12,7 @@
  */
 
 require_once 'config.php';
+require_once 'inc/Cache.php';
 
 // Inicialização de variáveis
 $message = '';
@@ -36,6 +37,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['url'])) {
         $message_type = MESSAGES['INVALID_URL']['type'];
     }
 }
+
+// Inicializa o cache para contagem
+$cache = new Cache();
+$cache_folder = $cache->getCacheFileCount();
 ?>
 <!DOCTYPE html>
 <html lang="pt-BR">
@@ -56,22 +61,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['url'])) {
 <body class="bg-gray-50 min-h-screen">
     <div class="container mx-auto px-4 py-8 max-w-4xl">
         <!-- Cabeçalho da página -->
-        <div class="text-center mb-8">
-            <h1 class="text-4xl font-bold text-gray-800 mb-4">
-                <img src="assets/svg/marreta.svg" class="inline-block w-12 h-12 mb-2" alt="Marreta">
-                <?php echo SITE_NAME; ?>
-            </h1>
-            <p class="text-gray-600 text-lg"><?php echo SITE_DESCRIPTION; ?></p>
-            <p class="text-gray-600 text-lg">
-                <span class="font-bold text-blue-600">
-                    <?php
-                        $cache_folder = iterator_count(new FilesystemIterator('cache/'));
-                        echo number_format($cache_folder, 0, ',', '.');
-                    ?>
-                </span>
-                <span>paredes derrubadas!</span>
-            </p>
-        </div>
+    <div class="text-center mb-8">
+        <h1 class="text-4xl font-bold text-gray-800 mb-4">
+            <img src="assets/svg/marreta.svg" class="inline-block w-12 h-12 mb-2" alt="Marreta">
+            <?php echo SITE_NAME; ?>
+        </h1>
+        <p class="text-gray-600 text-lg"><?php echo SITE_DESCRIPTION; ?></p>
+        <p class="text-gray-600 text-lg">
+            <span class="font-bold text-blue-600">
+                <?php echo number_format($cache_folder, 0, ',', '.'); ?>
+            </span>
+            <span>paredes derrubadas!</span>
+        </p>
+    </div>
 
         <!-- Formulário principal de análise de URLs -->
         <div class="bg-white rounded-xl shadow-lg p-8 mb-8">
@@ -231,5 +233,4 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['url'])) {
     ?>
     </script>
 </body>
-
 </html>

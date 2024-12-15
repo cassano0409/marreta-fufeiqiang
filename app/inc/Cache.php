@@ -3,6 +3,7 @@
 use Inc\Cache\CacheStorageInterface;
 use Inc\Cache\DiskStorage;
 use Inc\Cache\S3Storage;
+use Inc\Cache\RedisStorage;
 
 /**
  * Classe responsável pelo gerenciamento de cache do sistema
@@ -20,12 +21,20 @@ class Cache
     private $storage;
 
     /**
+     * @var RedisStorage Instância do Redis para contagem de arquivos
+     */
+    private $redisStorage;
+
+    /**
      * Construtor da classe
      * 
      * Inicializa o storage apropriado baseado na configuração
      */
     public function __construct()
     {
+        // Inicializa o RedisStorage para contagem de arquivos
+        $this->redisStorage = new RedisStorage(CACHE_DIR);
+
         // Se S3 está configurado e ativo, usa S3Storage
         if (defined('S3_CACHE_ENABLED') && S3_CACHE_ENABLED === true) {
             $this->storage = new S3Storage([
@@ -41,6 +50,16 @@ class Cache
             // Caso contrário, usa o storage em disco
             $this->storage = new DiskStorage(CACHE_DIR);
         }
+    }
+
+    /**
+     * Obtém a contagem de arquivos em cache
+     * 
+     * @return int Número de arquivos em cache
+     */
+    public function getCacheFileCount(): int
+    {
+        return $this->redisStorage->countCacheFiles();
     }
 
     /**

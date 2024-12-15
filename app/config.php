@@ -26,9 +26,14 @@ define('SITE_NAME', isset($_ENV['SITE_NAME']) ? $_ENV['SITE_NAME'] : 'Marreta');
 define('SITE_DESCRIPTION', isset($_ENV['SITE_DESCRIPTION']) ? $_ENV['SITE_DESCRIPTION'] : 'Chapéu de paywall é marreta!');
 define('SITE_URL', isset($_ENV['SITE_URL']) ? $_ENV['SITE_URL'] : 'https://' . $_SERVER['HTTP_HOST']);
 define('DNS_SERVERS', isset($_ENV['DNS_SERVERS']) ? $_ENV['DNS_SERVERS'] : '1.1.1.1, 8.8.8.8');
-define('CACHE_DIR', __DIR__ . '/cache');
 define('DISABLE_CACHE', isset($_ENV['DISABLE_CACHE']) ? filter_var($_ENV['DISABLE_CACHE'], FILTER_VALIDATE_BOOLEAN) : false);
 define('SELENIUM_HOST', isset($_ENV['SELENIUM_HOST']) ? $_ENV['SELENIUM_HOST'] : 'localhost:4444');
+define('CACHE_DIR', __DIR__ . '/cache');
+
+// Configurações de Redis
+define('REDIS_HOST', isset($_ENV['REDIS_HOST']) ? $_ENV['REDIS_HOST'] : 'localhost');
+define('REDIS_PORT', isset($_ENV['REDIS_PORT']) ? $_ENV['REDIS_PORT'] : 6379);
+define('REDIS_PREFIX', isset($_ENV['REDIS_PREFIX']) ? $_ENV['REDIS_PREFIX'] : 'marreta:');
 
 /**
  * Configurações de Cache S3
