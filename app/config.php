@@ -29,6 +29,7 @@ define('DNS_SERVERS', isset($_ENV['DNS_SERVERS']) ? $_ENV['DNS_SERVERS'] : '1.1.
 define('DISABLE_CACHE', isset($_ENV['DISABLE_CACHE']) ? filter_var($_ENV['DISABLE_CACHE'], FILTER_VALIDATE_BOOLEAN) : false);
 define('SELENIUM_HOST', isset($_ENV['SELENIUM_HOST']) ? $_ENV['SELENIUM_HOST'] : 'localhost:4444');
 define('CACHE_DIR', __DIR__ . '/cache');
+define('DEBUG', isset($_ENV['DEBUG']) ? filter_var($_ENV['DEBUG'], FILTER_VALIDATE_BOOLEAN) : false);
 
 // Configurações de Redis
 define('REDIS_HOST', isset($_ENV['REDIS_HOST']) ? $_ENV['REDIS_HOST'] : 'localhost');
