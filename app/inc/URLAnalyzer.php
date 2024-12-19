@@ -24,7 +24,6 @@ use Facebook\WebDriver\Firefox\FirefoxProfile;
 
 class URLAnalyzer
 {
-    // Rest of the file content remains exactly the same
     /**
      * @var array Lista de User Agents disponíveis para requisições
      */
@@ -206,7 +205,7 @@ class URLAnalyzer
 
             $driver->get($url);
 
-            $htmlSource = $driver->executeScript("return document.documentElement.outerHTML;");
+            $htmlSource = $driver->getPageSource();
 
             $driver->quit();
 
