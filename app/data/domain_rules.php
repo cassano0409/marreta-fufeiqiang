@@ -118,6 +118,9 @@ return [
     'estadao.com.br' => [
         'useSelenium' => true
     ],
+    'stcatharinesstandard.ca' => [
+        'useSelenium' => true
+    ],
     'opovo.com.br' => [
         'classElementRemove' => ['screen-loading', 'overlay-advise']
     ],
