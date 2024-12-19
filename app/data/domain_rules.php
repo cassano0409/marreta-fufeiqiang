@@ -116,7 +116,8 @@ return [
         'classElementRemove' => ['header-top-wrapper'],
     ],
     'estadao.com.br' => [
-        'useSelenium' => true
+        'useSelenium' => true,
+        'browser' => 'chrome'
     ],
     'stcatharinesstandard.ca' => [
         'useSelenium' => true

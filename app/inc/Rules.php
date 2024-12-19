@@ -36,9 +36,9 @@ class Rules
         'customCode',
         'excludeGlobalRules',
         'customStyle',
-        'useSelenium'
+        'useSelenium',
+        'browser'
     ];
-
 
     /**
      * Obtém o domínio base removendo o prefixo www

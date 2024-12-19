@@ -21,6 +21,7 @@ use Facebook\WebDriver\Remote\DesiredCapabilities;
 use Facebook\WebDriver\Remote\RemoteWebDriver;
 use Facebook\WebDriver\Firefox\FirefoxOptions;
 use Facebook\WebDriver\Firefox\FirefoxProfile;
+use Facebook\WebDriver\Chrome\ChromeOptions;
 
 class URLAnalyzer
 {
@@ -134,7 +135,7 @@ class URLAnalyzer
         $domainRules = $this->getDomainRules($host);
         if (isset($domainRules['useSelenium']) && $domainRules['useSelenium'] === true) {
             try {
-                $content = $this->fetchFromSelenium($cleanUrl);
+                $content = $this->fetchFromSelenium($cleanUrl, isset($domainRules['browser']) ? $domainRules['browser'] : 'firefox');
                 if (!empty($content)) {
                     $processedContent = $this->processContent($content, $host, $cleanUrl);
                     $this->cache->set($cleanUrl, $processedContent);
@@ -177,26 +178,42 @@ class URLAnalyzer
      * Tenta obter o conteúdo da URL usando Selenium
      * 
      * @param string $url URL para buscar
+     * @param array $domainRules Regras específicas do domínio
      * @return string|null Conteúdo HTML da página
      * @throws Exception Em caso de erro na requisição
      */
-    private function fetchFromSelenium($url)
+    private function fetchFromSelenium($url, $browser)
     {
         $host = 'http://'.SELENIUM_HOST.'/wd/hub';
 
-        $profile = new FirefoxProfile();
-        $profile->setPreference("permissions.default.image", 2); // Não carrega imagens
-        $profile->setPreference("javascript.enabled", true); // Mantem habilitado javascripts
-        $profile->setPreference("network.http.referer.defaultPolicy", 0); // Sempre envia referer
-        $profile->setPreference("network.http.referer.defaultReferer", "https://www.google.com.br"); // Define referer padrão
-        $profile->setPreference("network.http.referer.spoofSource", true); // Permite spoofing do referer
-        $profile->setPreference("network.http.referer.trimmingPolicy", 0); // Não corta o referer
+        if ($browser === 'chrome') {
+            $options = new ChromeOptions();
+            $options->addArguments([
+                '--headless',
+                '--disable-gpu',
+                '--no-sandbox',
+                '--disable-dev-shm-usage',
+                '--disable-images',
+                '--blink-settings=imagesEnabled=false'
+            ]);
+            
+            $capabilities = DesiredCapabilities::chrome();
+            $capabilities->setCapability(ChromeOptions::CAPABILITY, $options);
+        } else {
+            $profile = new FirefoxProfile();
+            $profile->setPreference("permissions.default.image", 2); // Não carrega imagens
+            $profile->setPreference("javascript.enabled", true); // Mantem habilitado javascripts
+            $profile->setPreference("network.http.referer.defaultPolicy", 0); // Sempre envia referer
+            $profile->setPreference("network.http.referer.defaultReferer", "https://www.google.com.br"); // Define referer padrão
+            $profile->setPreference("network.http.referer.spoofSource", true); // Permite spoofing do referer
+            $profile->setPreference("network.http.referer.trimmingPolicy", 0); // Não corta o referer
 
-        $options = new FirefoxOptions();
-        $options->setProfile($profile);
+            $options = new FirefoxOptions();
+            $options->setProfile($profile);
 
-        $capabilities = DesiredCapabilities::firefox();
-        $capabilities->setCapability(FirefoxOptions::CAPABILITY, $options);
+            $capabilities = DesiredCapabilities::firefox();
+            $capabilities->setCapability(FirefoxOptions::CAPABILITY, $options);
+        }
 
         try {
             $driver = RemoteWebDriver::create($host, $capabilities);
