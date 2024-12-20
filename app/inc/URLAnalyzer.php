@@ -115,9 +115,8 @@ class URLAnalyzer
         $host = preg_replace('/^www\./', '', $host);
 
         if (in_array($host, BLOCKED_DOMAINS)) {
-            $error = 'BLOCKED_DOMAINS';
-            Logger::getInstance()->log($cleanUrl, $error);
-            throw new Exception($error);
+            Logger::getInstance()->log($cleanUrl, 'BLOCKED_DOMAIN');
+            throw new Exception('Este domínio está bloqueado para extração.');
         }
 
         // 4. Verifica se deve usar Selenium

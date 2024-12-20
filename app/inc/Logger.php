@@ -11,12 +11,10 @@ class Logger
 
     private function __construct()
     {
-        // Inicializa o Hawk apenas se houver um token configurado
-        if (!empty(HAWK_TOKEN)) {
-            Catcher::init([
-                'integrationToken' => HAWK_TOKEN,
-            ]);
-        }
+        // Inicializa o Hawk
+        Catcher::init([
+            'integrationToken' => HAWK_TOKEN,
+        ]);
     }
 
     public static function getInstance(): Logger
@@ -36,11 +34,6 @@ class Logger
      */
     public function error(string $message, array $context = [], string $type = 'WARNING'): void
     {
-        // Se não houver token do Hawk configurado, não gera log
-        if (empty(HAWK_TOKEN)) {
-            return;
-        }
-
         // Registra no Hawk
         try {
             Catcher::get()->sendException(new Exception($message), [
@@ -63,6 +56,11 @@ class Logger
      */
     public function log(string $url, string $error_group, string $message_error = '', string $type = 'WARNING'): void
     {
+        // Se não houver token do Hawk configurado, não gera log
+        if (empty(HAWK_TOKEN)) {
+            return;
+        }
+        
         $this->error($error_group, [
             'url' => $url,
             'timestamp' => time(),
