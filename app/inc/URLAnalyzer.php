@@ -48,6 +48,11 @@ class URLAnalyzer
     private $cache;
 
     /**
+     * @var array Lista de regras ativadas durante o processamento
+     */
+    private $activatedRules = [];
+
+    /**
      * Construtor da classe
      * Inicializa as dependências necessárias
      */
@@ -99,6 +104,9 @@ class URLAnalyzer
      */
     public function analyze($url)
     {
+        // Reset activated rules for new analysis
+        $this->activatedRules = [];
+
         // 1. Limpa a URL
         $cleanUrl = $this->cleanUrl($url);
         if (!$cleanUrl) {
@@ -514,6 +522,7 @@ class URLAnalyzer
             $styleElement = $dom->createElement('style');
             $styleElement->appendChild($dom->createTextNode($domainRules['customStyle']));
             $dom->getElementsByTagName('head')[0]->appendChild($styleElement);
+            $this->activatedRules[] = 'customStyle';
         }
 
         if (isset($domainRules['customCode'])) {
@@ -526,10 +535,11 @@ class URLAnalyzer
         if (isset($domainRules['classAttrRemove'])) {
             foreach ($domainRules['classAttrRemove'] as $class) {
                 $elements = $xpath->query("//*[contains(@class, '$class')]");
-                if ($elements !== false) {
+                if ($elements !== false && $elements->length > 0) {
                     foreach ($elements as $element) {
                         $this->removeClassNames($element, [$class]);
                     }
+                    $this->activatedRules[] = "classAttrRemove: $class";
                 }
             }
         }
@@ -537,12 +547,13 @@ class URLAnalyzer
         if (isset($domainRules['idElementRemove'])) {
             foreach ($domainRules['idElementRemove'] as $id) {
                 $elements = $xpath->query("//*[@id='$id']");
-                if ($elements !== false) {
+                if ($elements !== false && $elements->length > 0) {
                     foreach ($elements as $element) {
                         if ($element->parentNode) {
                             $element->parentNode->removeChild($element);
                         }
                     }
+                    $this->activatedRules[] = "idElementRemove: $id";
                 }
             }
         }
@@ -550,12 +561,13 @@ class URLAnalyzer
         if (isset($domainRules['classElementRemove'])) {
             foreach ($domainRules['classElementRemove'] as $class) {
                 $elements = $xpath->query("//*[contains(@class, '$class')]");
-                if ($elements !== false) {
+                if ($elements !== false && $elements->length > 0) {
                     foreach ($elements as $element) {
                         if ($element->parentNode) {
                             $element->parentNode->removeChild($element);
                         }
                     }
+                    $this->activatedRules[] = "classElementRemove: $class";
                 }
             }
         }
@@ -564,22 +576,24 @@ class URLAnalyzer
             foreach ($domainRules['scriptTagRemove'] as $script) {
                 // Busca por tags script com src ou conteúdo contendo o script
                 $scriptElements = $xpath->query("//script[contains(@src, '$script')] | //script[contains(text(), '$script')]");
-                if ($scriptElements !== false) {
+                if ($scriptElements !== false && $scriptElements->length > 0) {
                     foreach ($scriptElements as $element) {
                         if ($element->parentNode) {
                             $element->parentNode->removeChild($element);
                         }
                     }
+                    $this->activatedRules[] = "scriptTagRemove: $script";
                 }
 
                 // Busca por tags link que são scripts
                 $linkElements = $xpath->query("//link[@as='script' and contains(@href, '$script') and @type='application/javascript']");
-                if ($linkElements !== false) {
+                if ($linkElements !== false && $linkElements->length > 0) {
                     foreach ($linkElements as $element) {
                         if ($element->parentNode) {
                             $element->parentNode->removeChild($element);
                         }
                     }
+                    $this->activatedRules[] = "scriptTagRemove: $script";
                 }
             }
         }
@@ -604,6 +618,26 @@ class URLAnalyzer
             $marretaHtml->appendXML('Chapéu de paywall é <a href="'.SITE_URL.'" style="color: #fff; text-decoration: underline; font-weight: bold;" target="_blank">Marreta</a>!');
             $marretaDiv->appendChild($marretaHtml);
             $body->appendChild($marretaDiv);
+
+            // Adiciona painel de debug se DEBUG for true
+            if (DEBUG) {
+                $debugDiv = $dom->createElement('div');
+                $debugDiv->setAttribute('style', 'z-index: 99999; position: fixed; bottom: 10px; right: 10px; background: rgba(0,0,0,0.8); color: #fff; font-size: 13px; line-height: 1.4; padding: 10px; border-radius: 3px; font-family: monospace; max-height: 200px; overflow-y: auto;');
+                
+                if( empty($this->activatedRules)) {
+                    $ruleElement = $dom->createElement('div');
+                    $ruleElement->textContent = 'Nenhuma regra ativada';
+                    $debugDiv->appendChild($ruleElement);
+                } else {
+                    foreach ($this->activatedRules as $rule) {
+                        $ruleElement = $dom->createElement('div');
+                        $ruleElement->textContent = $rule;
+                        $debugDiv->appendChild($ruleElement);
+                    }
+                }
+
+                $body->appendChild($debugDiv);
+            }
         }
 
         return $dom->saveHTML();
