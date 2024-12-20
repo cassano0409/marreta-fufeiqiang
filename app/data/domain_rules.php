@@ -122,6 +122,12 @@ return [
     'stcatharinesstandard.ca' => [
         'useSelenium' => true
     ],
+    'cartacapital.com.br' => [
+        'useSelenium' => true
+    ],
+    'nzherald.co.nz' => [
+        'useSelenium' => true
+    ],
     'opovo.com.br' => [
         'classElementRemove' => ['screen-loading', 'overlay-advise']
     ],

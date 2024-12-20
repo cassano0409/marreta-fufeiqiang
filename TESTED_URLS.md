@@ -38,6 +38,7 @@ https://diplomatique.org.br/saude-unica-em-tempos-de-crise-democratica/
 https://oantagonista.com.br/brasil/lewandowski-insiste-na-pec-da-seguranca/
 https://jornaldebrasilia.com.br/noticias/politica-e-poder/lula-aguarda-pt-para-troca-em-pastas-chefiadas-por-petistas-em-reforma-ministerial/
 https://opopular.com.br/cidades/ex-secretario-de-saude-de-goiania-deixa-hospital-e-volta-para-a-cadeia-1.3207162
+https://www.cartacapital.com.br/politica/surpresa-natalina/
 
 ## Internacional
 https://www.nytimes.com/2024/11/20/us/politics/matt-gaetz-venmo-payments-sex.html
@@ -66,3 +67,4 @@ https://www.businessinsider.com/google-unveiled-quantum-computer-chip-willow-202
 https://theverge.com/2024/12/11/24318164/lord-of-the-rings-war-of-the-rohirrim-review
 https://www.sabado.pt/portugal/detalhe/lider-sindical-da-psp-apanhado-numa-investigacao-da-pj
 https://www.cmjornal.pt/portugal/detalhe/motorista-da-aeroporto-parque-destroi-carro-de-colecao-de-cliente-e-quer-pagar-tuta-e-meia
+https://www.nzherald.co.nz/entertainment/nz-theatre-legend-tim-bray-on-cancer-chemo-and-the-man-whos-holding-him-together/ESPBIQ7YEFGEBMGPWPB6XBEY5U/
