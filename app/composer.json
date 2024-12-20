@@ -3,7 +3,8 @@
         "vlucas/phpdotenv": "^5.6.1",
         "aws/aws-sdk-php": "^3.0",
         "php-curl-class/php-curl-class": "^11.0",
-        "php-webdriver/webdriver": "^1.15"
+        "php-webdriver/webdriver": "^1.15",
+        "codex-team/hawk.php": "^2.2"
     },
     "autoload": {
         "psr-4": {

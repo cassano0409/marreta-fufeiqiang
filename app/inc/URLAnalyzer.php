@@ -15,6 +15,7 @@
 
 require_once 'Rules.php';
 require_once 'Cache.php';
+require_once 'Logger.php';
 
 use Curl\Curl;
 use Facebook\WebDriver\Remote\DesiredCapabilities;
@@ -22,6 +23,7 @@ use Facebook\WebDriver\Remote\RemoteWebDriver;
 use Facebook\WebDriver\Firefox\FirefoxOptions;
 use Facebook\WebDriver\Firefox\FirefoxProfile;
 use Facebook\WebDriver\Chrome\ChromeOptions;
+use Inc\Logger;
 
 class URLAnalyzer
 {
@@ -89,19 +91,6 @@ class URLAnalyzer
     }
 
     /**
-     * Registra erros no arquivo de log
-     * 
-     * @param string $url URL que gerou o erro
-     * @param string $error Mensagem de erro
-     */
-    private function logError($url, $error)
-    {
-        $timestamp = date('Y-m-d H:i:s');
-        $logEntry = "[{$timestamp}] URL: {$url} - Error: {$error}" . PHP_EOL;
-        file_put_contents(__DIR__ . '/../logs/error.log', $logEntry, FILE_APPEND);
-    }
-
-    /**
      * Método principal para análise de URLs
      * 
      * @param string $url URL a ser analisada
@@ -126,8 +115,8 @@ class URLAnalyzer
         $host = preg_replace('/^www\./', '', $host);
 
         if (in_array($host, BLOCKED_DOMAINS)) {
-            $error = 'Este domínio está bloqueado para extração.';
-            $this->logError($cleanUrl, $error);
+            $error = 'BLOCKED_DOMAINS';
+            Logger::getInstance()->log($cleanUrl, $error);
             throw new Exception($error);
         }
 
@@ -142,8 +131,9 @@ class URLAnalyzer
                     return $processedContent;
                 }
             } catch (Exception $e) {
-                $this->logError($cleanUrl, "Selenium fetch error: " . $e->getMessage());
-                throw new Exception("Não foi possível obter o conteúdo via Selenium");
+                $error = 'SELENIUM_ERROR';
+                Logger::getInstance()->log($cleanUrl, 'SELENIUM_ERROR', $e->getMessage());
+                throw new Exception($error);
             }
         }
 
@@ -156,7 +146,7 @@ class URLAnalyzer
                 return $processedContent;
             }
         } catch (Exception $e) {
-            $this->logError($cleanUrl, "Direct fetch error: " . $e->getMessage());
+            Logger::getInstance()->log($cleanUrl, 'DIRECT_FETCH_ERROR', $e->getMessage());
         }
 
         // 6. Tenta buscar do Wayback Machine como fallback
@@ -168,9 +158,10 @@ class URLAnalyzer
                 return $processedContent;
             }
         } catch (Exception $e) {
-            $this->logError($cleanUrl, "Wayback Machine error: " . $e->getMessage());
+            Logger::getInstance()->log($cleanUrl, 'WAYBACK_FETCH_ERROR', $e->getMessage());
         }
 
+        Logger::getInstance()->log($cleanUrl, 'GENERAL_FETCH_ERROR');
         throw new Exception("Não foi possível obter o conteúdo da URL");
     }
 

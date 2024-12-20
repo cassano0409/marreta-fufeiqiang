@@ -31,10 +31,17 @@ define('SELENIUM_HOST', isset($_ENV['SELENIUM_HOST']) ? $_ENV['SELENIUM_HOST'] :
 define('CACHE_DIR', __DIR__ . '/cache');
 define('DEBUG', isset($_ENV['DEBUG']) ? filter_var($_ENV['DEBUG'], FILTER_VALIDATE_BOOLEAN) : false);
 
-// Configurações de Redis
+/**
+ * Configurações de Redis
+ */
 define('REDIS_HOST', isset($_ENV['REDIS_HOST']) ? $_ENV['REDIS_HOST'] : 'localhost');
 define('REDIS_PORT', isset($_ENV['REDIS_PORT']) ? $_ENV['REDIS_PORT'] : 6379);
 define('REDIS_PREFIX', isset($_ENV['REDIS_PREFIX']) ? $_ENV['REDIS_PREFIX'] : 'marreta:');
+
+/**
+ * Configurações do Hawk.so
+ */
+define('HAWK_TOKEN', isset($_ENV['HAWK_TOKEN']) ? $_ENV['HAWK_TOKEN'] : null);
 
 /**
  * Configurações de Cache S3

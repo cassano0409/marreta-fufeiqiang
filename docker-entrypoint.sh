@@ -90,6 +90,11 @@ if [ -n "${SELENIUM_HOST}" ]; then
     echo "SELENIUM_HOST=${SELENIUM_HOST}" >> /app/.env
 fi
 
+# Configurações do Hawk.so
+if [ -n "${HAWK_TOKEN}" ]; then
+    echo "HAWK_TOKEN=${HAWK_TOKEN}" >> /app/.env
+fi
+
 log_success "Variáveis de ambiente configuradas"
 
 # === Ajuste de Permissões ===
