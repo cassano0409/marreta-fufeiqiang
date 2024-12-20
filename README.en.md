@@ -184,6 +184,16 @@ Important settings:
 
 After setting up Selenium, make sure to set the `SELENIUM_HOST` variable in your environment to point to the Selenium hub (typically `selenium-hub:4444`).
 
+### Error monitoring
+
+Marreta uses [Hawk.so](https://hawk.so), an open-source error monitoring platform. To configure monitoring, add the following variables to your `.env` or docker:
+
+```env
+HAWK_TOKEN=your_token
+```
+
+You can host your own Hawk.so instance or use the hosted service at [hawk.so](https://hawk.so). The source code is available at [github.com/codex-team/hawk](https://github.com/codex-team/hawk).
+
 ## 🛠️ Maintenance
 
 ### Logs
