@@ -22,6 +22,7 @@ return [
     'brasilenergia.com.br',
     'ole.com.ar',
     'adage.com',
+    'couriermail.com.au',
     //-- Bloqueio tecnico de acesso ao conteudo
     'bloomberg.com',
     'sportskeeda.com',

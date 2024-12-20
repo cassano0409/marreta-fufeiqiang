@@ -63,3 +63,6 @@ https://www.npr.org/2024/12/06/nx-s1-5219927/unitedhealthcare-ceo-shooting-new-y
 https://www.bloomberg.com/news/articles/2024-12-07/south-korea-impeachment-vote-drags-on-after-ruling-party-boycott?srnd=homepage-americas
 https://www.leparisien.fr/politique/le-gouvernement-barnier-censure-emmanuel-macron-de-nouveau-face-a-une-impasse-05-12-2024-KNZVD5MGOJGIPEONBQEYSACOLI.php
 https://www.businessinsider.com/google-unveiled-quantum-computer-chip-willow-2024-12
+https://theverge.com/2024/12/11/24318164/lord-of-the-rings-war-of-the-rohirrim-review
+https://www.sabado.pt/portugal/detalhe/lider-sindical-da-psp-apanhado-numa-investigacao-da-pj
+https://www.cmjornal.pt/portugal/detalhe/motorista-da-aeroporto-parque-destroi-carro-de-colecao-de-cliente-e-quer-pagar-tuta-e-meia

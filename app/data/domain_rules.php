@@ -130,6 +130,9 @@ return [
             'crs_subscriber' => '1'
         ]
     ],
+    'theverge.com' => [
+        'useSelenium' => true
+    ],
     'economist.com' => [
         'cookies' => [
             'ec_limit' => 'allow'
@@ -234,7 +237,16 @@ return [
         'classElementRemove' => ['zephr-backdrop', 'zephr-generic-modal'],
         'excludeGlobalRules' => [
             'classElementRemove' => ['premium-article'],
-        ]
+        ],
+        'useSelenium' => true
+    ],
+    'cmjornal.pt' => [
+        'classAttrRemove' => ['bloco_bloqueio_premium'],
+        'useSelenium' => true
+    ],
+    'sabado.pt' => [
+        'classElementRemove' => ['bloco_bloqueio'],
+        'useSelenium' => true
     ],
     'seudinheiro.com' => [
         'idElementRemove' => ['premium-paywall']
