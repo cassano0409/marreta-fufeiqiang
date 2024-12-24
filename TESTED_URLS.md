@@ -39,6 +39,8 @@ https://oantagonista.com.br/brasil/lewandowski-insiste-na-pec-da-seguranca/
 https://jornaldebrasilia.com.br/noticias/politica-e-poder/lula-aguarda-pt-para-troca-em-pastas-chefiadas-por-petistas-em-reforma-ministerial/
 https://opopular.com.br/cidades/ex-secretario-de-saude-de-goiania-deixa-hospital-e-volta-para-a-cadeia-1.3207162
 https://www.cartacapital.com.br/politica/surpresa-natalina/
+https://seucreditodigital.com.br/123milhas-devera-apresentar-plano-de-recuperacao-ainda-este-mes/
+https://www.matinaljornalismo.com.br/matinal/reportagem-matinal/vazao-guaiba-porto-alegre/
 
 ## Internacional
 https://www.nytimes.com/2024/11/20/us/politics/matt-gaetz-venmo-payments-sex.html

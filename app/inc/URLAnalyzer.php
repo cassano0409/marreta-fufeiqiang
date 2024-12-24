@@ -123,7 +123,6 @@ class URLAnalyzer
         $host = preg_replace('/^www\./', '', $host);
 
         if (in_array($host, BLOCKED_DOMAINS)) {
-            Logger::getInstance()->log($cleanUrl, 'BLOCKED_DOMAIN');
             throw new Exception('Este domínio está bloqueado para extração.');
         }
 
@@ -153,7 +152,7 @@ class URLAnalyzer
                 return $processedContent;
             }
         } catch (Exception $e) {
-            Logger::getInstance()->log($cleanUrl, 'DIRECT_FETCH_ERROR', $e->getMessage());
+            error_log("DIRECT_FETCH_ERROR: " . $e->getMessage());
         }
 
         // 6. Tenta buscar do Wayback Machine como fallback
@@ -165,7 +164,19 @@ class URLAnalyzer
                 return $processedContent;
             }
         } catch (Exception $e) {
-            Logger::getInstance()->log($cleanUrl, 'WAYBACK_FETCH_ERROR', $e->getMessage());
+            error_log("WAYBACK_FETCH_ERROR: " . $e->getMessage());
+        }
+
+        // 7. Tenta buscar com Selenium como fallback
+        try {
+            $content = $this->fetchFromSelenium($cleanUrl, 'firefox');
+            if (!empty($content)) {
+                $processedContent = $this->processContent($content, $host, $cleanUrl);
+                $this->cache->set($cleanUrl, $processedContent);
+                return $processedContent;
+            }
+        } catch (Exception $e) {
+            error_log("SELENIUM_ERROR: " . $e->getMessage());
         }
 
         Logger::getInstance()->log($cleanUrl, 'GENERAL_FETCH_ERROR');

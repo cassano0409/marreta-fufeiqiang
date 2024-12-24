@@ -16,6 +16,7 @@ return [
     'utppublishing.com',
     'chronicle.com',
     'nexojornal.com',
+    'nexojornal.com.br',
     'lesoir.be',
     'weeklytimesnow.com.au',
     'barrons.com',
