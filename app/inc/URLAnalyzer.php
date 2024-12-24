@@ -220,7 +220,8 @@ class URLAnalyzer
 
             $driver->get($url);
 
-            $htmlSource = $driver->getPageSource();
+            $htmlSource = $driver->executeScript("return document.documentElement.outerHTML;");
+            //$htmlSource = $driver->getPageSource();
 
             $driver->quit();
 
