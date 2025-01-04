@@ -59,7 +59,7 @@ services:
 
 - `SITE_NAME`: Nome do seu Marreta
 - `SITE_DESCRIPTION`: Conta pra que serve
-- `SITE_URL`: Onde vai rodar, endereço completo com `https://`
+- `SITE_URL`: Onde vai rodar, endereço completo com `https://`. Se você alterar a porta no docker-compose (ex: 8080:80), você também deve incluir a porta no SITE_URL (ex: https://seusite:8080)
 - `DNS_SERVERS`: Quais servidores DNS usar `1.1.1.1, 8.8.8.8`
 - `SELENIUM_HOST`: Servidor:PORTA do host do Selenium (ex: selenium-hub:4444)
 - 
