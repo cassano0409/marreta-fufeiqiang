@@ -46,7 +46,7 @@ Se necessario
 services:
   marreta:
     container_name: marreta
-    image: ghcr.io/manualdousuario/marreta/marreta:latest
+    image: ghcr.io/manualdousuario/marreta:latest
     ports:
       - "80:80"
     environment:
