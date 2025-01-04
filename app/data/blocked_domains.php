@@ -24,6 +24,7 @@ return [
     'ole.com.ar',
     'adage.com',
     'couriermail.com.au',
+    'mittelbayerische.de/',
     //-- Bloqueio tecnico de acesso ao conteudo
     'bloomberg.com',
     'sportskeeda.com',
