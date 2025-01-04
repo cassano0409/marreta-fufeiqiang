@@ -15,7 +15,6 @@ services:
       - LANGUAGE=pt-br
       - DEBUG=false
       - SELENIUM_HOST=selenium-hub:4444
-    user: "${UID:-1000}:${GID:-1000}"
     restart: unless-stopped
   selenium-chromium:
     container_name: selenium-chromium
@@ -31,8 +30,6 @@ services:
     entrypoint: bash -c 'SE_OPTS="--host $$HOSTNAME" /opt/bin/entry_point.sh'
     depends_on:
       - selenium-hub
-    networks:
-      - selenium
   selenium-firefox:
     container_name: selenium-firefox
     image: selenium/node-firefox:4.27.0-20241204
