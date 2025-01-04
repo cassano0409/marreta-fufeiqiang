@@ -8,13 +8,13 @@ services:
       - ./app/cache:/app/cache
       - ./app/logs:/app/logs
     environment:
-      - SITE_NAME=Marreta
-      - SITE_DESCRIPTION="Chapéu de paywall é marreta!"
-      - SITE_URL=https://marreta.localhost
-      - DNS_SERVERS=1.1.1.1,8.8.8.8
-      - LANGUAGE=pt-br
-      - DEBUG=false
-      - SELENIUM_HOST=selenium-hub:4444
+      - SITE_NAME=${SITE_NAME:-}
+      - SITE_DESCRIPTION=${SITE_DESCRIPTION:-}
+      - SITE_URL=${SITE_URL:-https://marreta.localhost}
+      - DNS_SERVERS=${DNS_SERVER:-}
+      - LANGUAGE=${LANGUAGE:-}
+      - DEBUG=${DEBUG:-}
+      - SELENIUM_HOST=${SELENIUM_HOST:-selenium-hub:4444}
     restart: unless-stopped
   selenium-chromium:
     container_name: selenium-chromium
