@@ -86,6 +86,7 @@ SITE_URL=http://localhost
 DNS_SERVERS=1.1.1.1, 8.8.8.8
 DEBUG=true
 SELENIUM_HOST=selenium-hub:4444
+LANGUAGE=pt-br
 ```
 
 4. Roda tudo:
@@ -105,7 +106,10 @@ As configurações estão organizadas em `data/`:
 - `global_rules.php`: Regras que se aplicam a todos os sites
 - `blocked_domains.php`: Lista de sites bloqueados
 - `user_agents.php`: Configurações de User Agents
-- `messages.php`: Mensagens do sistema
+
+### Traduções
+
+- `/languages/`: Cada lingua está em seu ISO id (`pt-br, en ou es`) e pode ser definida no environment `LANGUAGE`
 
 ### Cache S3
 

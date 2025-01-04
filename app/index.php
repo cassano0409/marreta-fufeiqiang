@@ -13,6 +13,10 @@
 
 require_once 'config.php';
 require_once 'inc/Cache.php';
+require_once 'inc/Language.php';
+
+// Initialize language
+Language::init(LANGUAGE);
 
 // Inicialização de variáveis
 $message = '';
@@ -20,10 +24,11 @@ $message_type = '';
 $url = '';
 
 // Processa mensagens de erro/alerta da query string
-if (isset($_GET['message']) && isset(MESSAGES[$_GET['message']])) {
+if (isset($_GET['message'])) {
     $message_key = $_GET['message'];
-    $message = MESSAGES[$message_key]['message'];
-    $message_type = MESSAGES[$message_key]['type'];
+    $messageData = Language::getMessage($message_key);
+    $message = $messageData['message'];
+    $message_type = $messageData['type'];
 }
 
 // Processa submissão do formulário
@@ -33,8 +38,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['url'])) {
         header('Location: ' . SITE_URL . '/p/' . urlencode($url));
         exit;
     } else {
-        $message = MESSAGES['INVALID_URL']['message'];
-        $message_type = MESSAGES['INVALID_URL']['type'];
+        $messageData = Language::getMessage('INVALID_URL');
+        $message = $messageData['message'];
+        $message_type = $messageData['type'];
     }
 }
 
@@ -43,7 +49,7 @@ $cache = new Cache();
 $cache_folder = $cache->getCacheFileCount();
 ?>
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="<?php echo Language::getCurrentLanguage(); ?>">
 
 <head>
     <meta charset="UTF-8">
@@ -61,19 +67,19 @@ $cache_folder = $cache->getCacheFileCount();
 <body class="bg-gray-50 min-h-screen">
     <div class="container mx-auto px-4 py-8 max-w-4xl">
         <!-- Cabeçalho da página -->
-    <div class="text-center mb-8">
-        <h1 class="text-4xl font-bold text-gray-800 mb-4">
-            <img src="assets/svg/marreta.svg" class="inline-block w-12 h-12 mb-2" alt="Marreta">
-            <?php echo SITE_NAME; ?>
-        </h1>
-        <p class="text-gray-600 text-lg"><?php echo SITE_DESCRIPTION; ?></p>
-        <p class="text-gray-600 text-lg">
-            <span class="font-bold text-blue-600">
-                <?php echo number_format($cache_folder, 0, ',', '.'); ?>
-            </span>
-            <span>paredes derrubadas!</span>
-        </p>
-    </div>
+        <div class="text-center mb-8">
+            <h1 class="text-4xl font-bold text-gray-800 mb-4">
+                <img src="assets/svg/marreta.svg" class="inline-block w-12 h-12 mb-2" alt="Marreta">
+                <?php echo SITE_NAME; ?>
+            </h1>
+            <p class="text-gray-600 text-lg"><?php echo SITE_DESCRIPTION; ?></p>
+            <p class="text-gray-600 text-lg">
+                <span class="font-bold text-blue-600">
+                    <?php echo number_format($cache_folder, 0, ',', '.'); ?>
+                </span>
+                <span><?php echo Language::get('walls_destroyed'); ?></span>
+            </p>
+        </div>
 
         <!-- Formulário principal de análise de URLs -->
         <div class="bg-white rounded-xl shadow-lg p-8 mb-8">
@@ -87,16 +93,16 @@ $cache_folder = $cache->getCacheFileCount();
                             name="url"
                             id="url"
                             class="flex-1 block w-full rounded-none rounded-r-lg text-lg py-4 border border-l-0 border-gray-300 bg-gray-50 focus:border-blue-500 focus:ring-blue-500 shadow-sm bg-gray-50"
-                            placeholder="Digite a URL (ex: https://exemplo.com)"
+                            placeholder="<?php echo Language::get('url_placeholder'); ?>"
                             value="<?php echo htmlspecialchars($url); ?>"
                             required
                             pattern="https?://.+"
-                            title="Por favor, insira uma URL válida começando com http:// ou https://">
+                            title="<?php echo Language::getMessage('INVALID_URL')['message']; ?>">
                     </div>
                     <button type="submit"
                         class="mt-4 w-full inline-flex justify-center items-center px-6 py-4 border border-transparent text-lg font-medium rounded-lg text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200">
                         <img src="assets/svg/search.svg" class="w-6 h-6 mr-3" alt="Search">
-                        Analisar
+                        <?php echo Language::get('analyze_button'); ?>
                     </button>
                 </div>
             </form>
@@ -126,7 +132,7 @@ $cache_folder = $cache->getCacheFileCount();
         <div class="mt-8 text-center text-base text-gray-500">
             <p>
                 <img src="assets/svg/code.svg" class="inline-block w-5 h-5 mr-2" alt="Acesso direito">
-                Acesso direto:
+                <?php echo Language::get('direct_access'); ?>
             <pre class="bg-gray-100 p-3 rounded-lg text-sm overflow-x-auto"><?php echo SITE_URL; ?>/p/https://exemplo.com</pre>
             </p>
         </div>
@@ -135,18 +141,18 @@ $cache_folder = $cache->getCacheFileCount();
         <div class="bg-white rounded-xl shadow-lg p-8 mt-8 mb-8">
             <h2 class="text-xl font-semibold text-gray-800 mb-6 flex items-center">
                 <img src="assets/svg/bookmark.svg" class="w-6 h-6 mr-3" alt="Favoritos">
-                Adicione aos Favoritos
+                <?php echo Language::get('bookmarklet_title'); ?>
             </h2>
             <div class="space-y-4">
                 <p class="text-gray-600">
-                    Arraste o botão abaixo para sua barra de favoritos para acessar o <?php echo SITE_NAME; ?> rapidamente em qualquer página:
+                    <?php echo str_replace('{site_name}', SITE_NAME, Language::get('bookmarklet_description')); ?>
                 </p>
                 <div class="flex justify-center">
                     <a href="javascript:(function(){let currentUrl=window.location.href;window.location.href='<?php echo SITE_URL; ?>/p/'+encodeURIComponent(currentUrl);})()"
                         class="inline-flex items-center px-6 py-3 border-2 border-blue-500 font-medium rounded-lg text-blue-600 bg-white hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200 cursor-move"
                         onclick="return false;">
                         <img src="assets/svg/marreta.svg" class="w-5 h-5 mr-2" alt="Marreta">
-                        Abrir no <?php echo SITE_NAME; ?>
+                        <?php echo str_replace('{site_name}', SITE_NAME, Language::get('open_in')); ?>
                     </a>
                 </div>
             </div>
@@ -156,7 +162,7 @@ $cache_folder = $cache->getCacheFileCount();
         <div class="bg-white rounded-xl shadow-lg p-8 mt-8">
             <h2 class="text-xl font-semibold text-gray-800 mb-6">
                 <img src="assets/svg/refresh.svg" class="inline-block w-6 h-6 mr-3" alt="Serviços alternativos">
-                Serviços alternativos
+                <?php echo Language::get('alternative_services'); ?>
             </h2>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <a href="https://archive.today" target="_blank"
@@ -180,18 +186,18 @@ $cache_folder = $cache->getCacheFileCount();
         <div class="bg-white rounded-xl shadow-lg p-8 mt-8">
             <h2 class="text-xl font-semibold text-gray-800 mb-6 flex items-center">
                 <img src="assets/svg/code.svg" class="w-6 h-6 mr-3" alt="API REST">
-                API REST
+                <?php echo Language::get('api_title'); ?>
             </h2>
             <div class="space-y-4">
                 <p class="text-gray-600">
-                    O <?php echo SITE_NAME; ?> disponibiliza uma API REST para integração com outros sistemas:
+                    <?php echo str_replace('{site_name}', SITE_NAME, Language::get('api_description')); ?>
                 </p>
                 <div class="bg-gray-50 rounded-lg p-4">
-                    <h3 class="font-medium text-gray-800 mb-2">Endpoint:</h3>
+                    <h3 class="font-medium text-gray-800 mb-2"><?php echo Language::get('endpoint'); ?></h3>
                     <pre class="bg-gray-100 p-3 rounded-lg text-sm overflow-x-auto">GET <?php echo SITE_URL; ?>/api/https://exemplo.com</pre>
                 </div>
                 <div class="bg-gray-50 rounded-lg p-4">
-                    <h3 class="font-medium text-gray-800 mb-2">Resposta de sucesso:</h3>
+                    <h3 class="font-medium text-gray-800 mb-2"><?php echo Language::get('success_response'); ?></h3>
                     <pre class="bg-gray-100 p-3 rounded-lg text-sm overflow-x-auto">
 {
     "status": 200,
@@ -199,25 +205,24 @@ $cache_folder = $cache->getCacheFileCount();
 }</pre>
                 </div>
                 <div class="bg-gray-50 rounded-lg p-4">
-                    <h3 class="font-medium text-gray-800 mb-2">Resposta de erro:</h3>
+                    <h3 class="font-medium text-gray-800 mb-2"><?php echo Language::get('error_response'); ?></h3>
                     <pre class="bg-gray-100 p-3 rounded-lg text-sm overflow-x-auto">
 {
     "status": 400,
     "error": {
         "code": "INVALID_URL",
-        "message": "URL inválida"
+        "message": "<?php echo Language::getMessage('INVALID_URL')['message']; ?>"
     }
 }</pre>
                 </div>
             </div>
             <h2 class="text-xl font-semibold text-gray-800 mt-6 mb-6 flex items-center">
                 <img src="assets/svg/code.svg" class="w-6 h-6 mr-3" alt="Open Source">
-                Projeto Open Source
+                <?php echo Language::get('open_source_title'); ?>
             </h2>
             <div>
                 <p class="text-gray-600">
-                    Este é um projeto de <a href="https://github.com/manualdousuario/marreta/" class="underline" target="_blank">código aberto</a> feito com ❤️!<br />
-                    Você pode contribuir, reportar problemas ou fazer sugestões através do <a href="https://github.com/manualdousuario/marreta/" class="underline" target="_blank">GitHub</a>.
+                    <?php echo Language::get('open_source_description'); ?>
                 </p>
             </div>
         </div>

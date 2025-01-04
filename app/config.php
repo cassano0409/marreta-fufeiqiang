@@ -7,7 +7,6 @@
  * - Carregamento de variáveis de ambiente
  * - Definições de constantes do sistema
  * - Configurações de segurança
- * - Mensagens do sistema
  * - Configurações de bots e user agents
  * - Lista de domínios bloqueados
  * - Configurações de cache S3
@@ -30,6 +29,7 @@ define('DISABLE_CACHE', isset($_ENV['DISABLE_CACHE']) ? filter_var($_ENV['DISABL
 define('SELENIUM_HOST', isset($_ENV['SELENIUM_HOST']) ? $_ENV['SELENIUM_HOST'] : 'localhost:4444');
 define('CACHE_DIR', __DIR__ . '/cache');
 define('DEBUG', isset($_ENV['DEBUG']) ? filter_var($_ENV['DEBUG'], FILTER_VALIDATE_BOOLEAN) : false);
+define('LANGUAGE', isset($_ENV['LANGUAGE']) ? $_ENV['LANGUAGE'] : 'pt-br');
 
 /**
  * Configurações de Redis
@@ -60,7 +60,6 @@ if (S3_CACHE_ENABLED) {
 /**
  * Carrega as configurações do sistema
  */
-define('MESSAGES', require __DIR__ . '/data/messages.php');
 define('USER_AGENTS', require __DIR__ . '/data/user_agents.php');
 define('BLOCKED_DOMAINS', require __DIR__ . '/data/blocked_domains.php');
 define('DOMAIN_RULES', require __DIR__ . '/data/domain_rules.php');

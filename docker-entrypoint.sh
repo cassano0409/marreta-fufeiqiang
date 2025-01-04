@@ -48,6 +48,10 @@ if [ -n "${SITE_URL}" ]; then
     echo "SITE_URL=${SITE_URL}" >> /app/.env
 fi
 
+if [ -n "${LANGUAGE}" ]; then
+    echo "LANGUAGE=${LANGUAGE}" >> /app/.env
+fi
+
 if [ -n "${DNS_SERVERS}" ]; then
     echo "DNS_SERVERS=${DNS_SERVERS}" >> /app/.env
 fi
