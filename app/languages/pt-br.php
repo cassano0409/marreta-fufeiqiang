@@ -16,6 +16,7 @@ return [
     'error_response' => 'Resposta de erro:',
     'open_source_title' => 'Projeto Open Source',
     'open_source_description' => 'Este é um projeto de <a href="https://github.com/manualdousuario/marreta/" class="underline" target="_blank">código aberto</a> feito com ❤️!<br />Você pode contribuir, reportar problemas ou fazer sugestões através do <a href="https://github.com/manualdousuario/marreta/" class="underline" target="_blank">GitHub</a>.',
+    'adblocker_warning' => 'Conflitos entre o {site_name} e bloqueadores de anúncios podem causar tela branca. Use o modo anônimo ou desative a extensão.',
     
     'messages' => [
         'BLOCKED_DOMAIN' => [

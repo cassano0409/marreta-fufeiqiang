@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Página principal do sistema
+ * Página principal do sistema / Main system page
  * 
  * Este arquivo implementa a interface web principal, incluindo:
  * - Formulário para análise de URLs
@@ -9,21 +9,28 @@
  * - Documentação da API
  * - Interface para bookmarklet
  * - Links para serviços alternativos
+ *
+ * This file implements the main web interface, including:
+ * - URL analysis form
+ * - Error/success message handling
+ * - API documentation
+ * - Bookmarklet interface
+ * - Links to alternative services
  */
 
 require_once 'config.php';
 require_once 'inc/Cache.php';
 require_once 'inc/Language.php';
 
-// Initialize language
+// Inicialização das traduções / Initialize translations
 Language::init(LANGUAGE);
 
-// Inicialização de variáveis
+// Inicialização de variáveis / Variable initialization
 $message = '';
 $message_type = '';
 $url = '';
 
-// Processa mensagens de erro/alerta da query string
+// Processa mensagens de erro/alerta da query string / Process error/warning messages from query string
 if (isset($_GET['message'])) {
     $message_key = $_GET['message'];
     $messageData = Language::getMessage($message_key);
@@ -31,7 +38,7 @@ if (isset($_GET['message'])) {
     $message_type = $messageData['type'];
 }
 
-// Processa submissão do formulário
+// Processa submissão do formulário / Process form submission
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['url'])) {
     $url = filter_var($_POST['url'], FILTER_SANITIZE_URL);
     if (filter_var($url, FILTER_VALIDATE_URL)) {
@@ -44,7 +51,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['url'])) {
     }
 }
 
-// Inicializa o cache para contagem
+// Inicializa o cache para contagem / Initialize cache for counting
 $cache = new Cache();
 $cache_folder = $cache->getCacheFileCount();
 ?>
@@ -66,7 +73,7 @@ $cache_folder = $cache->getCacheFileCount();
 
 <body class="bg-gray-50 min-h-screen">
     <div class="container mx-auto px-4 py-8 max-w-4xl">
-        <!-- Cabeçalho da página -->
+        <!-- Cabeçalho da página / Page header -->
         <div class="text-center mb-8">
             <h1 class="text-4xl font-bold text-gray-800 mb-4">
                 <img src="assets/svg/marreta.svg" class="inline-block w-12 h-12 mb-2" alt="Marreta">
@@ -81,7 +88,7 @@ $cache_folder = $cache->getCacheFileCount();
             </p>
         </div>
 
-        <!-- Formulário principal de análise de URLs -->
+        <!-- Formulário principal de análise de URLs / Main URL analysis form -->
         <div class="bg-white rounded-xl shadow-lg p-8 mb-8">
             <form id="urlForm" method="POST" onsubmit="return validateForm()" class="space-y-6">
                 <div class="relative">
@@ -107,7 +114,12 @@ $cache_folder = $cache->getCacheFileCount();
                 </div>
             </form>
 
-            <!-- Área de mensagens de erro/alerta -->
+            <!-- Aviso sobre bloqueadores de anúncios / Ad blocker warning -->
+            <div class="mt-4 text-sm text-gray-600 flex items-start">
+                <p><?php echo str_replace('{site_name}', SITE_NAME, Language::get('adblocker_warning')); ?></p>
+            </div>
+
+            <!-- Área de mensagens de erro/alerta / Error/warning message area -->
             <?php if ($message): ?>
                 <div class="mt-6 <?php echo $message_type === 'error' ? 'bg-red-50 border-red-400' : 'bg-yellow-50 border-yellow-400'; ?> border-l-4 p-4 rounded-r">
                     <div class="flex">
@@ -128,7 +140,7 @@ $cache_folder = $cache->getCacheFileCount();
             <?php endif; ?>
         </div>
 
-        <!-- Exemplo de uso direto -->
+        <!-- Exemplo de uso direto / Direct usage example -->
         <div class="mt-8 text-center text-base text-gray-500">
             <p>
                 <img src="assets/svg/code.svg" class="inline-block w-5 h-5 mr-2" alt="Acesso direito">
@@ -137,7 +149,7 @@ $cache_folder = $cache->getCacheFileCount();
             </p>
         </div>
 
-        <!-- Seção de Bookmarklet -->
+        <!-- Seção de Bookmarklet / Bookmarklet section -->
         <div class="bg-white rounded-xl shadow-lg p-8 mt-8 mb-8">
             <h2 class="text-xl font-semibold text-gray-800 mb-6 flex items-center">
                 <img src="assets/svg/bookmark.svg" class="w-6 h-6 mr-3" alt="Favoritos">
@@ -158,7 +170,7 @@ $cache_folder = $cache->getCacheFileCount();
             </div>
         </div>
 
-        <!-- Serviços alternativos -->
+        <!-- Serviços alternativos / Alternative services -->
         <div class="bg-white rounded-xl shadow-lg p-8 mt-8">
             <h2 class="text-xl font-semibold text-gray-800 mb-6">
                 <img src="assets/svg/refresh.svg" class="inline-block w-6 h-6 mr-3" alt="Serviços alternativos">
@@ -182,7 +194,7 @@ $cache_folder = $cache->getCacheFileCount();
             </div>
         </div>
 
-        <!-- Desenvolvimento -->
+        <!-- Desenvolvimento / Development -->
         <div class="bg-white rounded-xl shadow-lg p-8 mt-8">
             <h2 class="text-xl font-semibold text-gray-800 mb-6 flex items-center">
                 <img src="assets/svg/code.svg" class="w-6 h-6 mr-3" alt="API REST">

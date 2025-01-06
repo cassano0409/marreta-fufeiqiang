@@ -1,7 +1,6 @@
 <?php
 
 return [
-    'site_description' => '¡El sombrero del muro de pago es un martillo!',
     'walls_destroyed' => '¡paredes destruidas!',
     'url_placeholder' => 'Ingrese URL (ej: https://ejemplo.com)',
     'analyze_button' => 'Analizar',
@@ -17,6 +16,7 @@ return [
     'error_response' => 'Respuesta de error:',
     'open_source_title' => 'Proyecto de Código Abierto',
     'open_source_description' => '¡Este es un proyecto de <a href="https://github.com/manualdousuario/marreta/" class="underline" target="_blank">código abierto</a> hecho con ❤️!<br />Puedes contribuir, reportar problemas o hacer sugerencias a través de <a href="https://github.com/manualdousuario/marreta/" class="underline" target="_blank">GitHub</a>.',
+    'adblocker_warning' => 'Los conflictos entre {site_name} y los bloqueadores de anuncios pueden causar una pantalla en blanco. Use el modo incógnito o desactive la extensión.',
     
     'messages' => [
         'BLOCKED_DOMAIN' => [
