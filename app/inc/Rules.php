@@ -1,7 +1,13 @@
 <?php
 
 /**
+ * Class responsible for content manipulation rules management
  * Classe responsável pelo gerenciamento de regras de manipulação de conteúdo
+ * 
+ * This class implements a rules system for different web domains,
+ * allowing system behavior customization for each site.
+ * Includes functionalities for paywall removal, specific elements,
+ * cookie manipulation and custom code execution.
  * 
  * Esta classe implementa um sistema de regras para diferentes domínios web,
  * permitindo a personalização do comportamento do sistema para cada site.
@@ -11,17 +17,24 @@
 class Rules
 {
     /**
+     * Associative array containing specific rules for each domain
      * Array associativo contendo regras específicas para cada domínio
      * 
+     * Possible configurations for each domain:
      * Configurações possíveis para cada domínio:
      * @var array
      */
     private $domainRules = DOMAIN_RULES;
 
-    // Regras globais expandidas
+    /**
+     * Expanded global rules
+     * Regras globais expandidas
+     * @var array
+     */
     private $globalRules = GLOBAL_RULES;
 
     /**
+     * List of supported rule types
      * Lista de tipos de regras suportados
      * @var array
      */
@@ -41,10 +54,11 @@ class Rules
     ];
 
     /**
+     * Gets the base domain by removing www prefix
      * Obtém o domínio base removendo o prefixo www
      * 
-     * @param string $domain Domínio completo
-     * @return string Domínio base sem www
+     * @param string $domain Full domain / Domínio completo
+     * @return string Base domain without www / Domínio base sem www
      */
     private function getBaseDomain($domain)
     {
@@ -52,10 +66,11 @@ class Rules
     }
 
     /**
+     * Splits a domain into its constituent parts
      * Divide um domínio em suas partes constituintes
      * 
-     * @param string $domain Domínio a ser dividido
-     * @return array Array com todas as combinações possíveis do domínio
+     * @param string $domain Domain to be split / Domínio a ser dividido
+     * @return array Array with all possible domain combinations / Array com todas as combinações possíveis do domínio
      */
     private function getDomainParts($domain)
     {
@@ -75,10 +90,11 @@ class Rules
     }
 
     /**
+     * Gets specific rules for a domain
      * Obtém as regras específicas para um domínio
      * 
-     * @param string $domain Domínio para buscar regras
-     * @return array|null Array com regras mescladas ou null se não encontrar
+     * @param string $domain Domain to search rules for / Domínio para buscar regras
+     * @return array|null Array with merged rules or null if not found / Array com regras mescladas ou null se não encontrar
      */
     public function getDomainRules($domain)
     {
@@ -98,25 +114,29 @@ class Rules
             }
         }
 
+        // If no specific rules found, return only global rules
         // Se não encontrou regras específicas, retorna apenas as regras globais
         return $this->getGlobalRules();
     }
 
     /**
+     * Merges domain-specific rules with global rules
      * Mescla regras específicas do domínio com regras globais
      * 
-     * @param array $rules Regras específicas do domínio
-     * @return array Regras mescladas
+     * @param array $rules Domain-specific rules / Regras específicas do domínio
+     * @return array Merged rules / Regras mescladas
      */
     private function mergeWithGlobalRules($rules)
     {
         $globalRules = $this->getGlobalRules();
         $mergedRules = [];
 
+        // Process global rules exclusions
         // Processa as exclusões de regras globais
         $excludeGlobalRules = isset($rules['excludeGlobalRules']) ? $rules['excludeGlobalRules'] : [];
-        unset($rules['excludeGlobalRules']); // Remove do array de regras para não ser processado como regra normal
+        unset($rules['excludeGlobalRules']); // Remove from rules array to avoid processing as normal rule / Remove do array de regras para não ser processado como regra normal
 
+        // First, add all global rules except excluded ones
         // Primeiro, adiciona todas as regras globais, exceto as excluídas
         foreach ($globalRules as $ruleType => $globalTypeRules) {
             if (!in_array($ruleType, $this->supportedRuleTypes)) {
@@ -124,10 +144,12 @@ class Rules
             }
 
             if (isset($excludeGlobalRules[$ruleType])) {
+                // If rule type is an associative array (like cookies or headers)
                 // Se o tipo de regra é um array associativo (como cookies ou headers)
                 if (is_array($globalTypeRules) && array_keys($globalTypeRules) !== range(0, count($globalTypeRules) - 1)) {
                     $mergedRules[$ruleType] = array_diff_key($globalTypeRules, array_flip($excludeGlobalRules[$ruleType]));
                 } else {
+                    // For simple arrays (like classElementRemove)
                     // Para arrays simples (como classElementRemove)
                     $mergedRules[$ruleType] = array_diff($globalTypeRules, $excludeGlobalRules[$ruleType]);
                 }
@@ -136,6 +158,7 @@ class Rules
             }
         }
 
+        // Then, merge with domain-specific rules
         // Depois, mescla com as regras específicas do domínio
         foreach ($rules as $ruleType => $domainTypeRules) {
             if (!in_array($ruleType, $this->supportedRuleTypes)) {
@@ -147,11 +170,14 @@ class Rules
                 continue;
             }
 
+            // If rule type already exists, merge appropriately
             // Se o tipo de regra já existe, mescla apropriadamente
             if (in_array($ruleType, ['cookies', 'headers'])) {
+                // For cookies and headers, preserve keys
                 // Para cookies e headers, preserva as chaves
                 $mergedRules[$ruleType] = array_merge($mergedRules[$ruleType], $domainTypeRules);
             } else {
+                // For other types, merge as simple arrays
                 // Para outros tipos, mescla como arrays simples
                 $mergedRules[$ruleType] = array_values(array_unique(array_merge(
                     $mergedRules[$ruleType],
@@ -164,9 +190,10 @@ class Rules
     }
 
     /**
+     * Returns all global rules
      * Retorna todas as regras globais
      * 
-     * @return array Array com todas as regras globais
+     * @return array Array with all global rules / Array com todas as regras globais
      */
     public function getGlobalRules()
     {

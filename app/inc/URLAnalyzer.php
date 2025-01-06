@@ -1,16 +1,19 @@
 <?php
 
 /**
+ * Class responsible for URL analysis and processing
  * Classe responsável pela análise e processamento de URLs
  * 
+ * This class implements functionalities for:
  * Esta classe implementa funcionalidades para:
- * - Análise e limpeza de URLs
- * - Cache de conteúdo
- * - Resolução DNS
- * - Requisições HTTP com múltiplas tentativas
- * - Processamento de conteúdo baseado em regras específicas por domínio
- * - Suporte a Wayback Machine como fallback
- * - Suporte a extração via Selenium quando habilitado por domínio
+ * 
+ * - URL analysis and cleaning / Análise e limpeza de URLs
+ * - Content caching / Cache de conteúdo
+ * - DNS resolution / Resolução DNS
+ * - HTTP requests with multiple attempts / Requisições HTTP com múltiplas tentativas
+ * - Content processing based on domain-specific rules / Processamento de conteúdo baseado em regras específicas por domínio
+ * - Wayback Machine support as fallback / Suporte a Wayback Machine como fallback
+ * - Selenium extraction support when enabled by domain / Suporte a extração via Selenium quando habilitado por domínio
  */
 
 require_once 'Rules.php';
@@ -28,32 +31,40 @@ use Inc\Logger;
 class URLAnalyzer
 {
     /**
+     * @var array List of available User Agents for requests
      * @var array Lista de User Agents disponíveis para requisições
      */
     private $userAgents;
 
     /**
+     * @var array List of DNS servers for resolution
      * @var array Lista de servidores DNS para resolução
      */
     private $dnsServers;
 
     /**
+     * @var Rules Instance of rules class
      * @var Rules Instância da classe de regras
      */
     private $rules;
 
     /**
+     * @var Cache Instance of cache class
      * @var Cache Instância da classe de cache
      */
     private $cache;
 
     /**
+     * @var array List of rules activated during processing
      * @var array Lista de regras ativadas durante o processamento
      */
     private $activatedRules = [];
 
     /**
+     * Class constructor
      * Construtor da classe
+     * 
+     * Initializes required dependencies
      * Inicializa as dependências necessárias
      */
     public function __construct()
@@ -65,10 +76,11 @@ class URLAnalyzer
     }
 
     /**
+     * Check if a URL has redirects and return the final URL
      * Verifica se uma URL tem redirecionamentos e retorna a URL final
      * 
-     * @param string $url URL para verificar redirecionamentos
-     * @return array Array com a URL final e se houve redirecionamento
+     * @param string $url URL to check redirects / URL para verificar redirecionamentos
+     * @return array Array with final URL and if there was a redirect / Array com a URL final e se houve redirecionamento
      */
     public function checkRedirects($url)
     {
@@ -96,37 +108,39 @@ class URLAnalyzer
     }
 
     /**
+     * Main method for URL analysis
      * Método principal para análise de URLs
      * 
-     * @param string $url URL a ser analisada
-     * @return string Conteúdo processado da URL
-     * @throws Exception Em caso de erros durante o processamento
+     * @param string $url URL to be analyzed / URL a ser analisada
+     * @return string Processed content / Conteúdo processado
+     * @throws Exception In case of processing errors / Em caso de erros durante o processamento
      */
     public function analyze($url)
     {
         // Reset activated rules for new analysis
+        // Reset das regras ativadas para nova análise
         $this->activatedRules = [];
 
-        // 1. Limpa a URL
+        // 1. Clean URL / Limpa a URL
         $cleanUrl = $this->cleanUrl($url);
         if (!$cleanUrl) {
-            throw new Exception("URL inválida");
+            throw new Exception(Language::getMessage('INVALID_URL')['message']);
         }
 
-        // 2. Verifica cache
+        // 2. Check cache / Verifica cache
         if ($this->cache->exists($cleanUrl)) {
             return $this->cache->get($cleanUrl);
         }
 
-        // 3. Verifica domínios bloqueados
+        // 3. Check blocked domains / Verifica domínios bloqueados
         $host = parse_url($cleanUrl, PHP_URL_HOST);
         $host = preg_replace('/^www\./', '', $host);
 
         if (in_array($host, BLOCKED_DOMAINS)) {
-            throw new Exception('Este domínio está bloqueado para extração.');
+            throw new Exception(Language::getMessage('BLOCKED_DOMAIN')['message']);
         }
 
-        // 4. Verifica se deve usar Selenium
+        // 4. Check if should use Selenium / Verifica se deve usar Selenium
         $domainRules = $this->getDomainRules($host);
         if (isset($domainRules['useSelenium']) && $domainRules['useSelenium'] === true) {
             try {
@@ -137,13 +151,12 @@ class URLAnalyzer
                     return $processedContent;
                 }
             } catch (Exception $e) {
-                $error = 'SELENIUM_ERROR';
                 Logger::getInstance()->log($cleanUrl, 'SELENIUM_ERROR', $e->getMessage());
-                throw new Exception($error);
+                throw new Exception(Language::getMessage('CONTENT_ERROR')['message']);
             }
         }
 
-        // 5. Tenta buscar conteúdo diretamente
+        // 5. Try to fetch content directly / Tenta buscar conteúdo diretamente
         try {
             $content = $this->fetchContent($cleanUrl);
             if (!empty($content)) {
@@ -155,7 +168,7 @@ class URLAnalyzer
             error_log("DIRECT_FETCH_ERROR: " . $e->getMessage());
         }
 
-        // 6. Tenta buscar do Wayback Machine como fallback
+        // 6. Try to fetch from Wayback Machine as fallback / Tenta buscar do Wayback Machine como fallback
         try {
             $content = $this->fetchFromWaybackMachine($cleanUrl);
             if (!empty($content)) {
@@ -167,7 +180,7 @@ class URLAnalyzer
             error_log("WAYBACK_FETCH_ERROR: " . $e->getMessage());
         }
 
-        // 7. Tenta buscar com Selenium como fallback
+        // 7. Try to fetch with Selenium as fallback / Tenta buscar com Selenium como fallback
         try {
             $content = $this->fetchFromSelenium($cleanUrl, 'firefox');
             if (!empty($content)) {
@@ -180,16 +193,17 @@ class URLAnalyzer
         }
 
         Logger::getInstance()->log($cleanUrl, 'GENERAL_FETCH_ERROR');
-        throw new Exception("Não foi possível obter o conteúdo da URL");
+        throw new Exception(Language::getMessage('CONTENT_ERROR')['message']);
     }
 
     /**
+     * Try to get content using Selenium
      * Tenta obter o conteúdo da URL usando Selenium
      * 
-     * @param string $url URL para buscar
-     * @param array $domainRules Regras específicas do domínio
-     * @return string|null Conteúdo HTML da página
-     * @throws Exception Em caso de erro na requisição
+     * @param string $url URL to fetch / URL para buscar
+     * @param string $browser Browser to use (chrome/firefox) / Navegador a ser usado (chrome/firefox)
+     * @return string|null HTML content of the page / Conteúdo HTML da página
+     * @throws Exception In case of request error / Em caso de erro na requisição
      */
     private function fetchFromSelenium($url, $browser)
     {
@@ -210,12 +224,12 @@ class URLAnalyzer
             $capabilities->setCapability(ChromeOptions::CAPABILITY, $options);
         } else {
             $profile = new FirefoxProfile();
-            $profile->setPreference("permissions.default.image", 2); // Não carrega imagens
-            $profile->setPreference("javascript.enabled", true); // Mantem habilitado javascripts
-            $profile->setPreference("network.http.referer.defaultPolicy", 0); // Sempre envia referer
-            $profile->setPreference("network.http.referer.defaultReferer", "https://www.google.com.br"); // Define referer padrão
-            $profile->setPreference("network.http.referer.spoofSource", true); // Permite spoofing do referer
-            $profile->setPreference("network.http.referer.trimmingPolicy", 0); // Não corta o referer
+            $profile->setPreference("permissions.default.image", 2); // Don't load images / Não carrega imagens
+            $profile->setPreference("javascript.enabled", true); // Keep JavaScript enabled / Mantém JavaScript habilitado
+            $profile->setPreference("network.http.referer.defaultPolicy", 0); // Always send referer / Sempre envia referer
+            $profile->setPreference("network.http.referer.defaultReferer", "https://www.google.com.br"); // Set default referer / Define referer padrão
+            $profile->setPreference("network.http.referer.spoofSource", true); // Allow referer spoofing / Permite spoofing do referer
+            $profile->setPreference("network.http.referer.trimmingPolicy", 0); // Don't trim referer / Não corta o referer
 
             $options = new FirefoxOptions();
             $options->setProfile($profile);
@@ -232,12 +246,11 @@ class URLAnalyzer
             $driver->get($url);
 
             $htmlSource = $driver->executeScript("return document.documentElement.outerHTML;");
-            //$htmlSource = $driver->getPageSource();
 
             $driver->quit();
 
             if (empty($htmlSource)) {
-                throw new Exception("Selenium returned empty content");
+                throw new Exception("Selenium returned empty content / Selenium retornou conteúdo vazio");
             }
 
             return $htmlSource;
@@ -250,11 +263,12 @@ class URLAnalyzer
     }
 
     /**
+     * Try to get content from Internet Archive's Wayback Machine
      * Tenta obter o conteúdo da URL do Internet Archive's Wayback Machine
      * 
-     * @param string $url URL original
-     * @return string|null Conteúdo do arquivo
-     * @throws Exception Em caso de erro na requisição
+     * @param string $url Original URL / URL original
+     * @return string|null Archive content / Conteúdo do arquivo
+     * @throws Exception In case of request error / Em caso de erro na requisição
      */
     private function fetchFromWaybackMachine($url)
     {
@@ -270,12 +284,12 @@ class URLAnalyzer
         $curl->get($availabilityUrl);
 
         if ($curl->error || $curl->httpStatusCode !== 200) {
-            throw new Exception("Erro ao verificar disponibilidade no Wayback Machine");
+            throw new Exception(Language::getMessage('HTTP_ERROR')['message']);
         }
 
         $data = $curl->response;
         if (!isset($data->archived_snapshots->closest->url)) {
-            throw new Exception("Nenhum snapshot encontrado no Wayback Machine");
+            throw new Exception(Language::getMessage('CONTENT_ERROR')['message']);
         }
 
         $archiveUrl = $data->archived_snapshots->closest->url;
@@ -288,11 +302,12 @@ class URLAnalyzer
         $curl->get($archiveUrl);
 
         if ($curl->error || $curl->httpStatusCode !== 200 || empty($curl->response)) {
-            throw new Exception("Erro ao obter conteúdo do Wayback Machine");
+            throw new Exception(Language::getMessage('HTTP_ERROR')['message']);
         }
 
         $content = $curl->response;
         
+        // Remove Wayback Machine toolbar and cache URLs
         // Remove o toolbar do Wayback Machine e URLs de cache
         $content = preg_replace('/<!-- BEGIN WAYBACK TOOLBAR INSERT -->.*?<!-- END WAYBACK TOOLBAR INSERT -->/s', '', $content);
         $content = preg_replace('/https?:\/\/web\.archive\.org\/web\/\d+im_\//', '', $content);
@@ -301,11 +316,12 @@ class URLAnalyzer
     }
 
     /**
+     * Perform HTTP request using Curl Class
      * Realiza requisição HTTP usando Curl Class
      * 
-     * @param string $url URL para requisição
-     * @return string Conteúdo da página
-     * @throws Exception Em caso de erro na requisição
+     * @param string $url URL for request / URL para requisição
+     * @return string Page content / Conteúdo da página
+     * @throws Exception In case of request error / Em caso de erro na requisição
      */
     private function fetchContent($url)
     {
@@ -320,13 +336,13 @@ class URLAnalyzer
         $curl->setOpt(CURLOPT_SSL_VERIFYPEER, false);
         $curl->setOpt(CURLOPT_DNS_SERVERS, implode(',', $this->dnsServers));
         
-        // Define User Agent
+        // Set User Agent / Define User Agent
         $userAgent = isset($domainRules['userAgent']) 
             ? $domainRules['userAgent'] 
             : $this->userAgents[array_rand($this->userAgents)];
         $curl->setUserAgent($userAgent);
 
-        // Headers padrão
+        // Default headers / Headers padrão
         $headers = [
             'Host' => $host,
             'Accept' => 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
@@ -335,13 +351,13 @@ class URLAnalyzer
             'Pragma' => 'no-cache'
         ];
 
-        // Adiciona headers específicos do domínio
+        // Add domain-specific headers / Adiciona headers específicos do domínio
         if (isset($domainRules['headers'])) {
             $headers = array_merge($headers, $domainRules['headers']);
         }
         $curl->setHeaders($headers);
 
-        // Adiciona cookies específicos do domínio
+        // Add domain-specific cookies / Adiciona cookies específicos do domínio
         if (isset($domainRules['cookies'])) {
             $cookies = [];
             foreach ($domainRules['cookies'] as $name => $value) {
@@ -354,7 +370,7 @@ class URLAnalyzer
             }
         }
 
-        // Adiciona referer se especificado
+        // Add referer if specified / Adiciona referer se especificado
         if (isset($domainRules['referer'])) {
             $curl->setHeader('Referer', $domainRules['referer']);
         }
@@ -362,43 +378,44 @@ class URLAnalyzer
         $curl->get($url);
 
         if ($curl->error || $curl->httpStatusCode !== 200) {
-            throw new Exception("Erro HTTP " . $curl->httpStatusCode . ": " . $curl->errorMessage);
+            throw new Exception(Language::getMessage('HTTP_ERROR')['message']);
         }
 
         if (empty($curl->response)) {
-            throw new Exception("Resposta vazia do servidor");
+            throw new Exception(Language::getMessage('CONTENT_ERROR')['message']);
         }
 
         return $curl->response;
     }
 
     /**
+     * Clean and normalize a URL
      * Limpa e normaliza uma URL
      * 
-     * @param string $url URL para limpar
-     * @return string|false URL limpa e normalizada ou false se inválida
+     * @param string $url URL to clean / URL para limpar
+     * @return string|false Cleaned and normalized URL or false if invalid / URL limpa e normalizada ou false se inválida
      */
     private function cleanUrl($url)
     {
         $url = trim($url);
 
-        // Verifica se a URL é válida
+        // Check if URL is valid / Verifica se a URL é válida
         if (!filter_var($url, FILTER_VALIDATE_URL)) {
             return false;
         }
 
-        // Detecta e converte URLs AMP
+        // Detect and convert AMP URLs / Detecta e converte URLs AMP
         if (preg_match('#https://([^.]+)\.cdn\.ampproject\.org/v/s/([^/]+)(.*)#', $url, $matches)) {
             $url = 'https://' . $matches[2] . $matches[3];
         }
 
-        // Separa a URL em suas partes componentes
+        // Split URL into component parts / Separa a URL em suas partes componentes
         $parts = parse_url($url);
         
-        // Reconstrói a URL base
+        // Rebuild base URL / Reconstrói a URL base
         $cleanedUrl = $parts['scheme'] . '://' . $parts['host'];
         
-        // Adiciona o caminho se existir
+        // Add path if exists / Adiciona o caminho se existir
         if (isset($parts['path'])) {
             $cleanedUrl .= $parts['path'];
         }
@@ -407,10 +424,11 @@ class URLAnalyzer
     }
 
     /**
+     * Get specific rules for a domain
      * Obtém regras específicas para um domínio
      * 
-     * @param string $domain Domínio para buscar regras
-     * @return array|null Regras do domínio ou null se não encontrar
+     * @param string $domain Domain to search rules / Domínio para buscar regras
+     * @return array|null Domain rules or null if not found / Regras do domínio ou null se não encontrar
      */
     private function getDomainRules($domain)
     {
@@ -418,10 +436,11 @@ class URLAnalyzer
     }
 
     /**
+     * Remove specific classes from an element
      * Remove classes específicas de um elemento
      * 
-     * @param DOMElement $element Elemento DOM
-     * @param array $classesToRemove Classes a serem removidas
+     * @param DOMElement $element DOM Element / Elemento DOM
+     * @param array $classesToRemove Classes to remove / Classes a serem removidas
      */
     private function removeClassNames($element, $classesToRemove)
     {
@@ -442,11 +461,12 @@ class URLAnalyzer
     }
 
     /**
+     * Fix relative URLs in a DOM document
      * Corrige URLs relativas em um documento DOM
      * 
-     * @param DOMDocument $dom Documento DOM
-     * @param DOMXPath $xpath Objeto XPath
-     * @param string $baseUrl URL base para correção
+     * @param DOMDocument $dom DOM Document / Documento DOM
+     * @param DOMXPath $xpath XPath Object / Objeto XPath
+     * @param string $baseUrl Base URL for correction / URL base para correção
      */
     private function fixRelativeUrls($dom, $xpath, $baseUrl)
     {
@@ -490,12 +510,13 @@ class URLAnalyzer
     }
 
     /**
+     * Process HTML content applying domain rules
      * Processa o conteúdo HTML aplicando regras do domínio
      * 
-     * @param string $content Conteúdo HTML
-     * @param string $host Nome do host
-     * @param string $url URL completa
-     * @return string Conteúdo processado
+     * @param string $content HTML content / Conteúdo HTML
+     * @param string $host Host name / Nome do host
+     * @param string $url Complete URL / URL completa
+     * @return string Processed content / Conteúdo processado
      */
     private function processContent($content, $host, $url)
     {
@@ -507,17 +528,17 @@ class URLAnalyzer
 
         $xpath = new DOMXPath($dom);
 
-        // Processa tags canônicas
+        // Process canonical tags / Processa tags canônicas
         $canonicalLinks = $xpath->query("//link[@rel='canonical']");
         if ($canonicalLinks !== false) {
-            // Remove todas as tags canônicas existentes
             foreach ($canonicalLinks as $link) {
                 if ($link->parentNode) {
                     $link->parentNode->removeChild($link);
                 }
             }
         }
-        // Adiciona nova tag canônica com a URL original
+
+        // Add new canonical tag with original URL / Adiciona nova tag canônica com a URL original
         $head = $xpath->query('//head')->item(0);
         if ($head) {
             $newCanonical = $dom->createElement('link');
@@ -526,7 +547,7 @@ class URLAnalyzer
             $head->appendChild($newCanonical);
         }
 
-        // Sempre aplica a correção de URLs relativas
+        // Always fix relative URLs / Sempre corrige URLs relativas
         $this->fixRelativeUrls($dom, $xpath, $url);
 
         $domainRules = $this->getDomainRules($host);
@@ -586,6 +607,7 @@ class URLAnalyzer
 
         if (isset($domainRules['scriptTagRemove'])) {
             foreach ($domainRules['scriptTagRemove'] as $script) {
+                // Search for script tags with src or content containing the script
                 // Busca por tags script com src ou conteúdo contendo o script
                 $scriptElements = $xpath->query("//script[contains(@src, '$script')] | //script[contains(text(), '$script')]");
                 if ($scriptElements !== false && $scriptElements->length > 0) {
@@ -597,6 +619,7 @@ class URLAnalyzer
                     $this->activatedRules[] = "scriptTagRemove: $script";
                 }
 
+                // Search for link tags that are scripts
                 // Busca por tags link que são scripts
                 $linkElements = $xpath->query("//link[@as='script' and contains(@href, '$script') and @type='application/javascript']");
                 if ($linkElements !== false && $linkElements->length > 0) {
@@ -621,7 +644,7 @@ class URLAnalyzer
             }
         }
 
-        // Adiciona CTA Marreta 
+        // Add Marreta CTA / Adiciona CTA Marreta
         $body = $xpath->query('//body')->item(0);
         if ($body) {
             $marretaDiv = $dom->createElement('div');
@@ -631,14 +654,14 @@ class URLAnalyzer
             $marretaDiv->appendChild($marretaHtml);
             $body->appendChild($marretaDiv);
 
-            // Adiciona painel de debug se DEBUG for true
+            // Add debug panel if DEBUG is true / Adiciona painel de debug se DEBUG for true
             if (DEBUG) {
                 $debugDiv = $dom->createElement('div');
                 $debugDiv->setAttribute('style', 'z-index: 99999; position: fixed; bottom: 10px; right: 10px; background: rgba(0,0,0,0.8); color: #fff; font-size: 13px; line-height: 1.4; padding: 10px; border-radius: 3px; font-family: monospace; max-height: 200px; overflow-y: auto;');
                 
-                if( empty($this->activatedRules)) {
+                if (empty($this->activatedRules)) {
                     $ruleElement = $dom->createElement('div');
-                    $ruleElement->textContent = 'Nenhuma regra ativada';
+                    $ruleElement->textContent = 'No rules activated / Nenhuma regra ativada';
                     $debugDiv->appendChild($ruleElement);
                 } else {
                     foreach ($this->activatedRules as $rule) {

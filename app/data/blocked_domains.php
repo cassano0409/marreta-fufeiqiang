@@ -1,14 +1,18 @@
 <?php
 
 /**
+ * List of blocked domains
  * Lista de domínios bloqueados
+ * 
+ * Defines domains that cannot be accessed by the system
+ * due to usage policies or technical restrictions
  * 
  * Define os domínios que não podem ser acessados pelo sistema
  * por questões de política de uso ou restrições técnicas
  */
 return [
-    // Sites de notícias
-    //-- Conteudo fica atras de um acesso de login
+    // News sites / Sites de notícias
+    //-- Content behind login access / Conteúdo fica atrás de um acesso de login
     'wsj.com',
     'piaui.folha.uol.com.br',
     'economist.com',
@@ -25,14 +29,14 @@ return [
     'adage.com',
     'couriermail.com.au',
     'mittelbayerische.de/',
-    //-- Bloqueio tecnico de acesso ao conteudo
+    //-- Technical access blocking / Bloqueio técnico de acesso ao conteúdo
     'bloomberg.com',
     'sportskeeda.com',
     'kansascity.com',
     'fastcompany.com',
     'expressnews.com',
     'nydailynews.com',
-    // Tracking
+    // Tracking services / Serviços de rastreamento
     'metaffiliation.com',
     'google-analytics.com',
     'googletagmanager.com',
@@ -53,7 +57,7 @@ return [
     'fullstory.com',
     'heap.io',
     'clearbrain.com',
-    // Redes sociais
+    // Social networks / Redes sociais
     'facebook.com',
     'instagram.com',
     'twitter.com',
@@ -67,7 +71,7 @@ return [
     'redd.it',
     'bsky.app',
     'threads.net',
-    // Streaming
+    // Streaming services / Serviços de streaming
     'netflix.com',
     'hulu.com',
     'disneyplus.com',
@@ -75,32 +79,32 @@ return [
     'spotify.com',
     'youtube.com',
     'twitch.tv',
-    // E-commerce
+    // E-commerce sites / Sites de comércio eletrônico
     'amazon.com',
     'ebay.com',
     'aliexpress.com',
     'mercadolivre.com.br',
     'shopify.com',
-    // Compartilhamento de arquivos
+    // File sharing / Compartilhamento de arquivos
     'mega.nz',
     'mediafire.com',
     'wetransfer.com',
     'dropbox.com',
     'torrent9.pe',
     'thepiratebay.org',
-    // Sites adultos
+    // Adult sites / Sites adultos
     'pornhub.com',
     'xvideos.com',
     'xnxx.com',
     'onlyfans.com',
     'privacy.com.br',
     'fatalmodel.com',
-    // Apostas e jogos
+    // Betting and gaming / Apostas e jogos
     'bet365.com',
     'betfair.com',
     'pokerstars.com',
     'casino.com',
-    // Outros sites populares
+    // Other popular sites / Outros sites populares
     'github.com',
     'stackoverflow.com',
     'wikipedia.org',

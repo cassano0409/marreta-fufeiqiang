@@ -1,28 +1,32 @@
 <?php
 
 /**
+ * Specific rule configurations for individual domains
  * Configurações específicas de regras para domínios individuais
+ * 
+ * This file contains custom rules for specific sites, allowing
+ * system behavior adjustment for each domain individually.
  * 
  * Este arquivo contém regras personalizadas para sites específicos, permitindo
  * ajustar o comportamento do sistema para cada domínio individualmente.
  * 
- * Estrutura das regras por domínio:
- * - userAgent: Define um User-Agent personalizado para o domínio
- * - headers: Headers HTTP personalizados para requisições
- * - idElementRemove: Array de IDs HTML que devem ser removidos da página
- * - classElementRemove: Array de classes HTML que devem ser removidas
- * - scriptTagRemove: Array de scripts que devem ser removidos (partial match)
- * - cookies: Array associativo de cookies a serem definidos (null remove o cookie)
- * - classAttrRemove: Array de classes a serem removidas de elementos
- * - customCode: String contendo código JavaScript personalizado para execução
- * - customStyle: String contendo código CSS personalizado para execução
- * - excludeGlobalRules: Array associativo de regras globais a serem excluídas para este domínio
- *   Exemplo:
+ * Domain rule structure / Estrutura das regras por domínio:
+ * - userAgent: Define custom User-Agent for the domain / Define um User-Agent personalizado para o domínio
+ * - headers: Custom HTTP headers for requests / Headers HTTP personalizados para requisições
+ * - idElementRemove: Array of HTML IDs to be removed / Array de IDs HTML que devem ser removidos da página
+ * - classElementRemove: Array of HTML classes to be removed / Array de classes HTML que devem ser removidas
+ * - scriptTagRemove: Array of scripts to be removed (partial match) / Array de scripts que devem ser removidos (partial match)
+ * - cookies: Associative array of cookies to be set (null removes cookie) / Array associativo de cookies a serem definidos (null remove o cookie)
+ * - classAttrRemove: Array of classes to be removed from elements / Array de classes a serem removidas de elementos
+ * - customCode: String containing custom JavaScript code / String contendo código JavaScript personalizado
+ * - customStyle: String containing custom CSS code / String contendo código CSS personalizado
+ * - excludeGlobalRules: Associative array of global rules to exclude for this domain / Array associativo de regras globais a serem excluídas para este domínio
+ *   Example / Exemplo:
  *   'excludeGlobalRules' => [
- *       'scriptTagRemove' => ['gtm.js', 'ga.js'],  // Exclui scripts específicos das regras globais
- *       'classElementRemove' => ['subscription']    // Exclui classes específicas das regras globais
+ *       'scriptTagRemove' => ['gtm.js', 'ga.js'],  // Excludes specific scripts from global rules / Exclui scripts específicos das regras globais
+ *       'classElementRemove' => ['subscription']    // Excludes specific classes from global rules / Exclui classes específicas das regras globais
  *   ]
- * - useSelenium: Boolean indicando se deve usar Selenium para extração
+ * - useSelenium: Boolean indicating whether to use Selenium for extraction / Boolean indicando se deve usar Selenium para extração
  */
 return [
     'nsctotal.com.br' => [
