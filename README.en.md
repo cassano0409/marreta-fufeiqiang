@@ -225,3 +225,7 @@ Made with ❤️! If you have questions or suggestions, open an issue and we'll 
 Thanks to the project [https://github.com/burlesco/burlesco](Burlesco) which served as the basis for several rules!
 
 Public instance at [marreta.pcdomanual.com](https://marreta.pcdomanual.com)!
+
+## Star History
+
+[![Star History Chart](https://api.star-history.com/svg?repos=manualdousuario/marreta&type=Date)](https://star-history.com/#manualdousuario/marreta&Date)
