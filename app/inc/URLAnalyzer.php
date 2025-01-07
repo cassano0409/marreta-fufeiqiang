@@ -521,6 +521,11 @@ class URLAnalyzer
      */
     private function processContent($content, $host, $url)
     {
+        // Check content size / Verifica o tamanho do conteúdo
+        if (strlen($content) < 5120) { // 5KB = 5120 bytes
+            throw new Exception(Language::getMessage('CONTENT_ERROR')['message']);
+        }
+
         $dom = new DOMDocument();
         $dom->preserveWhiteSpace = true;
         libxml_use_internal_errors(true);
