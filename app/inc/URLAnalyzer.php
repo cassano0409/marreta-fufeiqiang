@@ -19,6 +19,7 @@
 require_once 'Rules.php';
 require_once 'Cache.php';
 require_once 'Logger.php';
+require_once 'Language.php';
 
 use Curl\Curl;
 use Facebook\WebDriver\Remote\DesiredCapabilities;
