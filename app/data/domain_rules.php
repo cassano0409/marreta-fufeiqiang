@@ -32,6 +32,10 @@ return [
     'nsctotal.com.br' => [
         'userAgent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36'
     ],
+    'elcorreo.com' => [
+        'idElementRemove' => ['didomi-popup','engagement-top'],
+        'classAttrRemove' => ['didomi-popup-open'],
+    ],
     'globo.com' => [
         'idElementRemove' => ['cookie-banner-lgpd', 'paywall-cpt', 'mc-read-more-wrapper', 'paywall-cookie-content', 'paywall-cpt'],
         'classElementRemove' => ['banner-lgpd', 'article-related-link__title', 'article-related-link__picture', 'paywall-denied', 'banner-subscription'],

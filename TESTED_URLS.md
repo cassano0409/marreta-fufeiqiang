@@ -70,3 +70,4 @@ https://theverge.com/2024/12/11/24318164/lord-of-the-rings-war-of-the-rohirrim-r
 https://www.sabado.pt/portugal/detalhe/lider-sindical-da-psp-apanhado-numa-investigacao-da-pj
 https://www.cmjornal.pt/portugal/detalhe/motorista-da-aeroporto-parque-destroi-carro-de-colecao-de-cliente-e-quer-pagar-tuta-e-meia
 https://www.nzherald.co.nz/entertainment/nz-theatre-legend-tim-bray-on-cancer-chemo-and-the-man-whos-holding-him-together/ESPBIQ7YEFGEBMGPWPB6XBEY5U/
+https://www.elcorreo.com/athletic/uriarte-estalla-olmo-alucinante-deco-responde-preocupe-20250108203120-nt.html
