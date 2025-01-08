@@ -109,7 +109,7 @@ As configurações estão organizadas em `data/`:
 
 ### Traduções
 
-- `/languages/`: Cada lingua está em seu ISO id (`pt-br, en ou es`) e pode ser definida no environment `LANGUAGE`
+- `/languages/`: Cada lingua está em seu ISO id (`pt-br, en, es ou de-de`) e pode ser definida no environment `LANGUAGE`
 
 ### Cache S3
 
