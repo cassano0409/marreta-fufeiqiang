@@ -50,7 +50,7 @@ class Rules
         'excludeGlobalRules',
         'customStyle',
         'useSelenium',
-        'browser'
+        'fetchStrategies'
     ];
 
     /**

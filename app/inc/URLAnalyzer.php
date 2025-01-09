@@ -39,6 +39,7 @@ class URLAnalyzer
 
     /**
      * @var array List of social media referrers
+     * @var array Lista de referenciadores de mídia social
      */
     private $socialReferrers = [
         'https://t.co/',
@@ -121,9 +122,10 @@ class URLAnalyzer
 
     /**
      * Get a random user agent, with possibility of using Google bot
+     * Obtém um user agent aleatório, com possibilidade de usar o Google bot
      * 
-     * @param bool $preferGoogleBot Whether to prefer Google bot user agents
-     * @return string Selected user agent
+     * @param bool $preferGoogleBot Whether to prefer Google bot user agents / Se deve preferir user agents do Google bot
+     * @return string Selected user agent / User agent selecionado
      */
     private function getRandomUserAgent($preferGoogleBot = false)
     {
@@ -135,8 +137,9 @@ class URLAnalyzer
 
     /**
      * Get a random social media referrer
+     * Obtém um referenciador de mídia social aleatório
      * 
-     * @return string Selected referrer
+     * @return string Selected referrer / Referenciador selecionado
      */
     private function getRandomReferrer()
     {
@@ -176,22 +179,47 @@ class URLAnalyzer
             throw new Exception(Language::getMessage('BLOCKED_DOMAIN')['message']);
         }
 
-        // 4. Check if should use Selenium / Verifica se deve usar Selenium
+        // 4. Get domain rules and check fetch strategy / Obtenha regras de domínio e verifique a estratégia de busca
         $domainRules = $this->getDomainRules($host);
-        if (isset($domainRules['useSelenium']) && $domainRules['useSelenium'] === true) {
+        $fetchStrategy = isset($domainRules['fetchStrategies']) ? $domainRules['fetchStrategies'] : null;
+
+        // If a specific fetch strategy is defined, use only that / Se uma estratégia de busca específica for definida, use somente essa
+        if ($fetchStrategy) {
             try {
-                $content = $this->fetchFromSelenium($cleanUrl, isset($domainRules['browser']) ? $domainRules['browser'] : 'firefox');
+                $content = null;
+                switch ($fetchStrategy) {
+                    case 'fetchWithGoogleBot':
+                        $content = $this->fetchWithGoogleBot($cleanUrl);
+                        break;
+                    case 'fetchWithSocialReferrer':
+                        $content = $this->fetchWithSocialReferrer($cleanUrl);
+                        break;
+                    case 'fetchContent':
+                        $content = $this->fetchContent($cleanUrl);
+                        break;
+                    case 'fetchFromWaybackMachine':
+                        $content = $this->fetchFromWaybackMachine($cleanUrl);
+                        break;
+                    case 'fetchFromSelenium':
+                        $content = $this->fetchFromSelenium($cleanUrl, isset($domainRules['browser']) ? $domainRules['browser'] : 'firefox');
+                        break;
+                }
+                
                 if (!empty($content)) {
+                    // Add the used fetch strategy to activatedRules / Adicione a estratégia de busca usada para activatedRules
+                    $this->activatedRules[] = "fetchStrategy: $fetchStrategy";
+                    
                     $processedContent = $this->processContent($content, $host, $cleanUrl);
                     $this->cache->set($cleanUrl, $processedContent);
                     return $processedContent;
                 }
             } catch (Exception $e) {
-                Logger::getInstance()->log($cleanUrl, 'SELENIUM_ERROR', $e->getMessage());
+                Logger::getInstance()->log($cleanUrl, strtoupper($fetchStrategy) . '_ERROR', $e->getMessage());
+                throw $e;
             }
         }
 
-        // 5. Try multiple fetch strategies / Tenta múltiplas estratégias de fetch
+        // 5. If no specific strategy or it failed, try all strategies in sequence / Se não houver estratégia específica ou se ela falhar, tente todas as estratégias em sequência
         $fetchStrategies = [
             ['method' => 'fetchWithGoogleBot', 'args' => [$cleanUrl]],
             ['method' => 'fetchWithSocialReferrer', 'args' => [$cleanUrl]],
@@ -204,6 +232,9 @@ class URLAnalyzer
             try {
                 $content = call_user_func_array([$this, $strategy['method']], $strategy['args']);
                 if (!empty($content)) {
+                    // Add the successful fetch strategy to activatedRules / Adicione a estratégia de busca bem-sucedida ao activatedRules
+                    $this->activatedRules[] = "fetchStrategy: {$strategy['method']}";
+                    
                     $processedContent = $this->processContent($content, $host, $cleanUrl);
                     $this->cache->set($cleanUrl, $processedContent);
                     return $processedContent;
@@ -220,6 +251,7 @@ class URLAnalyzer
 
     /**
      * Fetch content using Google bot user agent
+     * Busca conteúdo usando user agent do Google bot
      */
     private function fetchWithGoogleBot($url)
     {
@@ -244,13 +276,14 @@ class URLAnalyzer
 
     /**
      * Fetch content using social media referrer
+     * Busca conteúdo usando referenciador de mídia social
      */
     private function fetchWithSocialReferrer($url)
     {
         $curl = new Curl();
         $this->setupBasicCurlOptions($curl);
         
-        // Set social media specific headers
+        // Set social media specific headers / Defina cabeçalhos específicos para mídias sociais
         $curl->setUserAgent($this->getRandomUserAgent());
         $curl->setHeader('Referer', $this->getRandomReferrer());
 
@@ -265,6 +298,7 @@ class URLAnalyzer
 
     /**
      * Setup basic CURL options
+     * Configura opções básicas do CURL
      */
     private function setupBasicCurlOptions($curl)
     {
@@ -287,6 +321,7 @@ class URLAnalyzer
 
     /**
      * Fetch content from URL
+     * Busca conteúdo da URL
      */
     private function fetchContent($url)
     {
@@ -297,12 +332,12 @@ class URLAnalyzer
         $host = preg_replace('/^www\./', '', $host);
         $domainRules = $this->getDomainRules($host);
 
-        // Add domain-specific headers
+        // Add domain-specific headers / Adicionar cabeçalhos específicos de domínio
         if (isset($domainRules['headers'])) {
             $curl->setHeaders($domainRules['headers']);
         }
 
-        // Add domain-specific cookies
+        // Add domain-specific cookies / Adicionar cookies específicos de domínio
         if (isset($domainRules['cookies'])) {
             $cookies = [];
             foreach ($domainRules['cookies'] as $name => $value) {
@@ -315,7 +350,7 @@ class URLAnalyzer
             }
         }
 
-        // Add referer if specified
+        // Add referer if specified / Adicionar referenciador se especificado
         if (isset($domainRules['referer'])) {
             $curl->setHeader('Referer', $domainRules['referer']);
         }
@@ -331,6 +366,7 @@ class URLAnalyzer
 
     /**
      * Try to get content from Internet Archive's Wayback Machine
+     * Tenta obter conteúdo do Wayback Machine do Internet Archive
      */
     private function fetchFromWaybackMachine($url)
     {
@@ -369,7 +405,7 @@ class URLAnalyzer
 
         $content = $curl->response;
         
-        // Remove Wayback Machine toolbar and cache URLs
+        // Remove Wayback Machine toolbar and cache URLs / Remover a barra de ferramentas do Wayback Machine e URLs de cache
         $content = preg_replace('/<!-- BEGIN WAYBACK TOOLBAR INSERT -->.*?<!-- END WAYBACK TOOLBAR INSERT -->/s', '', $content);
         $content = preg_replace('/https?:\/\/web\.archive\.org\/web\/\d+im_\//', '', $content);
         
@@ -378,6 +414,7 @@ class URLAnalyzer
 
     /**
      * Try to get content using Selenium
+     * Tenta obter conteúdo usando Selenium
      */
     private function fetchFromSelenium($url, $browser = 'firefox')
     {
@@ -438,6 +475,7 @@ class URLAnalyzer
 
     /**
      * Clean and normalize a URL
+     * Limpa e normaliza uma URL
      */
     private function cleanUrl($url)
     {
@@ -463,6 +501,7 @@ class URLAnalyzer
 
     /**
      * Get specific rules for a domain
+     * Obtém regras específicas para um domínio
      */
     private function getDomainRules($domain)
     {
@@ -471,6 +510,7 @@ class URLAnalyzer
 
     /**
      * Process HTML content applying domain rules
+     * Processa conteúdo HTML aplicando regras de domínio
      */
     private function processContent($content, $host, $url)
     {
@@ -486,7 +526,7 @@ class URLAnalyzer
 
         $xpath = new DOMXPath($dom);
 
-        // Process canonical tags
+        // Process canonical tags / Processar tags canônicas
         $canonicalLinks = $xpath->query("//link[@rel='canonical']");
         if ($canonicalLinks !== false) {
             foreach ($canonicalLinks as $link) {
@@ -496,7 +536,7 @@ class URLAnalyzer
             }
         }
 
-        // Add new canonical tag
+        // Add new canonical tag / Adicionar nova tag canônica
         $head = $xpath->query('//head')->item(0);
         if ($head) {
             $newCanonical = $dom->createElement('link');
@@ -505,12 +545,12 @@ class URLAnalyzer
             $head->appendChild($newCanonical);
         }
 
-        // Fix relative URLs
+        // Fix relative URLs / Corrigir URLs relativas
         $this->fixRelativeUrls($dom, $xpath, $url);
 
         $domainRules = $this->getDomainRules($host);
 
-        // Apply domain rules
+        // Apply domain rules / Aplicar regras de domínio
         if (isset($domainRules['customStyle'])) {
             $styleElement = $dom->createElement('style');
             $styleElement->appendChild($dom->createTextNode($domainRules['customStyle']));
@@ -525,14 +565,12 @@ class URLAnalyzer
             $dom->getElementsByTagName('body')[0]->appendChild($scriptElement);
         }
 
-        // Remove unwanted elements
+        // Remove unwanted elements / Remover elementos indesejados
         $this->removeUnwantedElements($dom, $xpath, $domainRules);
 
-        // Clean inline styles
+        // Clean inline styles / Limpar estilos inline
         $this->cleanInlineStyles($xpath);
 
-        // Add Marreta CTA
-        $this->addMarretaCTA($dom, $xpath);
         // Add Brand Bar / Adicionar barra de marca
         $this->addBrandBar($dom, $xpath);
 
@@ -541,6 +579,7 @@ class URLAnalyzer
 
     /**
      * Remove unwanted elements based on domain rules
+     * Remove elementos indesejados com base nas regras de domínio
      */
     private function removeUnwantedElements($dom, $xpath, $domainRules)
     {
@@ -611,6 +650,7 @@ class URLAnalyzer
 
     /**
      * Clean inline styles that might interfere with content visibility
+     * Limpa estilos inline que podem interferir na visibilidade do conteúdo
      */
     private function cleanInlineStyles($xpath)
     {
@@ -665,6 +705,7 @@ class URLAnalyzer
 
     /**
      * Remove specific classes from an element
+     * Remove classes específicas de um elemento
      */
     private function removeClassNames($element, $classesToRemove)
     {
@@ -686,6 +727,7 @@ class URLAnalyzer
 
     /**
      * Fix relative URLs in a DOM document
+     * Corrige URLs relativas em um documento DOM
      */
     private function fixRelativeUrls($dom, $xpath, $baseUrl)
     {
