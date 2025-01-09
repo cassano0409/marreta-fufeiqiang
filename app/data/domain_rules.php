@@ -26,7 +26,12 @@
  *       'scriptTagRemove' => ['gtm.js', 'ga.js'],  // Excludes specific scripts from global rules / Exclui scripts específicos das regras globais
  *       'classElementRemove' => ['subscription']    // Excludes specific classes from global rules / Exclui classes específicas das regras globais
  *   ]
- * - useSelenium: Boolean indicating whether to use Selenium for extraction / Boolean indicando se deve usar Selenium para extração
+ * - fetchStrategies: String indicating which fetch strategy to use. Available values: / String indicando qual estratégia de fetch usar. Valores disponíveis:
+ *   - fetchWithGoogleBot: Use Google bot headers and user agent / Usa headers e user agent do Google bot
+ *   - fetchWithSocialReferrer: Use social media referrer / Usa referenciador de mídia social
+ *   - fetchContent: Use standard fetch with domain rules / Usa fetch padrão com regras do domínio
+ *   - fetchFromWaybackMachine: Try to fetch from Internet Archive / Tenta buscar do Internet Archive
+ *   - fetchFromSelenium: Use Selenium for extraction / Usa Selenium para extração
  */
 return [
     'nsctotal.com.br' => [
@@ -175,6 +180,21 @@ return [
         ]
     ],
     'nytimes.com' => [
+        'idElementRemove' => ['gateway-content'],
+        'customStyle' => '
+            .vi-gateway-container {
+                position: inherit !important;
+                overflow: inherit !important;
+                height: inherit !important;
+            }
+            #gateway-content {
+                display: none !important;
+                width: 1px !important;
+                height: 1px !important;
+                overflow: hidden !important;
+                visibility: hidden !important;
+            }
+        ',
         'fetchStrategies' => 'fetchFromSelenium',
         'excludeGlobalRules' => [
             'scriptTagRemove' => [
