@@ -9,6 +9,8 @@
 
 Marreta é uma ferramenta para analisar URLs e acessar conteúdo na web sem dor de cabeça.
 
+Instancia publica em [marreta.pcdomanual.com](https://marreta.pcdomanual.com)!
+
 ## ✨ O que tem de legal?
 
 - Limpa e arruma URLs automaticamente
@@ -53,8 +55,6 @@ services:
       - SITE_NAME=
       - SITE_DESCRIPTION=
       - SITE_URL=
-      - DNS_SERVERS=
-      - SELENIUM_HOST=
 ```
 
 - `SITE_NAME`: Nome do seu Marreta
@@ -83,7 +83,7 @@ cp app/.env.sample app/.env
 SITE_NAME="Marreta"
 SITE_DESCRIPTION="Chapéu de paywall é marreta!"
 SITE_URL=http://localhost
-DNS_SERVERS=1.1.1.1, 8.8.8.8
+DNS_SERVERS=1.1.1.1,8.8.8.8
 DEBUG=true
 SELENIUM_HOST=selenium-hub:4444
 LANGUAGE=pt-br
@@ -228,9 +228,7 @@ docker-compose exec app rm -rf /app/cache/*
 
 Feito com ❤️! Se tiver dúvidas ou sugestões, abre uma issue que a gente ajuda! 😉
 
-Agradecimento ao projeto [https://github.com/burlesco/burlesco](Burlesco) que serviu de base para varias regras!
-
-Instancia publica em [marreta.pcdomanual.com](https://marreta.pcdomanual.com)!
+Agradecimento ao projeto [https://github.com/burlesco/burlesco](Burlesco) e [https://github.com/nang-dev/hover-paywalls-browser-extension/](Hover) que serviu de base para varias regras!
 
 ## Star History
 
