@@ -54,40 +54,40 @@ return [
         'excludeGlobalRules' => [
             'classElementRemove' => ['paid-content']
         ],
-        'useSelenium' => true
+        'fetchStrategies' => 'fetchFromSelenium',
     ],
     'reuters.com' => [
         'classElementRemove' => ['leaderboard__container'],
-        'useSelenium' => true
+        'fetchStrategies' => 'fetchFromSelenium',
     ],
     'diplomatique.org.br' => [
         'idElementRemove' => ['cboxOverlay'],
-        'useSelenium' => true
+        'fetchStrategies' => 'fetchFromSelenium',
     ],
     'washingtonpost.com' => [
         'classElementRemove' => ['paywall-overlay'],
-        'useSelenium' => true
+        'fetchStrategies' => 'fetchFromSelenium',
     ],
     'oantagonista.com.br' => [
-        'useSelenium' => true
+        'fetchStrategies' => 'fetchFromSelenium',
     ],
     'jornaldebrasilia.com.br' => [
-        'useSelenium' => true
+        'fetchStrategies' => 'fetchFromSelenium',
     ],
     'npr.org' => [
         'classElementRemove' => ['onetrust-pc-dark-filter'],
-        'useSelenium' => true
+        'fetchStrategies' => 'fetchFromSelenium',
     ],
     'opopular.com.br' => [
-        'useSelenium' => true
+        'fetchStrategies' => 'fetchFromSelenium',
     ],
     'businessinsider.com' => [
-        'useSelenium' => true
+        'fetchStrategies' => 'fetchFromSelenium',
     ],
     'leparisien.fr' => [
         'idElementRemove' => ['didomi-popup'],
         'classAttrRemove' => ['paywall-article-section'],        
-        'useSelenium' => true
+        'fetchStrategies' => 'fetchFromSelenium',
     ],
     'foreignaffairs.com' => [
         'customCode' => 'document.addEventListener(\'DOMContentLoaded\', function() {
@@ -125,17 +125,17 @@ return [
         'classElementRemove' => ['header-top-wrapper'],
     ],
     'estadao.com.br' => [
-        'useSelenium' => true,
+        'fetchStrategies' => 'fetchFromSelenium',
         'browser' => 'chrome'
     ],
     'stcatharinesstandard.ca' => [
-        'useSelenium' => true
+        'fetchStrategies' => 'fetchFromSelenium',
     ],
     'cartacapital.com.br' => [
-        'useSelenium' => true
+        'fetchStrategies' => 'fetchFromSelenium',
     ],
     'nzherald.co.nz' => [
-        'useSelenium' => true
+        'fetchStrategies' => 'fetchFromSelenium',
     ],
     'opovo.com.br' => [
         'classElementRemove' => ['screen-loading', 'overlay-advise']
@@ -146,7 +146,7 @@ return [
         ]
     ],
     'theverge.com' => [
-        'useSelenium' => true
+        'fetchStrategies' => 'fetchFromSelenium',
     ],
     'economist.com' => [
         'cookies' => [
@@ -175,7 +175,7 @@ return [
         ]
     ],
     'nytimes.com' => [
-        'useSelenium' => true,
+        'fetchStrategies' => 'fetchFromSelenium',
         'excludeGlobalRules' => [
             'scriptTagRemove' => [
                 'gtm.js',
@@ -253,15 +253,15 @@ return [
         'excludeGlobalRules' => [
             'classElementRemove' => ['premium-article'],
         ],
-        'useSelenium' => true
+        'fetchStrategies' => 'fetchFromSelenium',
     ],
     'cmjornal.pt' => [
         'classAttrRemove' => ['bloco_bloqueio_premium'],
-        'useSelenium' => true
+        'fetchStrategies' => 'fetchFromSelenium',
     ],
     'sabado.pt' => [
         'classElementRemove' => ['bloco_bloqueio'],
-        'useSelenium' => true
+        'fetchStrategies' => 'fetchFromSelenium',
     ],
     'seudinheiro.com' => [
         'idElementRemove' => ['premium-paywall']

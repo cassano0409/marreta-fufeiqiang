@@ -38,6 +38,17 @@ class URLAnalyzer
     private $userAgents;
 
     /**
+     * @var array List of social media referrers
+     */
+    private $socialReferrers = [
+        'https://t.co/',
+        'https://www.google.com/',
+        'https://www.facebook.com/',
+        'https://www.twitter.com/',
+        'https://www.linkedin.com/'
+    ];
+
+    /**
      * @var array List of DNS servers for resolution
      * @var array Lista de servidores DNS para resolução
      */
@@ -90,7 +101,7 @@ class URLAnalyzer
         $curl->setOpt(CURLOPT_TIMEOUT, 5);
         $curl->setOpt(CURLOPT_SSL_VERIFYPEER, false);
         $curl->setOpt(CURLOPT_NOBODY, true);
-        $curl->setUserAgent($this->userAgents[array_rand($this->userAgents)]);
+        $curl->setUserAgent($this->getRandomUserAgent());
         $curl->get($url);
 
         if ($curl->error) {
@@ -106,6 +117,30 @@ class URLAnalyzer
             'hasRedirect' => ($curl->effectiveUrl !== $url),
             'httpCode' => $curl->httpStatusCode
         ];
+    }
+
+    /**
+     * Get a random user agent, with possibility of using Google bot
+     * 
+     * @param bool $preferGoogleBot Whether to prefer Google bot user agents
+     * @return string Selected user agent
+     */
+    private function getRandomUserAgent($preferGoogleBot = false)
+    {
+        if ($preferGoogleBot && rand(0, 100) < 70) {
+            return $this->userAgents[array_rand($this->userAgents)];
+        }
+        return $this->userAgents[array_rand($this->userAgents)];
+    }
+
+    /**
+     * Get a random social media referrer
+     * 
+     * @return string Selected referrer
+     */
+    private function getRandomReferrer()
+    {
+        return $this->socialReferrers[array_rand($this->socialReferrers)];
     }
 
     /**
@@ -153,44 +188,30 @@ class URLAnalyzer
                 }
             } catch (Exception $e) {
                 Logger::getInstance()->log($cleanUrl, 'SELENIUM_ERROR', $e->getMessage());
-                throw new Exception(Language::getMessage('CONTENT_ERROR')['message']);
             }
         }
 
-        // 5. Try to fetch content directly / Tenta buscar conteúdo diretamente
-        try {
-            $content = $this->fetchContent($cleanUrl);
-            if (!empty($content)) {
-                $processedContent = $this->processContent($content, $host, $cleanUrl);
-                $this->cache->set($cleanUrl, $processedContent);
-                return $processedContent;
-            }
-        } catch (Exception $e) {
-            error_log("DIRECT_FETCH_ERROR: " . $e->getMessage());
-        }
+        // 5. Try multiple fetch strategies / Tenta múltiplas estratégias de fetch
+        $fetchStrategies = [
+            ['method' => 'fetchWithGoogleBot', 'args' => [$cleanUrl]],
+            ['method' => 'fetchWithSocialReferrer', 'args' => [$cleanUrl]],
+            ['method' => 'fetchContent', 'args' => [$cleanUrl]],
+            ['method' => 'fetchFromWaybackMachine', 'args' => [$cleanUrl]],
+            ['method' => 'fetchFromSelenium', 'args' => [$cleanUrl, 'firefox']]
+        ];
 
-        // 6. Try to fetch from Wayback Machine as fallback / Tenta buscar do Wayback Machine como fallback
-        try {
-            $content = $this->fetchFromWaybackMachine($cleanUrl);
-            if (!empty($content)) {
-                $processedContent = $this->processContent($content, $host, $cleanUrl);
-                $this->cache->set($cleanUrl, $processedContent);
-                return $processedContent;
+        foreach ($fetchStrategies as $strategy) {
+            try {
+                $content = call_user_func_array([$this, $strategy['method']], $strategy['args']);
+                if (!empty($content)) {
+                    $processedContent = $this->processContent($content, $host, $cleanUrl);
+                    $this->cache->set($cleanUrl, $processedContent);
+                    return $processedContent;
+                }
+            } catch (Exception $e) {
+                error_log("{$strategy['method']}_ERROR: " . $e->getMessage());
+                continue;
             }
-        } catch (Exception $e) {
-            error_log("WAYBACK_FETCH_ERROR: " . $e->getMessage());
-        }
-
-        // 7. Try to fetch with Selenium as fallback / Tenta buscar com Selenium como fallback
-        try {
-            $content = $this->fetchFromSelenium($cleanUrl, 'firefox');
-            if (!empty($content)) {
-                $processedContent = $this->processContent($content, $host, $cleanUrl);
-                $this->cache->set($cleanUrl, $processedContent);
-                return $processedContent;
-            }
-        } catch (Exception $e) {
-            error_log("SELENIUM_ERROR: " . $e->getMessage());
         }
 
         Logger::getInstance()->log($cleanUrl, 'GENERAL_FETCH_ERROR');
@@ -198,15 +219,167 @@ class URLAnalyzer
     }
 
     /**
-     * Try to get content using Selenium
-     * Tenta obter o conteúdo da URL usando Selenium
-     * 
-     * @param string $url URL to fetch / URL para buscar
-     * @param string $browser Browser to use (chrome/firefox) / Navegador a ser usado (chrome/firefox)
-     * @return string|null HTML content of the page / Conteúdo HTML da página
-     * @throws Exception In case of request error / Em caso de erro na requisição
+     * Fetch content using Google bot user agent
      */
-    private function fetchFromSelenium($url, $browser)
+    private function fetchWithGoogleBot($url)
+    {
+        $curl = new Curl();
+        $this->setupBasicCurlOptions($curl);
+        
+        // Set Google bot specific headers
+        $curl->setUserAgent($this->getRandomUserAgent(true));
+        $curl->setHeaders([
+            'X-Forwarded-For' => '66.249.' . rand(64, 95) . '.' . rand(1, 254),
+            'From' => 'googlebot(at)googlebot.com'
+        ]);
+
+        $curl->get($url);
+
+        if ($curl->error || $curl->httpStatusCode !== 200 || empty($curl->response)) {
+            throw new Exception(Language::getMessage('HTTP_ERROR')['message']);
+        }
+
+        return $curl->response;
+    }
+
+    /**
+     * Fetch content using social media referrer
+     */
+    private function fetchWithSocialReferrer($url)
+    {
+        $curl = new Curl();
+        $this->setupBasicCurlOptions($curl);
+        
+        // Set social media specific headers
+        $curl->setUserAgent($this->getRandomUserAgent());
+        $curl->setHeader('Referer', $this->getRandomReferrer());
+
+        $curl->get($url);
+
+        if ($curl->error || $curl->httpStatusCode !== 200 || empty($curl->response)) {
+            throw new Exception(Language::getMessage('HTTP_ERROR')['message']);
+        }
+
+        return $curl->response;
+    }
+
+    /**
+     * Setup basic CURL options
+     */
+    private function setupBasicCurlOptions($curl)
+    {
+        $curl->setOpt(CURLOPT_FOLLOWLOCATION, true);
+        $curl->setOpt(CURLOPT_MAXREDIRS, 2);
+        $curl->setOpt(CURLOPT_TIMEOUT, 10);
+        $curl->setOpt(CURLOPT_SSL_VERIFYPEER, false);
+        $curl->setOpt(CURLOPT_DNS_SERVERS, implode(',', $this->dnsServers));
+        $curl->setOpt(CURLOPT_ENCODING, '');
+        
+        // Additional anti-detection headers
+        $curl->setHeaders([
+            'Accept' => 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+            'Accept-Language' => 'en-US,en;q=0.5',
+            'Cache-Control' => 'no-cache',
+            'Pragma' => 'no-cache',
+            'DNT' => '1'
+        ]);
+    }
+
+    /**
+     * Fetch content from URL
+     */
+    private function fetchContent($url)
+    {
+        $curl = new Curl();
+        $this->setupBasicCurlOptions($curl);
+        
+        $host = parse_url($url, PHP_URL_HOST);
+        $host = preg_replace('/^www\./', '', $host);
+        $domainRules = $this->getDomainRules($host);
+
+        // Add domain-specific headers
+        if (isset($domainRules['headers'])) {
+            $curl->setHeaders($domainRules['headers']);
+        }
+
+        // Add domain-specific cookies
+        if (isset($domainRules['cookies'])) {
+            $cookies = [];
+            foreach ($domainRules['cookies'] as $name => $value) {
+                if ($value !== null) {
+                    $cookies[] = $name . '=' . $value;
+                }
+            }
+            if (!empty($cookies)) {
+                $curl->setHeader('Cookie', implode('; ', $cookies));
+            }
+        }
+
+        // Add referer if specified
+        if (isset($domainRules['referer'])) {
+            $curl->setHeader('Referer', $domainRules['referer']);
+        }
+
+        $curl->get($url);
+
+        if ($curl->error || $curl->httpStatusCode !== 200 || empty($curl->response)) {
+            throw new Exception(Language::getMessage('HTTP_ERROR')['message']);
+        }
+
+        return $curl->response;
+    }
+
+    /**
+     * Try to get content from Internet Archive's Wayback Machine
+     */
+    private function fetchFromWaybackMachine($url)
+    {
+        $cleanUrl = preg_replace('#^https?://#', '', $url);
+        $availabilityUrl = "https://archive.org/wayback/available?url=" . urlencode($cleanUrl);
+        
+        $curl = new Curl();
+        $curl->setOpt(CURLOPT_FOLLOWLOCATION, true);
+        $curl->setOpt(CURLOPT_TIMEOUT, 10);
+        $curl->setOpt(CURLOPT_SSL_VERIFYPEER, false);
+        $curl->setUserAgent($this->getRandomUserAgent());
+
+        $curl->get($availabilityUrl);
+
+        if ($curl->error || $curl->httpStatusCode !== 200) {
+            throw new Exception(Language::getMessage('HTTP_ERROR')['message']);
+        }
+
+        $data = $curl->response;
+        if (!isset($data->archived_snapshots->closest->url)) {
+            throw new Exception(Language::getMessage('CONTENT_ERROR')['message']);
+        }
+
+        $archiveUrl = $data->archived_snapshots->closest->url;
+        $curl = new Curl();
+        $curl->setOpt(CURLOPT_FOLLOWLOCATION, true);
+        $curl->setOpt(CURLOPT_TIMEOUT, 10);
+        $curl->setOpt(CURLOPT_SSL_VERIFYPEER, false);
+        $curl->setUserAgent($this->getRandomUserAgent());
+
+        $curl->get($archiveUrl);
+
+        if ($curl->error || $curl->httpStatusCode !== 200 || empty($curl->response)) {
+            throw new Exception(Language::getMessage('HTTP_ERROR')['message']);
+        }
+
+        $content = $curl->response;
+        
+        // Remove Wayback Machine toolbar and cache URLs
+        $content = preg_replace('/<!-- BEGIN WAYBACK TOOLBAR INSERT -->.*?<!-- END WAYBACK TOOLBAR INSERT -->/s', '', $content);
+        $content = preg_replace('/https?:\/\/web\.archive\.org\/web\/\d+im_\//', '', $content);
+        
+        return $content;
+    }
+
+    /**
+     * Try to get content using Selenium
+     */
+    private function fetchFromSelenium($url, $browser = 'firefox')
     {
         $host = 'http://'.SELENIUM_HOST.'/wd/hub';
 
@@ -225,12 +398,12 @@ class URLAnalyzer
             $capabilities->setCapability(ChromeOptions::CAPABILITY, $options);
         } else {
             $profile = new FirefoxProfile();
-            $profile->setPreference("permissions.default.image", 2); // Don't load images / Não carrega imagens
-            $profile->setPreference("javascript.enabled", true); // Keep JavaScript enabled / Mantém JavaScript habilitado
-            $profile->setPreference("network.http.referer.defaultPolicy", 0); // Always send referer / Sempre envia referer
-            $profile->setPreference("network.http.referer.defaultReferer", "https://www.google.com.br"); // Set default referer / Define referer padrão
-            $profile->setPreference("network.http.referer.spoofSource", true); // Allow referer spoofing / Permite spoofing do referer
-            $profile->setPreference("network.http.referer.trimmingPolicy", 0); // Don't trim referer / Não corta o referer
+            $profile->setPreference("permissions.default.image", 2);
+            $profile->setPreference("javascript.enabled", true);
+            $profile->setPreference("network.http.referer.defaultPolicy", 0);
+            $profile->setPreference("network.http.referer.defaultReferer", "https://www.google.com");
+            $profile->setPreference("network.http.referer.spoofSource", true);
+            $profile->setPreference("network.http.referer.trimmingPolicy", 0);
 
             $options = new FirefoxOptions();
             $options->setProfile($profile);
@@ -251,7 +424,7 @@ class URLAnalyzer
             $driver->quit();
 
             if (empty($htmlSource)) {
-                throw new Exception("Selenium returned empty content / Selenium retornou conteúdo vazio");
+                throw new Exception("Selenium returned empty content");
             }
 
             return $htmlSource;
@@ -264,159 +437,23 @@ class URLAnalyzer
     }
 
     /**
-     * Try to get content from Internet Archive's Wayback Machine
-     * Tenta obter o conteúdo da URL do Internet Archive's Wayback Machine
-     * 
-     * @param string $url Original URL / URL original
-     * @return string|null Archive content / Conteúdo do arquivo
-     * @throws Exception In case of request error / Em caso de erro na requisição
-     */
-    private function fetchFromWaybackMachine($url)
-    {
-        $cleanUrl = preg_replace('#^https?://#', '', $url);
-        $availabilityUrl = "https://archive.org/wayback/available?url=" . urlencode($cleanUrl);
-        
-        $curl = new Curl();
-        $curl->setOpt(CURLOPT_FOLLOWLOCATION, true);
-        $curl->setOpt(CURLOPT_TIMEOUT, 10);
-        $curl->setOpt(CURLOPT_SSL_VERIFYPEER, false);
-        $curl->setUserAgent($this->userAgents[array_rand($this->userAgents)]);
-
-        $curl->get($availabilityUrl);
-
-        if ($curl->error || $curl->httpStatusCode !== 200) {
-            throw new Exception(Language::getMessage('HTTP_ERROR')['message']);
-        }
-
-        $data = $curl->response;
-        if (!isset($data->archived_snapshots->closest->url)) {
-            throw new Exception(Language::getMessage('CONTENT_ERROR')['message']);
-        }
-
-        $archiveUrl = $data->archived_snapshots->closest->url;
-        $curl = new Curl();
-        $curl->setOpt(CURLOPT_FOLLOWLOCATION, true);
-        $curl->setOpt(CURLOPT_TIMEOUT, 10);
-        $curl->setOpt(CURLOPT_SSL_VERIFYPEER, false);
-        $curl->setUserAgent($this->userAgents[array_rand($this->userAgents)]);
-
-        $curl->get($archiveUrl);
-
-        if ($curl->error || $curl->httpStatusCode !== 200 || empty($curl->response)) {
-            throw new Exception(Language::getMessage('HTTP_ERROR')['message']);
-        }
-
-        $content = $curl->response;
-        
-        // Remove Wayback Machine toolbar and cache URLs
-        // Remove o toolbar do Wayback Machine e URLs de cache
-        $content = preg_replace('/<!-- BEGIN WAYBACK TOOLBAR INSERT -->.*?<!-- END WAYBACK TOOLBAR INSERT -->/s', '', $content);
-        $content = preg_replace('/https?:\/\/web\.archive\.org\/web\/\d+im_\//', '', $content);
-        
-        return $content;
-    }
-
-    /**
-     * Perform HTTP request using Curl Class
-     * Realiza requisição HTTP usando Curl Class
-     * 
-     * @param string $url URL for request / URL para requisição
-     * @return string Page content / Conteúdo da página
-     * @throws Exception In case of request error / Em caso de erro na requisição
-     */
-    private function fetchContent($url)
-    {
-        $host = parse_url($url, PHP_URL_HOST);
-        $host = preg_replace('/^www\./', '', $host);
-        $domainRules = $this->getDomainRules($host);
-
-        $curl = new Curl();
-        $curl->setOpt(CURLOPT_FOLLOWLOCATION, true);
-        $curl->setOpt(CURLOPT_MAXREDIRS, 2);
-        $curl->setOpt(CURLOPT_TIMEOUT, 10);
-        $curl->setOpt(CURLOPT_SSL_VERIFYPEER, false);
-        $curl->setOpt(CURLOPT_DNS_SERVERS, implode(',', $this->dnsServers));
-        
-        // Set User Agent / Define User Agent
-        $userAgent = isset($domainRules['userAgent']) 
-            ? $domainRules['userAgent'] 
-            : $this->userAgents[array_rand($this->userAgents)];
-        $curl->setUserAgent($userAgent);
-
-        // Default headers / Headers padrão
-        $headers = [
-            'Host' => $host,
-            'Accept' => 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
-            'Accept-Language' => 'pt-BR,pt;q=0.9,en-US;q=0.8,en;q=0.7',
-            'Cache-Control' => 'no-cache',
-            'Pragma' => 'no-cache'
-        ];
-
-        // Add domain-specific headers / Adiciona headers específicos do domínio
-        if (isset($domainRules['headers'])) {
-            $headers = array_merge($headers, $domainRules['headers']);
-        }
-        $curl->setHeaders($headers);
-
-        // Add domain-specific cookies / Adiciona cookies específicos do domínio
-        if (isset($domainRules['cookies'])) {
-            $cookies = [];
-            foreach ($domainRules['cookies'] as $name => $value) {
-                if ($value !== null) {
-                    $cookies[] = $name . '=' . $value;
-                }
-            }
-            if (!empty($cookies)) {
-                $curl->setHeader('Cookie', implode('; ', $cookies));
-            }
-        }
-
-        // Add referer if specified / Adiciona referer se especificado
-        if (isset($domainRules['referer'])) {
-            $curl->setHeader('Referer', $domainRules['referer']);
-        }
-
-        $curl->get($url);
-
-        if ($curl->error || $curl->httpStatusCode !== 200) {
-            throw new Exception(Language::getMessage('HTTP_ERROR')['message']);
-        }
-
-        if (empty($curl->response)) {
-            throw new Exception(Language::getMessage('CONTENT_ERROR')['message']);
-        }
-
-        return $curl->response;
-    }
-
-    /**
      * Clean and normalize a URL
-     * Limpa e normaliza uma URL
-     * 
-     * @param string $url URL to clean / URL para limpar
-     * @return string|false Cleaned and normalized URL or false if invalid / URL limpa e normalizada ou false se inválida
      */
     private function cleanUrl($url)
     {
         $url = trim($url);
 
-        // Check if URL is valid / Verifica se a URL é válida
         if (!filter_var($url, FILTER_VALIDATE_URL)) {
             return false;
         }
 
-        // Detect and convert AMP URLs / Detecta e converte URLs AMP
         if (preg_match('#https://([^.]+)\.cdn\.ampproject\.org/v/s/([^/]+)(.*)#', $url, $matches)) {
             $url = 'https://' . $matches[2] . $matches[3];
         }
 
-        // Split URL into component parts / Separa a URL em suas partes componentes
         $parts = parse_url($url);
-        
-        // Rebuild base URL / Reconstrói a URL base
         $cleanedUrl = $parts['scheme'] . '://' . $parts['host'];
         
-        // Add path if exists / Adiciona o caminho se existir
         if (isset($parts['path'])) {
             $cleanedUrl .= $parts['path'];
         }
@@ -426,10 +463,6 @@ class URLAnalyzer
 
     /**
      * Get specific rules for a domain
-     * Obtém regras específicas para um domínio
-     * 
-     * @param string $domain Domain to search rules / Domínio para buscar regras
-     * @return array|null Domain rules or null if not found / Regras do domínio ou null se não encontrar
      */
     private function getDomainRules($domain)
     {
@@ -437,92 +470,11 @@ class URLAnalyzer
     }
 
     /**
-     * Remove specific classes from an element
-     * Remove classes específicas de um elemento
-     * 
-     * @param DOMElement $element DOM Element / Elemento DOM
-     * @param array $classesToRemove Classes to remove / Classes a serem removidas
-     */
-    private function removeClassNames($element, $classesToRemove)
-    {
-        if (!$element->hasAttribute('class')) {
-            return;
-        }
-
-        $classes = explode(' ', $element->getAttribute('class'));
-        $newClasses = array_filter($classes, function ($class) use ($classesToRemove) {
-            return !in_array(trim($class), $classesToRemove);
-        });
-
-        if (empty($newClasses)) {
-            $element->removeAttribute('class');
-        } else {
-            $element->setAttribute('class', implode(' ', $newClasses));
-        }
-    }
-
-    /**
-     * Fix relative URLs in a DOM document
-     * Corrige URLs relativas em um documento DOM
-     * 
-     * @param DOMDocument $dom DOM Document / Documento DOM
-     * @param DOMXPath $xpath XPath Object / Objeto XPath
-     * @param string $baseUrl Base URL for correction / URL base para correção
-     */
-    private function fixRelativeUrls($dom, $xpath, $baseUrl)
-    {
-        $parsedBase = parse_url($baseUrl);
-        $baseHost = $parsedBase['scheme'] . '://' . $parsedBase['host'];
-
-        $elements = $xpath->query("//*[@src]");
-        if ($elements !== false) {
-            foreach ($elements as $element) {
-                if ($element instanceof DOMElement) {
-                    $src = $element->getAttribute('src');
-                    if (strpos($src, 'base64') !== false) {
-                        continue;
-                    }
-                    if (strpos($src, 'http') !== 0 && strpos($src, '//') !== 0) {
-                        $src = ltrim($src, '/');
-                        $element->setAttribute('src', $baseHost . '/' . $src);
-                    }
-                }
-            }
-        }
-
-        $elements = $xpath->query("//*[@href]");
-        if ($elements !== false) {
-            foreach ($elements as $element) {
-                if ($element instanceof DOMElement) {
-                    $href = $element->getAttribute('href');
-                    if (strpos($href, 'mailto:') === 0 || 
-                        strpos($href, 'tel:') === 0 || 
-                        strpos($href, 'javascript:') === 0 || 
-                        strpos($href, '#') === 0) {
-                        continue;
-                    }
-                    if (strpos($href, 'http') !== 0 && strpos($href, '//') !== 0) {
-                        $href = ltrim($href, '/');
-                        $element->setAttribute('href', $baseHost . '/' . $href);
-                    }
-                }
-            }
-        }
-    }
-
-    /**
      * Process HTML content applying domain rules
-     * Processa o conteúdo HTML aplicando regras do domínio
-     * 
-     * @param string $content HTML content / Conteúdo HTML
-     * @param string $host Host name / Nome do host
-     * @param string $url Complete URL / URL completa
-     * @return string Processed content / Conteúdo processado
      */
     private function processContent($content, $host, $url)
     {
-        // Check content size / Verifica o tamanho do conteúdo
-        if (strlen($content) < 5120) { // 5KB = 5120 bytes
+        if (strlen($content) < 5120) {
             throw new Exception(Language::getMessage('CONTENT_ERROR')['message']);
         }
 
@@ -534,7 +486,7 @@ class URLAnalyzer
 
         $xpath = new DOMXPath($dom);
 
-        // Process canonical tags / Processa tags canônicas
+        // Process canonical tags
         $canonicalLinks = $xpath->query("//link[@rel='canonical']");
         if ($canonicalLinks !== false) {
             foreach ($canonicalLinks as $link) {
@@ -544,7 +496,7 @@ class URLAnalyzer
             }
         }
 
-        // Add new canonical tag with original URL / Adiciona nova tag canônica com a URL original
+        // Add new canonical tag
         $head = $xpath->query('//head')->item(0);
         if ($head) {
             $newCanonical = $dom->createElement('link');
@@ -553,10 +505,12 @@ class URLAnalyzer
             $head->appendChild($newCanonical);
         }
 
-        // Always fix relative URLs / Sempre corrige URLs relativas
+        // Fix relative URLs
         $this->fixRelativeUrls($dom, $xpath, $url);
 
         $domainRules = $this->getDomainRules($host);
+
+        // Apply domain rules
         if (isset($domainRules['customStyle'])) {
             $styleElement = $dom->createElement('style');
             $styleElement->appendChild($dom->createTextNode($domainRules['customStyle']));
@@ -571,6 +525,23 @@ class URLAnalyzer
             $dom->getElementsByTagName('body')[0]->appendChild($scriptElement);
         }
 
+        // Remove unwanted elements
+        $this->removeUnwantedElements($dom, $xpath, $domainRules);
+
+        // Clean inline styles
+        $this->cleanInlineStyles($xpath);
+
+        // Add Marreta CTA
+        $this->addMarretaCTA($dom, $xpath);
+
+        return $dom->saveHTML();
+    }
+
+    /**
+     * Remove unwanted elements based on domain rules
+     */
+    private function removeUnwantedElements($dom, $xpath, $domainRules)
+    {
         if (isset($domainRules['classAttrRemove'])) {
             foreach ($domainRules['classAttrRemove'] as $class) {
                 $elements = $xpath->query("//*[contains(@class, '$class')]");
@@ -613,8 +584,6 @@ class URLAnalyzer
 
         if (isset($domainRules['scriptTagRemove'])) {
             foreach ($domainRules['scriptTagRemove'] as $script) {
-                // Search for script tags with src or content containing the script
-                // Busca por tags script com src ou conteúdo contendo o script
                 $scriptElements = $xpath->query("//script[contains(@src, '$script')] | //script[contains(text(), '$script')]");
                 if ($scriptElements !== false && $scriptElements->length > 0) {
                     foreach ($scriptElements as $element) {
@@ -625,8 +594,6 @@ class URLAnalyzer
                     $this->activatedRules[] = "scriptTagRemove: $script";
                 }
 
-                // Search for link tags that are scripts
-                // Busca por tags link que são scripts
                 $linkElements = $xpath->query("//link[@as='script' and contains(@href, '$script') and @type='application/javascript']");
                 if ($linkElements !== false && $linkElements->length > 0) {
                     foreach ($linkElements as $element) {
@@ -638,7 +605,13 @@ class URLAnalyzer
                 }
             }
         }
+    }
 
+    /**
+     * Clean inline styles that might interfere with content visibility
+     */
+    private function cleanInlineStyles($xpath)
+    {
         $elements = $xpath->query("//*[@style]");
         if ($elements !== false) {
             foreach ($elements as $element) {
@@ -649,10 +622,16 @@ class URLAnalyzer
                 }
             }
         }
+    }
 
-        // Add Marreta CTA / Adiciona CTA Marreta
+    /**
+     * Add Marreta CTA and debug panel
+     */
+    private function addMarretaCTA($dom, $xpath)
+    {
         $body = $xpath->query('//body')->item(0);
         if ($body) {
+            // Add Marreta CTA
             $marretaDiv = $dom->createElement('div');
             $marretaDiv->setAttribute('style', 'z-index: 99999; position: fixed; top: 0; right: 4px; background: rgb(37,99,235); color: #fff; font-size: 13px; line-height: 1em; padding: 6px; margin: 0px; overflow: hidden; border-bottom-left-radius: 3px; border-bottom-right-radius: 3px; font-family: Tahoma, sans-serif;');
             $marretaHtml = $dom->createDocumentFragment();
@@ -660,7 +639,7 @@ class URLAnalyzer
             $marretaDiv->appendChild($marretaHtml);
             $body->appendChild($marretaDiv);
 
-            // Add debug panel if DEBUG is true / Adiciona painel de debug se DEBUG for true
+            // Add debug panel if DEBUG is true
             if (DEBUG) {
                 $debugDiv = $dom->createElement('div');
                 $debugDiv->setAttribute('style', 'z-index: 99999; position: fixed; bottom: 10px; right: 10px; background: rgba(0,0,0,0.8); color: #fff; font-size: 13px; line-height: 1.4; padding: 10px; border-radius: 3px; font-family: monospace; max-height: 200px; overflow-y: auto;');
@@ -680,7 +659,70 @@ class URLAnalyzer
                 $body->appendChild($debugDiv);
             }
         }
+    }
 
-        return $dom->saveHTML();
+    /**
+     * Remove specific classes from an element
+     */
+    private function removeClassNames($element, $classesToRemove)
+    {
+        if (!$element->hasAttribute('class')) {
+            return;
+        }
+
+        $classes = explode(' ', $element->getAttribute('class'));
+        $newClasses = array_filter($classes, function ($class) use ($classesToRemove) {
+            return !in_array(trim($class), $classesToRemove);
+        });
+
+        if (empty($newClasses)) {
+            $element->removeAttribute('class');
+        } else {
+            $element->setAttribute('class', implode(' ', $newClasses));
+        }
+    }
+
+    /**
+     * Fix relative URLs in a DOM document
+     */
+    private function fixRelativeUrls($dom, $xpath, $baseUrl)
+    {
+        $parsedBase = parse_url($baseUrl);
+        $baseHost = $parsedBase['scheme'] . '://' . $parsedBase['host'];
+
+        $elements = $xpath->query("//*[@src]");
+        if ($elements !== false) {
+            foreach ($elements as $element) {
+                if ($element instanceof DOMElement) {
+                    $src = $element->getAttribute('src');
+                    if (strpos($src, 'base64') !== false) {
+                        continue;
+                    }
+                    if (strpos($src, 'http') !== 0 && strpos($src, '//') !== 0) {
+                        $src = ltrim($src, '/');
+                        $element->setAttribute('src', $baseHost . '/' . $src);
+                    }
+                }
+            }
+        }
+
+        $elements = $xpath->query("//*[@href]");
+        if ($elements !== false) {
+            foreach ($elements as $element) {
+                if ($element instanceof DOMElement) {
+                    $href = $element->getAttribute('href');
+                    if (strpos($href, 'mailto:') === 0 || 
+                        strpos($href, 'tel:') === 0 || 
+                        strpos($href, 'javascript:') === 0 || 
+                        strpos($href, '#') === 0) {
+                        continue;
+                    }
+                    if (strpos($href, 'http') !== 0 && strpos($href, '//') !== 0) {
+                        $href = ltrim($href, '/');
+                        $element->setAttribute('href', $baseHost . '/' . $href);
+                    }
+                }
+            }
+        }
     }
 }
