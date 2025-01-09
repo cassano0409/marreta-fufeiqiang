@@ -218,6 +218,12 @@ Quando precisar limpar:
 docker-compose exec app rm -rf /app/cache/*
 ```
 
+## 🚀 Integrações
+
+- 🤖 **Telegram**: [Bot oficial](https://t.me/leissoai_bot)
+- 🦊 **Firefox**: Extensão por [Clarissa Mendes](https://claromes.com/pages/whoami) - [Baixar](https://addons.mozilla.org/pt-BR/firefox/addon/marreta/) | [Código fonte](https://github.com/manualdousuario/marreta-extensao)
+- 🌐 **Bluesky**: Bot por [Joselito](https://bsky.app/profile/joseli.to) - [Perfil](https://bsky.app/profile/marreta.pcdomanual.com) | [Código fonte](https://github.com/manualdousuario/marreta-bot)
+
 ---
 
 Feito com ❤️! Se tiver dúvidas ou sugestões, abre uma issue que a gente ajuda! 😉
