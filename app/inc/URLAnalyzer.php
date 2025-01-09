@@ -533,6 +533,8 @@ class URLAnalyzer
 
         // Add Marreta CTA
         $this->addMarretaCTA($dom, $xpath);
+        // Add Brand Bar / Adicionar barra de marca
+        $this->addBrandBar($dom, $xpath);
 
         return $dom->saveHTML();
     }
@@ -625,21 +627,21 @@ class URLAnalyzer
     }
 
     /**
-     * Add Marreta CTA and debug panel
+     * Add Brand Bar CTA and debug panel
+     * Adiciona CTA da marca e painel de debug
      */
-    private function addMarretaCTA($dom, $xpath)
+    private function addBrandBar($dom, $xpath)
     {
         $body = $xpath->query('//body')->item(0);
         if ($body) {
-            // Add Marreta CTA
-            $marretaDiv = $dom->createElement('div');
-            $marretaDiv->setAttribute('style', 'z-index: 99999; position: fixed; top: 0; right: 4px; background: rgb(37,99,235); color: #fff; font-size: 13px; line-height: 1em; padding: 6px; margin: 0px; overflow: hidden; border-bottom-left-radius: 3px; border-bottom-right-radius: 3px; font-family: Tahoma, sans-serif;');
-            $marretaHtml = $dom->createDocumentFragment();
-            $marretaHtml->appendXML('Chapéu de paywall é <a href="'.SITE_URL.'" style="color: #fff; text-decoration: underline; font-weight: bold;" target="_blank">Marreta</a>!');
-            $marretaDiv->appendChild($marretaHtml);
-            $body->appendChild($marretaDiv);
+            $brandDiv = $dom->createElement('div');
+            $brandDiv->setAttribute('style', 'z-index: 99999; position: fixed; top: 0; right: 4px; background: rgb(37,99,235); color: #fff; font-size: 13px; line-height: 1em; padding: 6px; margin: 0px; overflow: hidden; border-bottom-left-radius: 3px; border-bottom-right-radius: 3px; font-family: Tahoma, sans-serif;');
+            $brandHtml = $dom->createDocumentFragment();
+            $brandHtml->appendXML('<a href="'.SITE_URL.'" style="color: #fff; text-decoration: none; font-weight: bold;" target="_blank">'.htmlspecialchars(SITE_DESCRIPTION).'</a>');
+            $brandDiv->appendChild($brandHtml);
+            $body->appendChild($brandDiv);
 
-            // Add debug panel if DEBUG is true
+            // Add debug panel if DEBUG is true / Adicionar painel de depuração se DEBUG for verdadeiro
             if (DEBUG) {
                 $debugDiv = $dom->createElement('div');
                 $debugDiv->setAttribute('style', 'z-index: 99999; position: fixed; bottom: 10px; right: 10px; background: rgba(0,0,0,0.8); color: #fff; font-size: 13px; line-height: 1.4; padding: 10px; border-radius: 3px; font-family: monospace; max-height: 200px; overflow-y: auto;');
