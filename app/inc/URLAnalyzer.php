@@ -55,8 +55,6 @@ class URLAnalyzer
         // Twitter
         'https://t.co/',
         'https://www.twitter.com/',
-        // Google
-        'https://www.google.com/',
         // Facebook
         'https://www.facebook.com/',
         // Linkedin
@@ -154,7 +152,7 @@ class URLAnalyzer
      * 
      * @return string Selected referrer / Referenciador selecionado
      */
-    private function getRandomReferrer()
+    private function getRandomSocialReferrer()
     {
         return $this->socialReferrers[array_rand($this->socialReferrers)];
     }
@@ -201,12 +199,6 @@ class URLAnalyzer
             try {
                 $content = null;
                 switch ($fetchStrategy) {
-                    case 'fetchWithGoogleBot':
-                        $content = $this->fetchWithGoogleBot($cleanUrl);
-                        break;
-                    case 'fetchWithSocialReferrer':
-                        $content = $this->fetchWithSocialReferrer($cleanUrl);
-                        break;
                     case 'fetchContent':
                         $content = $this->fetchContent($cleanUrl);
                         break;
@@ -234,8 +226,6 @@ class URLAnalyzer
 
         // 5. If no specific strategy or it failed, try all strategies in sequence / Se não houver estratégia específica ou se ela falhar, tente todas as estratégias em sequência
         $fetchStrategies = [
-            ['method' => 'fetchWithGoogleBot', 'args' => [$cleanUrl]],
-            ['method' => 'fetchWithSocialReferrer', 'args' => [$cleanUrl]],
             ['method' => 'fetchContent', 'args' => [$cleanUrl]],
             ['method' => 'fetchFromWaybackMachine', 'args' => [$cleanUrl]],
             ['method' => 'fetchFromSelenium', 'args' => [$cleanUrl, 'firefox']]
@@ -263,58 +253,17 @@ class URLAnalyzer
     }
 
     /**
-     * Fetch content using Google bot user agent
-     * Busca conteúdo usando user agent do Google bot
+     * Fetch content from URL
+     * Busca conteúdo da URL
      */
-    private function fetchWithGoogleBot($url)
+    private function fetchContent($url)
     {
         $curl = new Curl();
-        $this->setupBasicCurlOptions($curl);
-        
-        // Set Google bot specific headers
-        $curl->setUserAgent($this->getRandomUserAgent(true));
-        $curl->setHeaders([
-            'X-Forwarded-For' => '66.249.' . rand(64, 95) . '.' . rand(1, 254),
-            'From' => 'googlebot(at)googlebot.com'
-        ]);
 
-        $curl->get($url);
+        $host = parse_url($url, PHP_URL_HOST);
+        $host = preg_replace('/^www\./', '', $host);
+        $domainRules = $this->getDomainRules($host);
 
-        if ($curl->error || $curl->httpStatusCode !== 200 || empty($curl->response)) {
-            throw new Exception(Language::getMessage('HTTP_ERROR')['message']);
-        }
-
-        return $curl->response;
-    }
-
-    /**
-     * Fetch content using social media referrer
-     * Busca conteúdo usando referenciador de mídia social
-     */
-    private function fetchWithSocialReferrer($url)
-    {
-        $curl = new Curl();
-        $this->setupBasicCurlOptions($curl);
-        
-        // Set social media specific headers / Defina cabeçalhos específicos para mídias sociais
-        $curl->setUserAgent($this->getRandomUserAgent());
-        $curl->setHeader('Referer', $this->getRandomReferrer());
-
-        $curl->get($url);
-
-        if ($curl->error || $curl->httpStatusCode !== 200 || empty($curl->response)) {
-            throw new Exception(Language::getMessage('HTTP_ERROR')['message']);
-        }
-
-        return $curl->response;
-    }
-
-    /**
-     * Setup basic CURL options
-     * Configura opções básicas do CURL
-     */
-    private function setupBasicCurlOptions($curl)
-    {
         $curl->setOpt(CURLOPT_FOLLOWLOCATION, true);
         $curl->setOpt(CURLOPT_MAXREDIRS, 2);
         $curl->setOpt(CURLOPT_TIMEOUT, 10);
@@ -322,7 +271,7 @@ class URLAnalyzer
         $curl->setOpt(CURLOPT_DNS_SERVERS, implode(',', $this->dnsServers));
         $curl->setOpt(CURLOPT_ENCODING, '');
         
-        // Additional anti-detection headers
+        // Additional anti-detection headers / Cabeçalhos anti-detecção adicionais
         $curl->setHeaders([
             'Accept' => 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
             'Accept-Language' => 'en-US,en;q=0.5',
@@ -330,20 +279,20 @@ class URLAnalyzer
             'Pragma' => 'no-cache',
             'DNT' => '1'
         ]);
-    }
 
-    /**
-     * Fetch content from URL
-     * Busca conteúdo da URL
-     */
-    private function fetchContent($url)
-    {
-        $curl = new Curl();
-        $this->setupBasicCurlOptions($curl, $url);
-        
-        $host = parse_url($url, PHP_URL_HOST);
-        $host = preg_replace('/^www\./', '', $host);
-        $domainRules = $this->getDomainRules($host);
+        // Set Google bot specific headers / Definir cabeçalhos específicos do bot do Google
+        if (isset($domainRules['fromGoogleBot'])) {
+            $curl->setUserAgent($this->getRandomUserAgent(true));
+            $curl->setHeaders([
+                'X-Forwarded-For' => '66.249.' . rand(64, 95) . '.' . rand(1, 254),
+                'From' => 'googlebot(at)googlebot.com'
+            ]);
+        }
+
+        // Fetch content using social media referrer / Busca conteúdo usando referenciador de mídia social
+        if (isset($domainRules['socialReferrers'])) {
+            $curl->setHeader('Referer', $this->getRandomSocialReferrer());
+        }
 
         // Add domain-specific headers / Adicionar cabeçalhos específicos de domínio
         if (isset($domainRules['headers'])) {

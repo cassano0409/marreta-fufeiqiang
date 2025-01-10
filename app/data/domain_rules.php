@@ -32,6 +32,8 @@
  *   - fetchContent: Use standard fetch with domain rules / Usa fetch padrão com regras do domínio
  *   - fetchFromWaybackMachine: Try to fetch from Internet Archive / Tenta buscar do Internet Archive
  *   - fetchFromSelenium: Use Selenium for extraction / Usa Selenium para extração
+ * - socialReferrers: Add random social media headers / Adiciona headers randomicos de redes sociais
+ * - fromGoogleBot: Adds simulation of request coming from Google Bot / Adiciona simulação de requisição vinda do Google Bot
  */
 return [
     'nsctotal.com.br' => [
@@ -40,6 +42,7 @@ return [
     'elcorreo.com' => [
         'idElementRemove' => ['didomi-popup','engagement-top'],
         'classAttrRemove' => ['didomi-popup-open'],
+        'fromGoogleBot' => true
     ],
     'globo.com' => [
         'idElementRemove' => ['cookie-banner-lgpd', 'paywall-cpt', 'mc-read-more-wrapper', 'paywall-cookie-content', 'paywall-cpt'],
@@ -175,9 +178,7 @@ return [
             'next-flags' => null,
             'next:ads' => null
         ],
-        'headers' => [
-            'Referer' => 'https://www.google.com.br/'
-        ]
+        'fromGoogleBot' => true
     ],
     'nytimes.com' => [
         'idElementRemove' => ['gateway-content'],

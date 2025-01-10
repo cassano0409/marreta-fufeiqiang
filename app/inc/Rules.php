@@ -49,8 +49,9 @@ class Rules
         'customCode',
         'excludeGlobalRules',
         'customStyle',
-        'useSelenium',
-        'fetchStrategies'
+        'socialReferrer',
+        'fetchStrategies',
+        'fromGoogleBot'
     ];
 
     /**
