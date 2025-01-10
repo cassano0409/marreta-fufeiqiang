@@ -17,6 +17,11 @@ return [
     'open_source_title' => 'Projeto Open Source',
     'open_source_description' => 'Este é um projeto de <a href="https://github.com/manualdousuario/marreta/" class="underline" target="_blank">código aberto</a> feito com ❤️!<br />Você pode contribuir, reportar problemas ou fazer sugestões através do <a href="https://github.com/manualdousuario/marreta/" class="underline" target="_blank">GitHub</a>.',
     'adblocker_warning' => 'Conflitos entre o {site_name} e bloqueadores de anúncios podem causar tela branca. Use o modo anônimo ou desative a extensão.',
+    'add_as_app' => 'Adicionar como Aplicativo',
+    'add_as_app_description' => 'Instale o {site_name} como um aplicativo para compartilhar links rapidamente:',
+    'add_as_app_step1' => 'No seu navegador, clique no ícone de menu (três pontos)',
+    'add_as_app_step2' => 'Selecione "Instalar aplicativo" ou "Adicionar à tela inicial"',
+    'add_as_app_step3' => 'Clique em "Instalar" para ter acesso rápido ao {site_name}',
     
     'messages' => [
         'BLOCKED_DOMAIN' => [

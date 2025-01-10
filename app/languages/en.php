@@ -17,6 +17,11 @@ return [
     'open_source_title' => 'Open Source Project',
     'open_source_description' => 'This is an <a href="https://github.com/manualdousuario/marreta/" class="underline" target="_blank">open source</a> project made with ❤️!<br />You can contribute, report issues, or make suggestions through <a href="https://github.com/manualdousuario/marreta/" class="underline" target="_blank">GitHub</a>.',
     'adblocker_warning' => 'Conflicts between {site_name} and ad blockers may cause a white screen. Use incognito mode or disable the extension.',
+    'add_as_app' => 'Add as App',
+    'add_as_app_description' => 'Install {site_name} as an app for quick link sharing:',
+    'add_as_app_step1' => 'In your browser, click the menu icon (three dots)',
+    'add_as_app_step2' => 'Select "Install app" or "Add to home screen"',
+    'add_as_app_step3' => 'Click "Install" for quick access to {site_name}',
     
     'messages' => [
         'BLOCKED_DOMAIN' => [

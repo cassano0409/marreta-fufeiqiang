@@ -62,7 +62,13 @@ $cache_folder = $cache->getCacheFileCount();
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?php echo SITE_NAME; ?></title>
-    <link rel="icon" href="assets/svg/marreta.svg" type="image/svg+xml">
+    <link rel="icon" href="<?php echo SITE_URL; ?>/assets/svg/marreta.svg" type="image/svg+xml">
+    <link rel="manifest" href="<?php echo SITE_URL; ?>/manifest.json">
+    <meta name="theme-color" content="#2563eb">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <meta name="apple-mobile-web-app-title" content="<?php echo SITE_NAME; ?>">
+    <link rel="apple-touch-icon" href="<?php echo SITE_URL; ?>/assets/pwa/192x192.png">
     <meta property="og:type" content="website" />
     <meta property="og:url" content="<?php echo SITE_URL; ?>" />
     <meta property="og:title" content="<?php echo SITE_NAME; ?>" />
@@ -147,6 +153,26 @@ $cache_folder = $cache->getCacheFileCount();
                 <?php echo Language::get('direct_access'); ?>
             <pre class="bg-gray-100 p-3 rounded-lg text-sm overflow-x-auto"><?php echo SITE_URL; ?>/p/https://exemplo.com</pre>
             </p>
+        </div>
+        
+        <!-- Adicionar como aplicativo / Add as app -->
+        <div class="bg-white rounded-xl shadow-lg p-8 mt-8">
+            <h2 class="text-xl font-semibold text-gray-800 mb-6 flex items-center">
+                <img src="assets/svg/marreta.svg" class="w-6 h-6 mr-3" alt="App">
+                <?php echo Language::get('add_as_app'); ?>
+            </h2>
+            <div class="space-y-4">
+                <p class="text-gray-600">
+                    <?php echo str_replace('{site_name}', SITE_NAME, Language::get('add_as_app_description')); ?>
+                </p>
+                <div class="bg-gray-50 rounded-lg p-4">
+                    <ol class="list-decimal list-inside space-y-2 text-gray-700">
+                        <li><?php echo Language::get('add_as_app_step1'); ?></li>
+                        <li><?php echo Language::get('add_as_app_step2'); ?></li>
+                        <li><?php echo str_replace('{site_name}', SITE_NAME, Language::get('add_as_app_step3')); ?></li>
+                    </ol>
+                </div>
+            </div>
         </div>
 
         <!-- Seção de Bookmarklet / Bookmarklet section -->
