@@ -27,8 +27,6 @@
  *       'classElementRemove' => ['subscription']    // Excludes specific classes from global rules / Exclui classes específicas das regras globais
  *   ]
  * - fetchStrategies: String indicating which fetch strategy to use. Available values: / String indicando qual estratégia de fetch usar. Valores disponíveis:
- *   - fetchWithGoogleBot: Use Google bot headers and user agent / Usa headers e user agent do Google bot
- *   - fetchWithSocialReferrer: Use social media referrer / Usa referenciador de mídia social
  *   - fetchContent: Use standard fetch with domain rules / Usa fetch padrão com regras do domínio
  *   - fetchFromWaybackMachine: Try to fetch from Internet Archive / Tenta buscar do Internet Archive
  *   - fetchFromSelenium: Use Selenium for extraction / Usa Selenium para extração
