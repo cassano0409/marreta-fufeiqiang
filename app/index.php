@@ -60,15 +60,20 @@ $cache_folder = $cache->getCacheFileCount();
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
     <title><?php echo SITE_NAME; ?></title>
     <link rel="icon" href="<?php echo SITE_URL; ?>/assets/svg/marreta.svg" type="image/svg+xml">
-    <link rel="manifest" href="<?php echo SITE_URL; ?>/manifest.json">
     <meta name="theme-color" content="#2563eb">
+    <link rel="manifest" href="<?php echo SITE_URL; ?>/manifest.json">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black">
-    <meta name="apple-mobile-web-app-title" content="<?php echo SITE_NAME; ?>">
-    <link rel="apple-touch-icon" href="<?php echo SITE_URL; ?>/assets/pwa/apple-touch-icon.png">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="<?php echo SITE_URL; ?>">
+    <link rel="apple-touch-icon" href="assets/pwa/apple-touch-icon.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="assets/pwa/apple-touch-icon.png">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="application-name" content="<?php echo SITE_URL; ?>">
+    <meta name="msapplication-TileColor" content="#2563eb">
+    <meta name="msapplication-tap-highlight" content="no">
     <meta property="og:type" content="website" />
     <meta property="og:url" content="<?php echo SITE_URL; ?>" />
     <meta property="og:title" content="<?php echo SITE_NAME; ?>" />

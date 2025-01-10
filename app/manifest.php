@@ -10,6 +10,7 @@
  */
 
 require_once 'config.php';
+require_once 'inc/Language.php';
 
 header('Content-Type: application/json');
 
@@ -18,11 +19,14 @@ $manifest = [
     'short_name' => SITE_NAME,
     'description' => SITE_DESCRIPTION,
     'start_url' => SITE_URL,
+    'id' => SITE_URL,
+    'scope' => '/',
     'display' => 'browser',
-    'display_override' => ['window-controls-overlay'],
+    'display_override' => ['window-controls-overlay', 'minimal-ui'],
     'background_color' => '#ffffff',
     'theme_color' => '#2563eb',
     'orientation' => 'any',
+    'categories' => ['utilities', 'productivity'],
     'icons' => [
         [
             'src' => 'assets/pwa/192x192.png',
@@ -35,17 +39,27 @@ $manifest = [
             'sizes' => '512x512',
             'type' => 'image/png',
             'purpose' => 'any maskable'
+        ],
+        [
+            'src' => 'assets/pwa/apple-touch-icon.png',
+            'sizes' => '180x180',
+            'type' => 'image/png',
+            'purpose' => 'any'
         ]
     ],
     'share_target' => [
         'action' => 'pwa.php',
         'method' => 'GET',
+        'enctype' => 'application/x-www-form-urlencoded',
         'params' => [
             'title' => 'title',
             'text' => 'text',
-            'url' => 'url'
+            'url' => 'url',
         ]
-    ]
+    ],
+    'prefer_related_applications' => false,
+    'lang' => Language::getCurrentLanguage(),
+    'dir' => 'ltr'
 ];
 
 echo json_encode($manifest, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
