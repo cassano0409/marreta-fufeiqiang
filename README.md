@@ -28,6 +28,7 @@ Instancia publica em [marreta.pcdomanual.com](https://marreta.pcdomanual.com)!
 - Tudo com SSL/TLS
 - PHP-FPM
 - OPcache ligado
+- Suporte a PWA (Progressive Web App)
 
 ## 🐳 Docker
 
