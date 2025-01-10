@@ -132,5 +132,10 @@ return [
     'sciencedirect.com',
     'focoradical.com.br',
     'taboola.com',
-    'tandfonline.com'
+    'tandfonline.com',
+    'qq.com',
+    'baidu.com',
+    'gofile.io',
+    'timestore.vip',
+    'hidewall.io'
 ];
