@@ -65,15 +65,12 @@ $cache_folder = $cache->getCacheFileCount();
     <link rel="icon" href="<?php echo SITE_URL; ?>/assets/svg/marreta.svg" type="image/svg+xml">
     <meta name="theme-color" content="#2563eb">
     <link rel="manifest" href="<?php echo SITE_URL; ?>/manifest.json">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="<?php echo SITE_URL; ?>">
-    <link rel="apple-touch-icon" href="assets/pwa/apple-touch-icon.png">
-    <link rel="apple-touch-icon" sizes="180x180" href="assets/pwa/apple-touch-icon.png">
+    
+    <!-- PWA meta tags -->
     <meta name="mobile-web-app-capable" content="yes">
-    <meta name="application-name" content="<?php echo SITE_URL; ?>">
-    <meta name="msapplication-TileColor" content="#2563eb">
-    <meta name="msapplication-tap-highlight" content="no">
+    <meta name="application-name" content="<?php echo SITE_NAME; ?>">
+    
+    <!-- Open Graph meta tags -->
     <meta property="og:type" content="website" />
     <meta property="og:url" content="<?php echo SITE_URL; ?>" />
     <meta property="og:title" content="<?php echo SITE_NAME; ?>" />

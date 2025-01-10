@@ -55,6 +55,13 @@ if (!empty($url) && isValidUrl($url)) {
 elseif (!empty($text) && isValidUrl($text)) {
     $redirect_url = $text;
 }
+// If text is not a URL but contains content, try to extract URL from it
+// Se o texto não é uma URL mas contém conteúdo, tenta extrair URL dele
+elseif (!empty($text)) {
+    if (preg_match('/https?:\/\/[^\s]+/', $text, $matches)) {
+        $redirect_url = $matches[0];
+    }
+}
 
 // If we have a valid URL, redirect to it
 // Se temos uma URL válida, redireciona para ela

@@ -28,7 +28,7 @@ Public instance at [marreta.pcdomanual.com](https://marreta.pcdomanual.com)!
 - Everything with SSL/TLS
 - PHP-FPM
 - OPcache enabled
-- PWA (Progressive Web App) support
+- PWA (Progressive Web App) support, direct sharing will only work on Android
 
 ## 🐳 Docker
 

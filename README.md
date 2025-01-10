@@ -28,7 +28,7 @@ Instancia publica em [marreta.pcdomanual.com](https://marreta.pcdomanual.com)!
 - Tudo com SSL/TLS
 - PHP-FPM
 - OPcache ligado
-- Suporte a PWA (Progressive Web App)
+- Suporte a PWA (Progressive Web App), o compartilhamento direto irá funcionar somente no Android
 
 ## 🐳 Docker
 

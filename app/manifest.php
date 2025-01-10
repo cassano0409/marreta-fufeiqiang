@@ -3,10 +3,10 @@
  * PWA Web Manifest Generator
  * 
  * This file generates the Web App Manifest (manifest.json) for Progressive Web App (PWA) functionality.
- * It defines the application's behavior when installed on a device and its appearance in various contexts.
+ * It defines the application's behavior when installed on a device and its appearance.
  * 
  * Este arquivo gera o Manifesto Web (manifest.json) para funcionalidade de Progressive Web App (PWA).
- * Ele define o comportamento da aplicação quando instalada em um dispositivo e sua aparência em vários contextos.
+ * Ele define o comportamento da aplicação quando instalada em um dispositivo e sua aparência.
  */
 
 require_once 'config.php';
@@ -21,12 +21,11 @@ $manifest = [
     'start_url' => SITE_URL,
     'id' => SITE_URL,
     'scope' => '/',
-    'display' => 'browser',
+    'display' => 'standalone',
     'display_override' => ['window-controls-overlay', 'minimal-ui'],
     'background_color' => '#ffffff',
     'theme_color' => '#2563eb',
     'orientation' => 'any',
-    'categories' => ['utilities', 'productivity'],
     'icons' => [
         [
             'src' => 'assets/pwa/192x192.png',
@@ -39,12 +38,6 @@ $manifest = [
             'sizes' => '512x512',
             'type' => 'image/png',
             'purpose' => 'any maskable'
-        ],
-        [
-            'src' => 'assets/pwa/apple-touch-icon.png',
-            'sizes' => '180x180',
-            'type' => 'image/png',
-            'purpose' => 'any'
         ]
     ],
     'share_target' => [
