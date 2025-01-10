@@ -21,7 +21,8 @@ return [
     'add_as_app_description' => 'Install {site_name} as an app for quick link sharing:',
     'add_as_app_step1' => 'In your browser, click the menu icon (three dots)',
     'add_as_app_step2' => 'Select "Install app" or "Add to home screen"',
-    'add_as_app_step3' => 'Click "Install" for quick access to {site_name}',
+    'add_as_app_step3' => 'Click "Install" for quick access',
+    'add_as_app_step4' => 'Now you can directly share links to {site_name}',
     
     'messages' => [
         'BLOCKED_DOMAIN' => [

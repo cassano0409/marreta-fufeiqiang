@@ -17,7 +17,6 @@
  * - Exibir o conteúdo processado ou redirecionar em caso de erro
  * 
  * Usage example / Exemplo de uso:
- * /p/https://example.com
  * /p/https://exemplo.com
  */
 

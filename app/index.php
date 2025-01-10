@@ -68,7 +68,7 @@ $cache_folder = $cache->getCacheFileCount();
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black">
     <meta name="apple-mobile-web-app-title" content="<?php echo SITE_NAME; ?>">
-    <link rel="apple-touch-icon" href="<?php echo SITE_URL; ?>/assets/pwa/192x192.png">
+    <link rel="apple-touch-icon" href="<?php echo SITE_URL; ?>/assets/pwa/apple-touch-icon.png">
     <meta property="og:type" content="website" />
     <meta property="og:url" content="<?php echo SITE_URL; ?>" />
     <meta property="og:title" content="<?php echo SITE_NAME; ?>" />
@@ -169,7 +169,8 @@ $cache_folder = $cache->getCacheFileCount();
                     <ol class="list-decimal list-inside space-y-2 text-gray-700">
                         <li><?php echo Language::get('add_as_app_step1'); ?></li>
                         <li><?php echo Language::get('add_as_app_step2'); ?></li>
-                        <li><?php echo str_replace('{site_name}', SITE_NAME, Language::get('add_as_app_step3')); ?></li>
+                        <li><?php echo Language::get('add_as_app_step3'); ?></li>
+                        <li><?php echo str_replace('{site_name}', SITE_NAME, Language::get('add_as_app_step4')); ?></li>
                     </ol>
                 </div>
             </div>

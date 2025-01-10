@@ -21,7 +21,8 @@ return [
     'add_as_app_description' => 'Installieren Sie {site_name} als App für schnelles Link-Sharing:',
     'add_as_app_step1' => 'Klicken Sie in Ihrem Browser auf das Menüsymbol (drei Punkte)',
     'add_as_app_step2' => 'Wählen Sie "App installieren" oder "Zum Startbildschirm hinzufügen"',
-    'add_as_app_step3' => 'Klicken Sie auf "Installieren" für schnellen Zugriff auf {site_name}',
+    'add_as_app_step3' => 'Klicken Sie für den Schnellzugriff auf „Installieren"',
+    'add_as_app_step4' => 'Jetzt können Sie Links direkt zu {site_name} teilen',
     
     'messages' => [
         'BLOCKED_DOMAIN' => [

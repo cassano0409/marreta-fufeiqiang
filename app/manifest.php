@@ -1,4 +1,14 @@
 <?php
+/**
+ * PWA Web Manifest Generator
+ * 
+ * This file generates the Web App Manifest (manifest.json) for Progressive Web App (PWA) functionality.
+ * It defines the application's behavior when installed on a device and its appearance in various contexts.
+ * 
+ * Este arquivo gera o Manifesto Web (manifest.json) para funcionalidade de Progressive Web App (PWA).
+ * Ele define o comportamento da aplicação quando instalada em um dispositivo e sua aparência em vários contextos.
+ */
+
 require_once 'config.php';
 
 header('Content-Type: application/json');
@@ -8,9 +18,11 @@ $manifest = [
     'short_name' => SITE_NAME,
     'description' => SITE_DESCRIPTION,
     'start_url' => SITE_URL,
-    'display' => 'standalone',
+    'display' => 'browser',
+    'display_override' => ['window-controls-overlay'],
     'background_color' => '#ffffff',
     'theme_color' => '#2563eb',
+    'orientation' => 'any',
     'icons' => [
         [
             'src' => 'assets/pwa/192x192.png',
@@ -26,10 +38,12 @@ $manifest = [
         ]
     ],
     'share_target' => [
-        'action' => '/p/',
+        'action' => 'pwa.php',
         'method' => 'GET',
         'params' => [
-            'url' => 'text'
+            'title' => 'title',
+            'text' => 'text',
+            'url' => 'url'
         ]
     ]
 ];

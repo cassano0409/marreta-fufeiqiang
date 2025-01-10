@@ -21,7 +21,8 @@ return [
     'add_as_app_description' => 'Instale {site_name} como una aplicación para compartir enlaces rápidamente:',
     'add_as_app_step1' => 'En su navegador, haga clic en el icono de menú (tres puntos)',
     'add_as_app_step2' => 'Seleccione "Instalar aplicación" o "Agregar a la pantalla de inicio"',
-    'add_as_app_step3' => 'Haga clic en "Instalar" para tener acceso rápido a {site_name}',
+    'add_as_app_step3' => 'Haga clic en "Instalar" para tener acceso rápido',
+    'add_as_app_step4' => 'Ahora puede compartir directamente enlaces a {site_name}',
     
     'messages' => [
         'BLOCKED_DOMAIN' => [
