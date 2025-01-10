@@ -35,17 +35,31 @@ class URLAnalyzer
      * @var array List of available User Agents for requests
      * @var array Lista de User Agents disponíveis para requisições
      */
-    private $userAgents;
+    private $userAgents = [
+        // Google News bot
+        // Bot do Google News
+        'Googlebot-News',
+        // Mobile Googlebot
+        // Googlebot para dispositivos móveis
+        'Mozilla/5.0 (Linux; Android 6.0.1; Nexus 5X Build/MMB29P) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/W.X.Y.Z Mobile Safari/537.36 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)',
+        // Desktop Googlebot
+        // Googlebot para desktop
+        'Mozilla/5.0 AppleWebKit/537.36 (KHTML, like Gecko; compatible; Googlebot/2.1; +http://www.google.com/bot.html) Chrome/W.X.Y.Z Safari/537.36'
+    ];
 
     /**
      * @var array List of social media referrers
      * @var array Lista de referenciadores de mídia social
      */
     private $socialReferrers = [
+        // Twitter
         'https://t.co/',
-        'https://www.google.com/',
-        'https://www.facebook.com/',
         'https://www.twitter.com/',
+        // Google
+        'https://www.google.com/',
+        // Facebook
+        'https://www.facebook.com/',
+        // Linkedin
         'https://www.linkedin.com/'
     ];
 
@@ -82,7 +96,6 @@ class URLAnalyzer
      */
     public function __construct()
     {
-        $this->userAgents = USER_AGENTS;
         $this->dnsServers = explode(',', DNS_SERVERS);
         $this->rules = new Rules();
         $this->cache = new Cache();
@@ -326,7 +339,7 @@ class URLAnalyzer
     private function fetchContent($url)
     {
         $curl = new Curl();
-        $this->setupBasicCurlOptions($curl);
+        $this->setupBasicCurlOptions($curl, $url);
         
         $host = parse_url($url, PHP_URL_HOST);
         $host = preg_replace('/^www\./', '', $host);

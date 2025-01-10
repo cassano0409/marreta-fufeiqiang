@@ -105,7 +105,6 @@ As configurações estão organizadas em `data/`:
 - `domain_rules.php`: Regras específicas para cada site
 - `global_rules.php`: Regras que se aplicam a todos os sites
 - `blocked_domains.php`: Lista de sites bloqueados
-- `user_agents.php`: Configurações de User Agents
 
 ### Traduções
 

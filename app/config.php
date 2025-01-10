@@ -99,7 +99,6 @@ try {
      * Load system configurations
      * Carrega as configurações do sistema
      */
-    define('USER_AGENTS', require __DIR__ . '/data/user_agents.php');
     define('BLOCKED_DOMAINS', require __DIR__ . '/data/blocked_domains.php');
     define('DOMAIN_RULES', require __DIR__ . '/data/domain_rules.php');
     define('GLOBAL_RULES', require __DIR__ . '/data/global_rules.php');
