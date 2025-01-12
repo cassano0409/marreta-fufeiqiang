@@ -7,7 +7,9 @@
 [![Stars](https://img.shields.io/github/stars/manualdousuario/marreta)](https://github.com/manualdousuario/marreta/stargazers)
 [![Issues](https://img.shields.io/github/issues/manualdousuario/marreta)](https://github.com/manualdousuario/marreta/issues)
 
-Marreta é uma ferramenta que limpa páginas web de barreiras de acesso e elementos que atrapalham a leitura!
+Marreta é uma ferramenta que quebra barreiras de acesso e elementos que atrapalham a leitura!
+
+![Antes e depois do Marreta](https://github.com/manualdousuario/marreta/blob/main/screen.png?raw=true)
 
 Instancia publica em [marreta.pcdomanual.com](https://marreta.pcdomanual.com)!
 

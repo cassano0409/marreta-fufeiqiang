@@ -7,7 +7,9 @@
 [![Stars](https://img.shields.io/github/stars/manualdousuario/marreta)](https://github.com/manualdousuario/marreta/stargazers)
 [![Issues](https://img.shields.io/github/issues/manualdousuario/marreta)](https://github.com/manualdousuario/marreta/issues)
 
-Marreta is a tool that cleans web pages of access barriers and other visual distractions!
+Marreta is a tool that removes access barriers and visual distractions!
+
+![Before and after Marreta](https://github.com/manualdousuario/marreta/blob/main/screen.en.png?raw=true)
 
 Public instance at [marreta.pcdomanual.com](https://marreta.pcdomanual.com)!
 
