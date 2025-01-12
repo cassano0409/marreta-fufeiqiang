@@ -7,7 +7,7 @@
 [![Stars](https://img.shields.io/github/stars/manualdousuario/marreta)](https://github.com/manualdousuario/marreta/stargazers)
 [![Issues](https://img.shields.io/github/issues/manualdousuario/marreta)](https://github.com/manualdousuario/marreta/issues)
 
-Marreta é uma ferramenta para analisar URLs e acessar conteúdo na web sem dor de cabeça.
+Marreta é uma ferramenta que limpa páginas web de barreiras de acesso e elementos que atrapalham a leitura!
 
 Instancia publica em [marreta.pcdomanual.com](https://marreta.pcdomanual.com)!
 
