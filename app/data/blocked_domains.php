@@ -28,7 +28,8 @@ return [
     'ole.com.ar',
     'adage.com',
     'couriermail.com.au',
-    'mittelbayerische.de/',
+    'mittelbayerische.de',
+    'josimarfootball.com',
     //-- Technical access blocking / Bloqueio técnico de acesso ao conteúdo
     'bloomberg.com',
     'sportskeeda.com',
