@@ -193,6 +193,10 @@ return [
                 overflow: hidden !important;
                 visibility: hidden !important;
             }
+            #site-index {
+                height: 100% !important;
+                position: relative !important;
+            }
         ',
         'fetchStrategies' => 'fetchFromSelenium',
         'excludeGlobalRules' => [

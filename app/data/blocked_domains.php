@@ -30,6 +30,7 @@ return [
     'couriermail.com.au',
     'mittelbayerische.de',
     'josimarfootball.com',
+    'nordsee-zeitung.de',
     //-- Technical access blocking / Bloqueio técnico de acesso ao conteúdo
     'bloomberg.com',
     'sportskeeda.com',
