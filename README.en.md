@@ -225,7 +225,8 @@ docker-compose exec app rm -rf /app/cache/*
 - 🤖 **Telegram**: [Official Bot](https://t.me/leissoai_bot)
 - 🦊 **Firefox**: Extension by [Clarissa Mendes](https://claromes.com/pages/whoami) - [Download](https://addons.mozilla.org/pt-BR/firefox/addon/marreta/) | [Source Code](https://github.com/manualdousuario/marreta-extensao)
 - 🦋 **Bluesky**: Bot by [Joselito](https://bsky.app/profile/joseli.to) - [Profile](https://bsky.app/profile/marreta.pcdomanual.com) | [Source Code](https://github.com/manualdousuario/marreta-bot)
-
+- 🍎 **Apple**: [Shortcuts](https://www.icloud.com/shortcuts/3594074b69ee4707af52ed78922d624f) integration
+- 
 ---
 
 Made with ❤️! If you have questions or suggestions, open an issue and we'll help! 😉
