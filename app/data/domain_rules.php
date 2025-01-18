@@ -66,6 +66,15 @@ return [
         'classElementRemove' => ['leaderboard__container'],
         'fetchStrategies' => 'fetchFromSelenium',
     ],
+    'fortune.com' => [
+        'classElementRemove' => ['leaderboard__container'],
+        'fetchStrategies' => 'fetchFromSelenium',
+        'excludeGlobalRules' => [
+            'scriptTagRemove' => [
+                'pw-'
+            ]
+        ]
+    ],
     'diplomatique.org.br' => [
         'idElementRemove' => ['cboxOverlay'],
         'fetchStrategies' => 'fetchFromSelenium',
