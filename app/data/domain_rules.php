@@ -67,13 +67,10 @@ return [
         'fetchStrategies' => 'fetchFromSelenium',
     ],
     'fortune.com' => [
-        'classElementRemove' => ['leaderboard__container'],
+        'classElementRemove' => ['latest-popular-module','own','drawer-menu'],
         'fetchStrategies' => 'fetchFromSelenium',
-        'excludeGlobalRules' => [
-            'scriptTagRemove' => [
-                'pw-'
-            ]
-        ]
+        'browser' => 'chrome',
+        'scriptTagRemove' => ['queryly.com'],
     ],
     'diplomatique.org.br' => [
         'idElementRemove' => ['cboxOverlay'],
