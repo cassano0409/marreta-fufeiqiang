@@ -79,6 +79,7 @@ return [
         'navdmp.com',
         'getblue.io',
         'smartocto.com',
-        'cdn.pn.vg'
+        'cdn.pn.vg',
+        'static.vocstatic.com'
     ]
 ];

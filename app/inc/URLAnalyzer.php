@@ -623,6 +623,41 @@ class URLAnalyzer
                 }
             }
         }
+
+        if (isset($domainRules['removeCustomAttr'])) {
+            foreach ($domainRules['removeCustomAttr'] as $attrPattern) {
+                if (strpos($attrPattern, '*') !== false) {
+                    // For wildcard attributes (e.g. data-*) / Para atributos com wildcard (ex: data-*)
+                    $elements = $xpath->query('//*');
+                    if ($elements !== false) {
+                        $pattern = '/^' . str_replace('*', '.*', $attrPattern) . '$/';
+                        foreach ($elements as $element) {
+                            if ($element->hasAttributes()) {
+                                $attrs = [];
+                                foreach ($element->attributes as $attr) {
+                                    if (preg_match($pattern, $attr->name)) {
+                                        $attrs[] = $attr->name;
+                                    }
+                                }
+                                foreach ($attrs as $attr) {
+                                    $element->removeAttribute($attr);
+                                }
+                            }
+                        }
+                        $this->activatedRules[] = "removeCustomAttr: $attrPattern";
+                    }
+                } else {
+                    // For non-wildcard attributes / Para atributos sem wildcard
+                    $elements = $xpath->query("//*[@$attrPattern]");
+                    if ($elements !== false && $elements->length > 0) {
+                        foreach ($elements as $element) {
+                            $element->removeAttribute($attrPattern);
+                        }
+                        $this->activatedRules[] = "removeCustomAttr: $attrPattern";
+                    }
+                }
+            }
+        }
     }
 
     /**
