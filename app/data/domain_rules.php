@@ -190,7 +190,37 @@ return [
         'fromGoogleBot' => true
     ],
     'nytimes.com' => [
-        'idElementRemove' => ['gateway-content'],
+        'idElementRemove' => ['gateway-content','site-index'],
+        'customCode' => '
+            setTimeout(function() {
+                const walk = document.createTreeWalker(
+                    document.body,
+                    NodeFilter.SHOW_TEXT,
+                    null,
+                    false
+                );
+                let node;
+                while (node = walk.nextNode()) {
+                    node.textContent = node.textContent
+                        .replace(/&rsquo;/g, "\\u2019")    /* right single quotation */
+                        .replace(/&lsquo;/g, "\\u2018")    /* left single quotation */
+                        .replace(/&rdquo;/g, "\\u201D")    /* right double quotation */
+                        .replace(/&ldquo;/g, "\\u201C")    /* left double quotation */
+                        .replace(/&mdash;/g, "\\u2014")    /* em dash */
+                        .replace(/&ndash;/g, "\\u2013")    /* en dash */
+                        .replace(/&hellip;/g, "\\u2026")   /* horizontal ellipsis */
+                        .replace(/&bull;/g, "\\u2022")     /* bullet */
+                        .replace(/&amp;/g, "&")            /* ampersand */
+                        .replace(/&nbsp;/g, " ")           /* non-breaking space */
+                        .replace(/&quot;/g, "\\"")         /* quotation mark */
+                        .replace(/&apos;/g, "\'")          /* apostrophe */
+                        .replace(/&lt;/g, "<")             /* less than */
+                        .replace(/&gt;/g, ">")             /* greater than */
+                        .replace(/&agrave;/g, "\\u00E0")   /* lowercase a with grave accent */
+                        .replace(/&ntilde;/g, "\\u00F1");  /* lowercase n with tilde */
+                }
+            }, 3000);
+        ',
         'customStyle' => '
             .vi-gateway-container {
                 position: inherit !important;
