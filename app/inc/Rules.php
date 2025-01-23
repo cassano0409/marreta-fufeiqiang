@@ -51,7 +51,9 @@ class Rules
         'customStyle',
         'socialReferrer',
         'fetchStrategies',
-        'fromGoogleBot'
+        'fromGoogleBot',
+        'removeElementsByTag',
+        'removeCustomAttr'
     ];
 
     /**

@@ -32,6 +32,8 @@
  *   - fetchFromSelenium: Use Selenium for extraction / Usa Selenium para extração
  * - socialReferrers: Add random social media headers / Adiciona headers randomicos de redes sociais
  * - fromGoogleBot: Adds simulation of request coming from Google Bot / Adiciona simulação de requisição vinda do Google Bot
+ * - removeElementsByTag: Remove specific elements via DOM / Remove elementos especificos via DOM
+ * - removeCustomAttr: Remove custom attributes from elements / Remove custom attributes from elements
  */
 return [
     'nsctotal.com.br' => [
@@ -39,8 +41,11 @@ return [
     ],
     'elcorreo.com' => [
         'idElementRemove' => ['didomi-popup','engagement-top'],
-        'classAttrRemove' => ['didomi-popup-open'],
-        'fromGoogleBot' => true
+        'classElementRemove' => ['content-exclusive-bg'],
+        'classAttrRemove' => ['didomi-popup-open','paywall'],
+        'fromGoogleBot' => true,
+        'removeElementsByTag' => ['style'],
+        'removeCustomAttr' => ['hidden','data-*']
     ],
     'globo.com' => [
         'idElementRemove' => ['cookie-banner-lgpd', 'paywall-cpt', 'mc-read-more-wrapper', 'paywall-cookie-content', 'paywall-cpt'],

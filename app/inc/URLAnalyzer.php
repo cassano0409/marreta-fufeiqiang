@@ -557,6 +557,21 @@ class URLAnalyzer
             }
         }
 
+        if (isset($domainRules['removeElementsByTag'])) {
+            $tagsToRemove = $domainRules['removeElementsByTag'];
+            foreach ($tagsToRemove as $tag) {
+                $tagElements = $xpath->query("//$tag");
+                if ($tagElements !== false) {
+                    foreach ($tagElements as $element) {
+                        if ($element->parentNode) {
+                            $element->parentNode->removeChild($element);
+                        }
+                    }
+                    $this->activatedRules[] = "removeElementsByTag: $tag";
+                }
+            }
+        }
+
         if (isset($domainRules['idElementRemove'])) {
             foreach ($domainRules['idElementRemove'] as $id) {
                 $elements = $xpath->query("//*[@id='$id']");
