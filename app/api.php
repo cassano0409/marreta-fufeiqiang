@@ -69,11 +69,10 @@ if (strpos($path, $prefix) === 0) {
     // Basic URL validation
     // Validação básica da URL
     if (!$url || !filter_var($url, FILTER_VALIDATE_URL)) {
-        $errorMessage = Language::getMessage('INVALID_URL');
         sendResponse([
             'error' => [
-                'code' => 'INVALID_URL',
-                'message' => $errorMessage['message']
+                'type' => URLAnalyzer::ERROR_INVALID_URL,
+                'message' => Language::getMessage('INVALID_URL')['message']
             ]
         ], 400);
     }
@@ -92,59 +91,43 @@ if (strpos($path, $prefix) === 0) {
         sendResponse([
             'url' => SITE_URL . '/p/' . $url
         ], 200);
-    } catch (Exception $e) {
-        // Get error code from exception or default to 400
-        // Obtém o código de erro da exceção ou usa 400 como padrão
-        $statusCode = $e->getCode() ?: 400;
-        $message = $e->getMessage();
+    } catch (URLAnalyzerException $e) {
+        // Get error details from the exception
+        // Obtém detalhes do erro da exceção
+        $errorType = $e->getErrorType();
+        $additionalInfo = $e->getAdditionalInfo();
         
-        // Map error codes to error types
-        // Mapeia códigos de erro para tipos de erro
-        switch ($statusCode) {
-            case 400:
-                $errorCode = 'INVALID_URL';
-                break;
-            case 403:
-                $errorCode = 'BLOCKED_DOMAIN';
-                break;
-            case 404:
-                $errorCode = 'NOT_FOUND';
-                break;
-            case 502:
-                $errorCode = 'HTTP_ERROR';
-                break;
-            case 503:
-                $errorCode = 'CONNECTION_ERROR';
-                break;
-            case 504:
-                $errorCode = 'DNS_FAILURE';
-                break;
-            default:
-                $errorCode = 'GENERIC_ERROR';
-                break;
-        }
-        
-        $errorMessage = Language::getMessage($errorCode);
-
         // Add error header for better client-side handling
         // Adiciona header de erro para melhor tratamento no cliente
-        header('X-Error-Message: ' . $message);
+        header('X-Error-Type: ' . $errorType);
+        if ($additionalInfo) {
+            header('X-Error-Info: ' . $additionalInfo);
+        }
 
         sendResponse([
             'error' => [
-                'code' => $errorCode,
-                'message' => $errorMessage['message']
+                'type' => $errorType,
+                'message' => $e->getMessage(),
+                'details' => $additionalInfo ?: null
             ]
-        ], $statusCode);
+        ], $e->getCode());
+    } catch (Exception $e) {
+        // Handle any other unexpected errors
+        // Trata quaisquer outros erros inesperados
+        sendResponse([
+            'error' => [
+                'type' => URLAnalyzer::ERROR_GENERIC_ERROR,
+                'message' => Language::getMessage('GENERIC_ERROR')['message']
+            ]
+        ], 500);
     }
 } else {
     // Return 404 error for endpoints not found
     // Retorna erro 404 para endpoints não encontrados
-    $errorMessage = Language::getMessage('NOT_FOUND');
     sendResponse([
         'error' => [
-            'code' => 'NOT_FOUND',
-            'message' => $errorMessage['message']
+            'type' => URLAnalyzer::ERROR_NOT_FOUND,
+            'message' => Language::getMessage('NOT_FOUND')['message']
         ]
     ], 404);
 }

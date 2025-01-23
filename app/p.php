@@ -60,55 +60,36 @@ if (strpos($path, $prefix) === 0) {
             // Exibe o conteúdo processado
             echo $content;
             exit;
-        } catch (Exception $e) {
-            // Get error code from exception or default to 400
-            // Obtém o código de erro da exceção ou usa 400 como padrão
-            $statusCode = $e->getCode() ?: 400;
+        } catch (URLAnalyzerException $e) {
+            // Get error type and additional info from exception
+            // Obtém o tipo de erro e informações adicionais da exceção
+            $errorType = $e->getErrorType();
+            $additionalInfo = $e->getAdditionalInfo();
             
-            // Map error codes to error types
-            // Mapeia códigos de erro para tipos de erro
-            switch ($statusCode) {
-                case 400:
-                    $errorType = 'INVALID_URL';
-                    break;
-                case 403:
-                    $errorType = 'BLOCKED_DOMAIN';
-                    // Extract redirect URL from error message if present
-                    $parts = explode('|', $e->getMessage());
-                    if (count($parts) > 1) {
-                        header('Location: ' . trim($parts[1]) . '?message=' . $errorType);
-                        exit;
-                    }
-                    break;
-                case 404:
-                    $errorType = 'NOT_FOUND';
-                    break;
-                case 502:
-                    $errorType = 'HTTP_ERROR';
-                    break;
-                case 503:
-                    $errorType = 'CONNECTION_ERROR';
-                    break;
-                case 504:
-                    $errorType = 'DNS_FAILURE';
-                    break;
-                default:
-                    $errorType = 'GENERIC_ERROR';
-                    break;
+            // Handle blocked domain with redirect URL
+            // Trata domínio bloqueado com URL de redirecionamento
+            if ($errorType === URLAnalyzer::ERROR_BLOCKED_DOMAIN && $additionalInfo) {
+                header('Location: ' . trim($additionalInfo) . '?message=' . $errorType);
+                exit;
             }
 
             // Redirect to home page with error message
             // Redireciona para a página inicial com mensagem de erro
             header('Location: /?message=' . $errorType);
             exit;
+        } catch (Exception $e) {
+            // Handle any other unexpected errors
+            // Trata quaisquer outros erros inesperados
+            header('Location: /?message=' . URLAnalyzer::ERROR_GENERIC_ERROR);
+            exit;
         }
     } else {
         // Invalid URL / URL inválida
-        header('Location: /?message=INVALID_URL');
+        header('Location: /?message=' . URLAnalyzer::ERROR_INVALID_URL);
         exit;
     }
 } else {
     // Invalid path / Path inválido
-    header('Location: /?message=NOT_FOUND');
+    header('Location: /?message=' . URLAnalyzer::ERROR_NOT_FOUND);
     exit;
 }

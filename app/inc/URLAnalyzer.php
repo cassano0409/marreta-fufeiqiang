@@ -29,8 +29,71 @@ use Facebook\WebDriver\Firefox\FirefoxProfile;
 use Facebook\WebDriver\Chrome\ChromeOptions;
 use Inc\Logger;
 
+/**
+ * Custom exception class for URL analysis errors
+ * Classe de exceção personalizada para erros de análise de URL
+ */
+class URLAnalyzerException extends Exception
+{
+    private $errorType;
+    private $additionalInfo;
+
+    public function __construct($message, $code, $errorType, $additionalInfo = '')
+    {
+        parent::__construct($message, $code);
+        $this->errorType = $errorType;
+        $this->additionalInfo = $additionalInfo;
+    }
+
+    public function getErrorType()
+    {
+        return $this->errorType;
+    }
+
+    public function getAdditionalInfo()
+    {
+        return $this->additionalInfo;
+    }
+}
+
 class URLAnalyzer
 {
+    // Error type constants
+    const ERROR_INVALID_URL = 'INVALID_URL';
+    const ERROR_BLOCKED_DOMAIN = 'BLOCKED_DOMAIN';
+    const ERROR_NOT_FOUND = 'NOT_FOUND';
+    const ERROR_HTTP_ERROR = 'HTTP_ERROR';
+    const ERROR_CONNECTION_ERROR = 'CONNECTION_ERROR';
+    const ERROR_DNS_FAILURE = 'DNS_FAILURE';
+    const ERROR_CONTENT_ERROR = 'CONTENT_ERROR';
+    const ERROR_GENERIC_ERROR = 'GENERIC_ERROR';
+
+    // Error mapping
+    private $errorMap = [
+        self::ERROR_INVALID_URL => ['code' => 400, 'message_key' => 'INVALID_URL'],
+        self::ERROR_BLOCKED_DOMAIN => ['code' => 403, 'message_key' => 'BLOCKED_DOMAIN'],
+        self::ERROR_NOT_FOUND => ['code' => 404, 'message_key' => 'NOT_FOUND'],
+        self::ERROR_HTTP_ERROR => ['code' => 502, 'message_key' => 'HTTP_ERROR'],
+        self::ERROR_CONNECTION_ERROR => ['code' => 503, 'message_key' => 'CONNECTION_ERROR'],
+        self::ERROR_DNS_FAILURE => ['code' => 504, 'message_key' => 'DNS_FAILURE'],
+        self::ERROR_CONTENT_ERROR => ['code' => 502, 'message_key' => 'CONTENT_ERROR'],
+        self::ERROR_GENERIC_ERROR => ['code' => 500, 'message_key' => 'GENERIC_ERROR']
+    ];
+
+    /**
+     * Helper method to throw standardized errors
+     * Método auxiliar para lançar erros padronizados
+     */
+    private function throwError($errorType, $additionalInfo = '')
+    {
+        $errorConfig = $this->errorMap[$errorType];
+        $message = Language::getMessage($errorConfig['message_key'])['message'];
+        if ($additionalInfo) {
+            $message;
+        }
+        throw new URLAnalyzerException($message, $errorConfig['code'], $errorType, $additionalInfo);
+    }
+
     /**
      * @var array List of available User Agents for requests
      * @var array Lista de User Agents disponíveis para requisições
@@ -163,7 +226,7 @@ class URLAnalyzer
      * 
      * @param string $url URL to be analyzed / URL a ser analisada
      * @return string Processed content / Conteúdo processado
-     * @throws Exception In case of processing errors / Em caso de erros durante o processamento
+     * @throws URLAnalyzerException In case of processing errors / Em caso de erros durante o processamento
      */
     public function analyze($url)
     {
@@ -174,7 +237,7 @@ class URLAnalyzer
         // 1. Clean URL / Limpa a URL
         $cleanUrl = $this->cleanUrl($url);
         if (!$cleanUrl) {
-            throw new Exception(Language::getMessage('INVALID_URL')['message'], 400);
+            $this->throwError(self::ERROR_INVALID_URL);
         }
 
         // 2. Check cache / Verifica cache
@@ -185,13 +248,13 @@ class URLAnalyzer
         // 3. Check blocked domains / Verifica domínios bloqueados
         $host = parse_url($cleanUrl, PHP_URL_HOST);
         if (!$host) {
-            throw new Exception(Language::getMessage('INVALID_URL')['message'], 400);
+            $this->throwError(self::ERROR_INVALID_URL);
         }
         $host = preg_replace('/^www\./', '', $host);
 
         if (in_array($host, BLOCKED_DOMAINS)) {
             Logger::getInstance()->log($cleanUrl, 'BLOCKED_DOMAIN');
-            throw new Exception(Language::getMessage('BLOCKED_DOMAIN')['message'], 403);
+            $this->throwError(self::ERROR_BLOCKED_DOMAIN);
         }
 
         // Check URL status code before proceeding
@@ -199,9 +262,9 @@ class URLAnalyzer
         if ($redirectInfo['httpCode'] !== 200) {
             Logger::getInstance()->log($cleanUrl, 'INVALID_STATUS_CODE', "HTTP {$redirectInfo['httpCode']}");
             if ($redirectInfo['httpCode'] === 404) {
-                throw new Exception(Language::getMessage('NOT_FOUND')['message'], 404);
+                $this->throwError(self::ERROR_NOT_FOUND);
             } else {
-                throw new Exception(Language::getMessage('HTTP_ERROR')['message'], $redirectInfo['httpCode']);
+                $this->throwError(self::ERROR_HTTP_ERROR, "HTTP {$redirectInfo['httpCode']}");
             }
         }
 
@@ -265,34 +328,34 @@ class URLAnalyzer
             // If we get here, all strategies failed
             Logger::getInstance()->log($cleanUrl, 'GENERAL_FETCH_ERROR');
             if ($lastError) {
-                // Map the error type based on the last error message
-                if (strpos($lastError->getMessage(), 'DNS') !== false) {
-                    throw new Exception(Language::getMessage('DNS_FAILURE')['message'], 504);
-                } elseif (strpos($lastError->getMessage(), 'CURL') !== false) {
-                    throw new Exception(Language::getMessage('CONNECTION_ERROR')['message'], 503);
-                } elseif (strpos($lastError->getMessage(), 'HTTP') !== false) {
-                    throw new Exception(Language::getMessage('HTTP_ERROR')['message'], 502);
-                } elseif (strpos($lastError->getMessage(), 'not found') !== false) {
-                    throw new Exception(Language::getMessage('NOT_FOUND')['message'], 404);
+                $message = $lastError->getMessage();
+                if (strpos($message, 'DNS') !== false) {
+                    $this->throwError(self::ERROR_DNS_FAILURE);
+                } elseif (strpos($message, 'CURL') !== false) {
+                    $this->throwError(self::ERROR_CONNECTION_ERROR);
+                } elseif (strpos($message, 'HTTP') !== false) {
+                    $this->throwError(self::ERROR_HTTP_ERROR);
+                } elseif (strpos($message, 'not found') !== false) {
+                    $this->throwError(self::ERROR_NOT_FOUND);
                 }
             }
-            throw new Exception(Language::getMessage('CONTENT_ERROR')['message'], 502);
-        } catch (Exception $e) {
-            // Re-throw with appropriate error code if not already set
-            if (!$e->getCode()) {
-                $code = 502; // Default to bad gateway
-                if (strpos($e->getMessage(), 'DNS') !== false) {
-                    $code = 504;
-                } elseif (strpos($e->getMessage(), 'CURL') !== false) {
-                    $code = 503;
-                } elseif (strpos($e->getMessage(), 'HTTP') !== false) {
-                    $code = 502;
-                } elseif (strpos($e->getMessage(), 'not found') !== false) {
-                    $code = 404;
-                }
-                throw new Exception($e->getMessage(), $code);
-            }
+            $this->throwError(self::ERROR_CONTENT_ERROR);
+        } catch (URLAnalyzerException $e) {
             throw $e;
+        } catch (Exception $e) {
+            // Map generic exceptions to appropriate error types
+            $message = $e->getMessage();
+            if (strpos($message, 'DNS') !== false) {
+                $this->throwError(self::ERROR_DNS_FAILURE);
+            } elseif (strpos($message, 'CURL') !== false) {
+                $this->throwError(self::ERROR_CONNECTION_ERROR);
+            } elseif (strpos($message, 'HTTP') !== false) {
+                $this->throwError(self::ERROR_HTTP_ERROR);
+            } elseif (strpos($message, 'not found') !== false) {
+                $this->throwError(self::ERROR_NOT_FOUND);
+            } else {
+                $this->throwError(self::ERROR_GENERIC_ERROR, $message);
+            }
         }
     }
 
@@ -306,7 +369,7 @@ class URLAnalyzer
 
         $host = parse_url($url, PHP_URL_HOST);
         if (!$host) {
-            throw new Exception(Language::getMessage('INVALID_URL')['message'], 400);
+            $this->throwError(self::ERROR_INVALID_URL);
         }
         $host = preg_replace('/^www\./', '', $host);
         $domainRules = $this->getDomainRules($host);
@@ -346,18 +409,18 @@ class URLAnalyzer
         if ($curl->error) {
             $errorMessage = $curl->errorMessage;
             if (strpos($errorMessage, 'DNS') !== false) {
-                throw new Exception(Language::getMessage('DNS_FAILURE')['message'], 504);
+                $this->throwError(self::ERROR_DNS_FAILURE);
             } elseif (strpos($errorMessage, 'CURL') !== false) {
-                throw new Exception(Language::getMessage('CONNECTION_ERROR')['message'], 503);
+                $this->throwError(self::ERROR_CONNECTION_ERROR);
             } elseif ($curl->httpStatusCode === 404) {
-                throw new Exception(Language::getMessage('NOT_FOUND')['message'], 404);
+                $this->throwError(self::ERROR_NOT_FOUND);
             } else {
-                throw new Exception(Language::getMessage('HTTP_ERROR')['message'], 502);
+                $this->throwError(self::ERROR_HTTP_ERROR);
             }
         }
 
         if ($curl->httpStatusCode !== 200 || empty($curl->response)) {
-            throw new Exception(Language::getMessage('HTTP_ERROR')['message'], 502);
+            $this->throwError(self::ERROR_HTTP_ERROR);
         }
 
         return $curl->response;
@@ -382,17 +445,17 @@ class URLAnalyzer
 
         if ($curl->error) {
             if (strpos($curl->errorMessage, 'DNS') !== false) {
-                throw new Exception(Language::getMessage('DNS_FAILURE')['message'], 504);
+                $this->throwError(self::ERROR_DNS_FAILURE);
             } elseif (strpos($curl->errorMessage, 'CURL') !== false) {
-                throw new Exception(Language::getMessage('CONNECTION_ERROR')['message'], 503);
+                $this->throwError(self::ERROR_CONNECTION_ERROR);
             } else {
-                throw new Exception(Language::getMessage('HTTP_ERROR')['message'], 502);
+                $this->throwError(self::ERROR_HTTP_ERROR);
             }
         }
 
         $data = $curl->response;
         if (!isset($data->archived_snapshots->closest->url)) {
-            throw new Exception(Language::getMessage('NOT_FOUND')['message'], 404);
+            $this->throwError(self::ERROR_NOT_FOUND);
         }
 
         $archiveUrl = $data->archived_snapshots->closest->url;
@@ -405,7 +468,7 @@ class URLAnalyzer
         $curl->get($archiveUrl);
 
         if ($curl->error || $curl->httpStatusCode !== 200 || empty($curl->response)) {
-            throw new Exception(Language::getMessage('HTTP_ERROR')['message'], 502);
+            $this->throwError(self::ERROR_HTTP_ERROR);
         }
 
         $content = $curl->response;
@@ -466,7 +529,7 @@ class URLAnalyzer
             $driver->quit();
 
             if (empty($htmlSource)) {
-                throw new Exception(Language::getMessage('CONTENT_ERROR')['message'], 502);
+                $this->throwError(self::ERROR_CONTENT_ERROR);
             }
 
             return $htmlSource;
@@ -475,16 +538,16 @@ class URLAnalyzer
                 $driver->quit();
             }
             
-            // Map Selenium errors to appropriate HTTP status codes
+            // Map Selenium errors to appropriate error types
             $message = $e->getMessage();
             if (strpos($message, 'DNS') !== false) {
-                throw new Exception(Language::getMessage('DNS_FAILURE')['message'], 504);
+                $this->throwError(self::ERROR_DNS_FAILURE);
             } elseif (strpos($message, 'timeout') !== false) {
-                throw new Exception(Language::getMessage('CONNECTION_ERROR')['message'], 503);
+                $this->throwError(self::ERROR_CONNECTION_ERROR);
             } elseif (strpos($message, 'not found') !== false) {
-                throw new Exception(Language::getMessage('NOT_FOUND')['message'], 404);
+                $this->throwError(self::ERROR_NOT_FOUND);
             } else {
-                throw new Exception(Language::getMessage('HTTP_ERROR')['message'], 502);
+                $this->throwError(self::ERROR_HTTP_ERROR);
             }
         }
     }
@@ -535,7 +598,7 @@ class URLAnalyzer
     private function processContent($content, $host, $url)
     {
         if (strlen($content) < 5120) {
-            throw new Exception(Language::getMessage('CONTENT_ERROR')['message'], 502);
+            $this->throwError(self::ERROR_CONTENT_ERROR);
         }
 
         $dom = new DOMDocument();
