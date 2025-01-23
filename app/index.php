@@ -148,17 +148,8 @@ $cache_folder = $cache->getCacheFileCount();
             <?php endif; ?>
         </div>
 
-        <!-- Exemplo de uso direto / Direct usage example -->
-        <div class="mt-8 text-center text-base text-gray-500">
-            <p>
-                <img src="assets/svg/code.svg" class="inline-block w-5 h-5 mr-2" alt="Acesso direito">
-                <?php echo Language::get('direct_access'); ?>
-            <pre class="bg-gray-100 p-3 rounded-lg text-sm overflow-x-auto"><?php echo SITE_URL; ?>/p/https://exemplo.com</pre>
-            </p>
-        </div>
-        
-        <!-- Adicionar como aplicativo / Add as app -->
-        <div class="bg-white rounded-xl shadow-lg p-8 mt-8">
+        <!-- Adicionar como aplicativo / Add as app (mobile only) -->
+        <div class="bg-white rounded-xl shadow-lg p-8 mt-8 mb-8 md:hidden">
             <h2 class="text-xl font-semibold text-gray-800 mb-6 flex items-center">
                 <img src="assets/svg/marreta.svg" class="w-6 h-6 mr-3" alt="App">
                 <?php echo Language::get('add_as_app'); ?>
@@ -178,8 +169,8 @@ $cache_folder = $cache->getCacheFileCount();
             </div>
         </div>
 
-        <!-- Seção de Bookmarklet / Bookmarklet section -->
-        <div class="bg-white rounded-xl shadow-lg p-8 mt-8 mb-8">
+        <!-- Seção de Bookmarklet / Bookmarklet section (desktop only) -->
+        <div class="bg-white rounded-xl shadow-lg p-8 mt-8 mb-8 hidden md:block">
             <h2 class="text-xl font-semibold text-gray-800 mb-6 flex items-center">
                 <img src="assets/svg/bookmark.svg" class="w-6 h-6 mr-3" alt="Favoritos">
                 <?php echo Language::get('bookmarklet_title'); ?>
@@ -199,74 +190,15 @@ $cache_folder = $cache->getCacheFileCount();
             </div>
         </div>
 
-        <!-- Serviços alternativos / Alternative services -->
-        <div class="bg-white rounded-xl shadow-lg p-8 mt-8">
-            <h2 class="text-xl font-semibold text-gray-800 mb-6">
-                <img src="assets/svg/refresh.svg" class="inline-block w-6 h-6 mr-3" alt="Serviços alternativos">
-                <?php echo Language::get('alternative_services'); ?>
-            </h2>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <a href="https://archive.today" target="_blank"
-                    class="flex items-center p-4 rounded-lg border-2 border-gray-200 hover:border-blue-500 hover:bg-blue-50 transition-all duration-200">
-                    <img src="assets/svg/archive.svg" class="w-8 h-8 mr-4" alt="Archive.today">
-                    <div>
-                        <div class="font-medium text-lg text-gray-800">archive.today</div>
-                    </div>
-                </a>
-                <a href="https://12ft.io" target="_blank"
-                    class="flex items-center p-4 rounded-lg border-2 border-gray-200 hover:border-green-500 hover:bg-green-50 transition-all duration-200">
-                    <img src="assets/svg/bypass.svg" class="w-8 h-8 mr-4" alt="12ft.io">
-                    <div>
-                        <div class="font-medium text-lg text-gray-800">12ft.io</div>
-                    </div>
-                </a>
-            </div>
+        <div class="text-gray-600 text-center text-sm">
+            <p>
+                <?php echo Language::get('open_source_description'); ?>
+            </p>
+            <p class="mt-2">
+                <a href="https://github.com/manualdousuario/marreta/wiki/API-Rest" target="_blank" class="underline">API Rest</a> ● <a href="https://github.com/manualdousuario/marreta/" target="_blank" class="underline">Github</a>
+            </p>
         </div>
 
-        <!-- Desenvolvimento / Development -->
-        <div class="bg-white rounded-xl shadow-lg p-8 mt-8">
-            <h2 class="text-xl font-semibold text-gray-800 mb-6 flex items-center">
-                <img src="assets/svg/code.svg" class="w-6 h-6 mr-3" alt="API REST">
-                <?php echo Language::get('api_title'); ?>
-            </h2>
-            <div class="space-y-4">
-                <p class="text-gray-600">
-                    <?php echo str_replace('{site_name}', SITE_NAME, Language::get('api_description')); ?>
-                </p>
-                <div class="bg-gray-50 rounded-lg p-4">
-                    <h3 class="font-medium text-gray-800 mb-2"><?php echo Language::get('endpoint'); ?></h3>
-                    <pre class="bg-gray-100 p-3 rounded-lg text-sm overflow-x-auto">GET <?php echo SITE_URL; ?>/api/https://exemplo.com</pre>
-                </div>
-                <div class="bg-gray-50 rounded-lg p-4">
-                    <h3 class="font-medium text-gray-800 mb-2"><?php echo Language::get('success_response'); ?></h3>
-                    <pre class="bg-gray-100 p-3 rounded-lg text-sm overflow-x-auto">
-{
-    "status": 200,
-    "url": "<?php echo SITE_URL; ?>/p/https://exemplo.com"
-}</pre>
-                </div>
-                <div class="bg-gray-50 rounded-lg p-4">
-                    <h3 class="font-medium text-gray-800 mb-2"><?php echo Language::get('error_response'); ?></h3>
-                    <pre class="bg-gray-100 p-3 rounded-lg text-sm overflow-x-auto">
-{
-    "status": 400,
-    "error": {
-        "code": "INVALID_URL",
-        "message": "<?php echo Language::getMessage('INVALID_URL')['message']; ?>"
-    }
-}</pre>
-                </div>
-            </div>
-            <h2 class="text-xl font-semibold text-gray-800 mt-6 mb-6 flex items-center">
-                <img src="assets/svg/code.svg" class="w-6 h-6 mr-3" alt="Open Source">
-                <?php echo Language::get('open_source_title'); ?>
-            </h2>
-            <div>
-                <p class="text-gray-600">
-                    <?php echo Language::get('open_source_description'); ?>
-                </p>
-            </div>
-        </div>
     </div>
 
     <!-- Scripts JavaScript -->
