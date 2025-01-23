@@ -106,7 +106,7 @@ class URLAnalyzer
      * @param string $url URL to check redirects / URL para verificar redirecionamentos
      * @return array Array with final URL and if there was a redirect / Array com a URL final e se houve redirecionamento
      */
-    public function checkRedirects($url)
+    public function checkStatus($url)
     {
         $curl = new Curl();
         $curl->setFollowLocation();
@@ -174,7 +174,7 @@ class URLAnalyzer
         // 1. Clean URL / Limpa a URL
         $cleanUrl = $this->cleanUrl($url);
         if (!$cleanUrl) {
-            throw new Exception(Language::getMessage('INVALID_URL')['message']);
+            throw new Exception(Language::getMessage('INVALID_URL')['message'], 400);
         }
 
         // 2. Check cache / Verifica cache
@@ -184,72 +184,116 @@ class URLAnalyzer
 
         // 3. Check blocked domains / Verifica domínios bloqueados
         $host = parse_url($cleanUrl, PHP_URL_HOST);
+        if (!$host) {
+            throw new Exception(Language::getMessage('INVALID_URL')['message'], 400);
+        }
         $host = preg_replace('/^www\./', '', $host);
 
         if (in_array($host, BLOCKED_DOMAINS)) {
-            throw new Exception(Language::getMessage('BLOCKED_DOMAIN')['message']);
+            Logger::getInstance()->log($cleanUrl, 'BLOCKED_DOMAIN');
+            throw new Exception(Language::getMessage('BLOCKED_DOMAIN')['message'], 403);
         }
 
-        // 4. Get domain rules and check fetch strategy / Obtenha regras de domínio e verifique a estratégia de busca
-        $domainRules = $this->getDomainRules($host);
-        $fetchStrategy = isset($domainRules['fetchStrategies']) ? $domainRules['fetchStrategies'] : null;
-
-        // If a specific fetch strategy is defined, use only that / Se uma estratégia de busca específica for definida, use somente essa
-        if ($fetchStrategy) {
-            try {
-                $content = null;
-                switch ($fetchStrategy) {
-                    case 'fetchContent':
-                        $content = $this->fetchContent($cleanUrl);
-                        break;
-                    case 'fetchFromWaybackMachine':
-                        $content = $this->fetchFromWaybackMachine($cleanUrl);
-                        break;
-                    case 'fetchFromSelenium':
-                        $content = $this->fetchFromSelenium($cleanUrl, isset($domainRules['browser']) ? $domainRules['browser'] : 'firefox');
-                        break;
-                }
-                
-                if (!empty($content)) {
-                    // Add the used fetch strategy to activatedRules / Adicione a estratégia de busca usada para activatedRules
-                    $this->activatedRules[] = "fetchStrategy: $fetchStrategy";
-                    
-                    $processedContent = $this->processContent($content, $host, $cleanUrl);
-                    $this->cache->set($cleanUrl, $processedContent);
-                    return $processedContent;
-                }
-            } catch (Exception $e) {
-                Logger::getInstance()->log($cleanUrl, strtoupper($fetchStrategy) . '_ERROR', $e->getMessage());
-                throw $e;
+        // Check URL status code before proceeding
+        $redirectInfo = $this->checkStatus($cleanUrl);
+        if ($redirectInfo['httpCode'] !== 200) {
+            Logger::getInstance()->log($cleanUrl, 'INVALID_STATUS_CODE', "HTTP {$redirectInfo['httpCode']}");
+            if ($redirectInfo['httpCode'] === 404) {
+                throw new Exception(Language::getMessage('NOT_FOUND')['message'], 404);
+            } else {
+                throw new Exception(Language::getMessage('HTTP_ERROR')['message'], $redirectInfo['httpCode']);
             }
         }
 
-        // 5. If no specific strategy or it failed, try all strategies in sequence / Se não houver estratégia específica ou se ela falhar, tente todas as estratégias em sequência
-        $fetchStrategies = [
-            ['method' => 'fetchContent', 'args' => [$cleanUrl]],
-            ['method' => 'fetchFromWaybackMachine', 'args' => [$cleanUrl]],
-            ['method' => 'fetchFromSelenium', 'args' => [$cleanUrl, 'firefox']]
-        ];
+        try {
+            // 4. Get domain rules and check fetch strategy / Obtenha regras de domínio e verifique a estratégia de busca
+            $domainRules = $this->getDomainRules($host);
+            $fetchStrategy = isset($domainRules['fetchStrategies']) ? $domainRules['fetchStrategies'] : null;
 
-        foreach ($fetchStrategies as $strategy) {
-            try {
-                $content = call_user_func_array([$this, $strategy['method']], $strategy['args']);
-                if (!empty($content)) {
-                    // Add the successful fetch strategy to activatedRules / Adicione a estratégia de busca bem-sucedida ao activatedRules
-                    $this->activatedRules[] = "fetchStrategy: {$strategy['method']}";
+            // If a specific fetch strategy is defined, use only that / Se uma estratégia de busca específica for definida, use somente essa
+            if ($fetchStrategy) {
+                try {
+                    $content = null;
+                    switch ($fetchStrategy) {
+                        case 'fetchContent':
+                            $content = $this->fetchContent($cleanUrl);
+                            break;
+                        case 'fetchFromWaybackMachine':
+                            $content = $this->fetchFromWaybackMachine($cleanUrl);
+                            break;
+                        case 'fetchFromSelenium':
+                            $content = $this->fetchFromSelenium($cleanUrl, isset($domainRules['browser']) ? $domainRules['browser'] : 'firefox');
+                            break;
+                    }
                     
-                    $processedContent = $this->processContent($content, $host, $cleanUrl);
-                    $this->cache->set($cleanUrl, $processedContent);
-                    return $processedContent;
+                    if (!empty($content)) {
+                        $this->activatedRules[] = "fetchStrategy: $fetchStrategy";
+                        $processedContent = $this->processContent($content, $host, $cleanUrl);
+                        $this->cache->set($cleanUrl, $processedContent);
+                        return $processedContent;
+                    }
+                } catch (Exception $e) {
+                    Logger::getInstance()->log($cleanUrl, strtoupper($fetchStrategy) . '_ERROR', $e->getMessage());
+                    throw $e;
                 }
-            } catch (Exception $e) {
-                error_log("{$strategy['method']}_ERROR: " . $e->getMessage());
-                continue;
             }
-        }
 
-        Logger::getInstance()->log($cleanUrl, 'GENERAL_FETCH_ERROR');
-        throw new Exception(Language::getMessage('CONTENT_ERROR')['message']);
+            // 5. Try all strategies in sequence
+            $fetchStrategies = [
+                ['method' => 'fetchContent', 'args' => [$cleanUrl]],
+                ['method' => 'fetchFromWaybackMachine', 'args' => [$cleanUrl]],
+                ['method' => 'fetchFromSelenium', 'args' => [$cleanUrl, 'firefox']]
+            ];
+
+            $lastError = null;
+            foreach ($fetchStrategies as $strategy) {
+                try {
+                    $content = call_user_func_array([$this, $strategy['method']], $strategy['args']);
+                    if (!empty($content)) {
+                        $this->activatedRules[] = "fetchStrategy: {$strategy['method']}";
+                        $processedContent = $this->processContent($content, $host, $cleanUrl);
+                        $this->cache->set($cleanUrl, $processedContent);
+                        return $processedContent;
+                    }
+                } catch (Exception $e) {
+                    $lastError = $e;
+                    error_log("{$strategy['method']}_ERROR: " . $e->getMessage());
+                    continue;
+                }
+            }
+
+            // If we get here, all strategies failed
+            Logger::getInstance()->log($cleanUrl, 'GENERAL_FETCH_ERROR');
+            if ($lastError) {
+                // Map the error type based on the last error message
+                if (strpos($lastError->getMessage(), 'DNS') !== false) {
+                    throw new Exception(Language::getMessage('DNS_FAILURE')['message'], 504);
+                } elseif (strpos($lastError->getMessage(), 'CURL') !== false) {
+                    throw new Exception(Language::getMessage('CONNECTION_ERROR')['message'], 503);
+                } elseif (strpos($lastError->getMessage(), 'HTTP') !== false) {
+                    throw new Exception(Language::getMessage('HTTP_ERROR')['message'], 502);
+                } elseif (strpos($lastError->getMessage(), 'not found') !== false) {
+                    throw new Exception(Language::getMessage('NOT_FOUND')['message'], 404);
+                }
+            }
+            throw new Exception(Language::getMessage('CONTENT_ERROR')['message'], 502);
+        } catch (Exception $e) {
+            // Re-throw with appropriate error code if not already set
+            if (!$e->getCode()) {
+                $code = 502; // Default to bad gateway
+                if (strpos($e->getMessage(), 'DNS') !== false) {
+                    $code = 504;
+                } elseif (strpos($e->getMessage(), 'CURL') !== false) {
+                    $code = 503;
+                } elseif (strpos($e->getMessage(), 'HTTP') !== false) {
+                    $code = 502;
+                } elseif (strpos($e->getMessage(), 'not found') !== false) {
+                    $code = 404;
+                }
+                throw new Exception($e->getMessage(), $code);
+            }
+            throw $e;
+        }
     }
 
     /**
@@ -261,6 +305,9 @@ class URLAnalyzer
         $curl = new Curl();
 
         $host = parse_url($url, PHP_URL_HOST);
+        if (!$host) {
+            throw new Exception(Language::getMessage('INVALID_URL')['message'], 400);
+        }
         $host = preg_replace('/^www\./', '', $host);
         $domainRules = $this->getDomainRules($host);
 
@@ -289,38 +336,28 @@ class URLAnalyzer
             ]);
         }
 
-        // Fetch content using social media referrer / Busca conteúdo usando referenciador de mídia social
-        if (isset($domainRules['socialReferrers'])) {
-            $curl->setHeader('Referer', $this->getRandomSocialReferrer());
-        }
-
         // Add domain-specific headers / Adicionar cabeçalhos específicos de domínio
         if (isset($domainRules['headers'])) {
             $curl->setHeaders($domainRules['headers']);
         }
 
-        // Add domain-specific cookies / Adicionar cookies específicos de domínio
-        if (isset($domainRules['cookies'])) {
-            $cookies = [];
-            foreach ($domainRules['cookies'] as $name => $value) {
-                if ($value !== null) {
-                    $cookies[] = $name . '=' . $value;
-                }
-            }
-            if (!empty($cookies)) {
-                $curl->setHeader('Cookie', implode('; ', $cookies));
-            }
-        }
-
-        // Add referer if specified / Adicionar referenciador se especificado
-        if (isset($domainRules['referer'])) {
-            $curl->setHeader('Referer', $domainRules['referer']);
-        }
-
         $curl->get($url);
 
-        if ($curl->error || $curl->httpStatusCode !== 200 || empty($curl->response)) {
-            throw new Exception(Language::getMessage('HTTP_ERROR')['message']);
+        if ($curl->error) {
+            $errorMessage = $curl->errorMessage;
+            if (strpos($errorMessage, 'DNS') !== false) {
+                throw new Exception(Language::getMessage('DNS_FAILURE')['message'], 504);
+            } elseif (strpos($errorMessage, 'CURL') !== false) {
+                throw new Exception(Language::getMessage('CONNECTION_ERROR')['message'], 503);
+            } elseif ($curl->httpStatusCode === 404) {
+                throw new Exception(Language::getMessage('NOT_FOUND')['message'], 404);
+            } else {
+                throw new Exception(Language::getMessage('HTTP_ERROR')['message'], 502);
+            }
+        }
+
+        if ($curl->httpStatusCode !== 200 || empty($curl->response)) {
+            throw new Exception(Language::getMessage('HTTP_ERROR')['message'], 502);
         }
 
         return $curl->response;
@@ -343,13 +380,19 @@ class URLAnalyzer
 
         $curl->get($availabilityUrl);
 
-        if ($curl->error || $curl->httpStatusCode !== 200) {
-            throw new Exception(Language::getMessage('HTTP_ERROR')['message']);
+        if ($curl->error) {
+            if (strpos($curl->errorMessage, 'DNS') !== false) {
+                throw new Exception(Language::getMessage('DNS_FAILURE')['message'], 504);
+            } elseif (strpos($curl->errorMessage, 'CURL') !== false) {
+                throw new Exception(Language::getMessage('CONNECTION_ERROR')['message'], 503);
+            } else {
+                throw new Exception(Language::getMessage('HTTP_ERROR')['message'], 502);
+            }
         }
 
         $data = $curl->response;
         if (!isset($data->archived_snapshots->closest->url)) {
-            throw new Exception(Language::getMessage('CONTENT_ERROR')['message']);
+            throw new Exception(Language::getMessage('NOT_FOUND')['message'], 404);
         }
 
         $archiveUrl = $data->archived_snapshots->closest->url;
@@ -362,7 +405,7 @@ class URLAnalyzer
         $curl->get($archiveUrl);
 
         if ($curl->error || $curl->httpStatusCode !== 200 || empty($curl->response)) {
-            throw new Exception(Language::getMessage('HTTP_ERROR')['message']);
+            throw new Exception(Language::getMessage('HTTP_ERROR')['message'], 502);
         }
 
         $content = $curl->response;
@@ -423,7 +466,7 @@ class URLAnalyzer
             $driver->quit();
 
             if (empty($htmlSource)) {
-                throw new Exception("Selenium returned empty content");
+                throw new Exception(Language::getMessage('CONTENT_ERROR')['message'], 502);
             }
 
             return $htmlSource;
@@ -431,7 +474,18 @@ class URLAnalyzer
             if (isset($driver)) {
                 $driver->quit();
             }
-            throw $e;
+            
+            // Map Selenium errors to appropriate HTTP status codes
+            $message = $e->getMessage();
+            if (strpos($message, 'DNS') !== false) {
+                throw new Exception(Language::getMessage('DNS_FAILURE')['message'], 504);
+            } elseif (strpos($message, 'timeout') !== false) {
+                throw new Exception(Language::getMessage('CONNECTION_ERROR')['message'], 503);
+            } elseif (strpos($message, 'not found') !== false) {
+                throw new Exception(Language::getMessage('NOT_FOUND')['message'], 404);
+            } else {
+                throw new Exception(Language::getMessage('HTTP_ERROR')['message'], 502);
+            }
         }
     }
 
@@ -452,6 +506,10 @@ class URLAnalyzer
         }
 
         $parts = parse_url($url);
+        if (!isset($parts['scheme']) || !isset($parts['host'])) {
+            return false;
+        }
+        
         $cleanedUrl = $parts['scheme'] . '://' . $parts['host'];
         
         if (isset($parts['path'])) {
@@ -477,7 +535,7 @@ class URLAnalyzer
     private function processContent($content, $host, $url)
     {
         if (strlen($content) < 5120) {
-            throw new Exception(Language::getMessage('CONTENT_ERROR')['message']);
+            throw new Exception(Language::getMessage('CONTENT_ERROR')['message'], 502);
         }
 
         $dom = new DOMDocument();
@@ -646,7 +704,7 @@ class URLAnalyzer
                         }
                         $this->activatedRules[] = "removeCustomAttr: $attrPattern";
                     }
-                } else {
+            } else {
                     // For non-wildcard attributes / Para atributos sem wildcard
                     $elements = $xpath->query("//*[@$attrPattern]");
                     if ($elements !== false && $elements->length > 0) {

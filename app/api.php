@@ -93,25 +93,38 @@ if (strpos($path, $prefix) === 0) {
             'url' => SITE_URL . '/p/' . $url
         ], 200);
     } catch (Exception $e) {
-        // Error handling with mapping to appropriate HTTP codes
-        // Tratamento de erros com mapeamento para códigos HTTP apropriados
+        // Get error code from exception or default to 400
+        // Obtém o código de erro da exceção ou usa 400 como padrão
+        $statusCode = $e->getCode() ?: 400;
         $message = $e->getMessage();
-        $statusCode = 400;
-        $errorCode = 'GENERIC_ERROR';
-        $errorMessage = Language::getMessage('GENERIC_ERROR');
-
-        // Try to match the error message with known error types
-        // Tenta corresponder a mensagem de erro com tipos de erro conhecidos
-        $errorTypes = ['BLOCKED_DOMAIN', 'DNS_FAILURE', 'HTTP_ERROR', 'CONNECTION_ERROR', 'CONTENT_ERROR'];
-        foreach ($errorTypes as $type) {
-            $typeMessage = Language::getMessage($type);
-            if (strpos($message, $typeMessage['message']) !== false) {
-                $statusCode = ($typeMessage['type'] === 'error') ? 400 : 503;
-                $errorCode = $type;
-                $errorMessage = $typeMessage;
+        
+        // Map error codes to error types
+        // Mapeia códigos de erro para tipos de erro
+        switch ($statusCode) {
+            case 400:
+                $errorCode = 'INVALID_URL';
                 break;
-            }
+            case 403:
+                $errorCode = 'BLOCKED_DOMAIN';
+                break;
+            case 404:
+                $errorCode = 'NOT_FOUND';
+                break;
+            case 502:
+                $errorCode = 'HTTP_ERROR';
+                break;
+            case 503:
+                $errorCode = 'CONNECTION_ERROR';
+                break;
+            case 504:
+                $errorCode = 'DNS_FAILURE';
+                break;
+            default:
+                $errorCode = 'GENERIC_ERROR';
+                break;
         }
+        
+        $errorMessage = Language::getMessage($errorCode);
 
         // Add error header for better client-side handling
         // Adiciona header de erro para melhor tratamento no cliente

@@ -40,7 +40,7 @@ if (strpos($path, $prefix) === 0) {
         try {
             // Check for redirects
             // Verifica se há redirecionamentos
-            $redirectInfo = $analyzer->checkRedirects($url);
+            $redirectInfo = $analyzer->checkStatus($url);
             
             // If there's a redirect and the final URL is different
             // Se houver redirecionamento e a URL final for diferente
@@ -61,21 +61,40 @@ if (strpos($path, $prefix) === 0) {
             echo $content;
             exit;
         } catch (Exception $e) {
-            $errorMessage = $e->getMessage();
-            $errorType = 'GENERIC_ERROR'; // Default error type / Tipo padrão de erro
-
-            // Map error message to specific type
-            // Mapeia a mensagem de erro para um tipo específico
-            if (strpos($errorMessage, 'bloqueado') !== false || strpos($errorMessage, 'blocked') !== false) {
-                $errorType = 'BLOCKED_DOMAIN';
-            } elseif (strpos($errorMessage, 'DNS') !== false) {
-                $errorType = 'DNS_FAILURE';
-            } elseif (strpos($errorMessage, 'HTTP: 4') !== false || strpos($errorMessage, 'HTTP: 5') !== false) {
-                $errorType = 'HTTP_ERROR';
-            } elseif (strpos($errorMessage, 'CURL') !== false) {
-                $errorType = 'CONNECTION_ERROR';
-            } elseif (strpos($errorMessage, 'obter conteúdo') !== false || strpos($errorMessage, 'get content') !== false) {
-                $errorType = 'CONTENT_ERROR';
+            // Get error code from exception or default to 400
+            // Obtém o código de erro da exceção ou usa 400 como padrão
+            $statusCode = $e->getCode() ?: 400;
+            
+            // Map error codes to error types
+            // Mapeia códigos de erro para tipos de erro
+            switch ($statusCode) {
+                case 400:
+                    $errorType = 'INVALID_URL';
+                    break;
+                case 403:
+                    $errorType = 'BLOCKED_DOMAIN';
+                    // Extract redirect URL from error message if present
+                    $parts = explode('|', $e->getMessage());
+                    if (count($parts) > 1) {
+                        header('Location: ' . trim($parts[1]) . '?message=' . $errorType);
+                        exit;
+                    }
+                    break;
+                case 404:
+                    $errorType = 'NOT_FOUND';
+                    break;
+                case 502:
+                    $errorType = 'HTTP_ERROR';
+                    break;
+                case 503:
+                    $errorType = 'CONNECTION_ERROR';
+                    break;
+                case 504:
+                    $errorType = 'DNS_FAILURE';
+                    break;
+                default:
+                    $errorType = 'GENERIC_ERROR';
+                    break;
             }
 
             // Redirect to home page with error message
