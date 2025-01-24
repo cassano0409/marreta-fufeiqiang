@@ -186,7 +186,6 @@ class Router
     private function setSecurityHeaders()
     {
         // Set security headers
-        header("Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com; style-src 'self' 'unsafe-inline'; img-src 'self' data:;");
         header("X-Content-Type-Options: nosniff");
         header("X-Frame-Options: DENY");
         header("X-XSS-Protection: 1; mode=block");
