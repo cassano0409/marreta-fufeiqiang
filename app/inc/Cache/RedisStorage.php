@@ -2,6 +2,8 @@
 
 namespace Inc\Cache;
 
+use Redis;
+
 /**
  * Redis-based cache storage implementation
  * Implementação de armazenamento de cache baseado em Redis
@@ -73,9 +75,15 @@ class RedisStorage implements CacheStorageInterface
             }
         }
 
-        // If Redis is not available or key is empty, count files
-        // Se Redis não estiver disponível ou chave vazia, conta os arquivos
-        $fileCount = iterator_count(new \FilesystemIterator($this->cacheDir));
+        // If Redis is not available or key is empty, count .gz files
+        // Se Redis não estiver disponível ou chave vazia, conta arquivos .gz
+        $fileCount = 0;
+        $iterator = new \FilesystemIterator($this->cacheDir);
+        foreach ($iterator as $file) {
+            if ($file->isFile() && $file->getExtension() === 'gz') {
+                $fileCount++;
+            }
+        }
 
         // If Redis is available, save the count
         // Se Redis estiver disponível, salva a contagem
