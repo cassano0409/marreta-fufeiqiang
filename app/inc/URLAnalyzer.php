@@ -16,10 +16,10 @@
  * - Selenium extraction support when enabled by domain / Suporte a extração via Selenium quando habilitado por domínio
  */
 
-require_once 'Rules.php';
-require_once 'Cache.php';
-require_once 'Logger.php';
-require_once 'Language.php';
+require_once __DIR__ . '/Rules.php';
+require_once __DIR__ . '/Cache.php';
+require_once __DIR__ . '/Logger.php';
+require_once __DIR__ . '/Language.php';
 
 use Curl\Curl;
 use Facebook\WebDriver\Remote\DesiredCapabilities;
@@ -253,14 +253,14 @@ class URLAnalyzer
         $host = preg_replace('/^www\./', '', $host);
 
         if (in_array($host, BLOCKED_DOMAINS)) {
-            Logger::getInstance()->log($cleanUrl, 'BLOCKED_DOMAIN');
+            Logger::getInstance()->logUrl($cleanUrl, 'BLOCKED_DOMAIN');
             $this->throwError(self::ERROR_BLOCKED_DOMAIN);
         }
 
         // Check URL status code before proceeding
         $redirectInfo = $this->checkStatus($cleanUrl);
         if ($redirectInfo['httpCode'] !== 200) {
-            Logger::getInstance()->log($cleanUrl, 'INVALID_STATUS_CODE', "HTTP {$redirectInfo['httpCode']}");
+            Logger::getInstance()->logUrl($cleanUrl, 'INVALID_STATUS_CODE', "HTTP {$redirectInfo['httpCode']}");
             if ($redirectInfo['httpCode'] === 404) {
                 $this->throwError(self::ERROR_NOT_FOUND);
             } else {
@@ -296,7 +296,7 @@ class URLAnalyzer
                         return $processedContent;
                     }
                 } catch (Exception $e) {
-                    Logger::getInstance()->log($cleanUrl, strtoupper($fetchStrategy) . '_ERROR', $e->getMessage());
+                    Logger::getInstance()->logUrl($cleanUrl, strtoupper($fetchStrategy) . '_ERROR', $e->getMessage());
                     throw $e;
                 }
             }
@@ -326,7 +326,7 @@ class URLAnalyzer
             }
 
             // If we get here, all strategies failed
-            Logger::getInstance()->log($cleanUrl, 'GENERAL_FETCH_ERROR');
+            Logger::getInstance()->logUrl($cleanUrl, 'GENERAL_FETCH_ERROR');
             if ($lastError) {
                 $message = $lastError->getMessage();
                 if (strpos($message, 'DNS') !== false) {

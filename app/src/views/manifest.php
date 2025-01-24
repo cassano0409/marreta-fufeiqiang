@@ -9,8 +9,8 @@
  * Ele define o comportamento da aplicação quando instalada em um dispositivo e sua aparência.
  */
 
-require_once 'config.php';
-require_once 'inc/Language.php';
+require_once __DIR__ . '/../../config.php';
+require_once __DIR__ . '/../../inc/Language.php';
 
 header('Content-Type: application/json');
 
