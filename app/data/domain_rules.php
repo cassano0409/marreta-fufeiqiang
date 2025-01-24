@@ -141,10 +141,6 @@ return [
         'scriptTagRemove' => ['me.jsuol.com.br', 'c.jsuol.com.br'],
         'classElementRemove' => ['header-top-wrapper'],
     ],
-    'estadao.com.br' => [
-        'fetchStrategies' => 'fetchFromSelenium',
-        'browser' => 'chrome'
-    ],
     'stcatharinesstandard.ca' => [
         'fetchStrategies' => 'fetchFromSelenium',
     ],
