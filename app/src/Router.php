@@ -81,11 +81,11 @@ class Router
                 require __DIR__ . '/views/home.php';
             });
 
-            // Rota da API - inclui api.php existente
-            // API route - includes existing api.php
+            // Rota da API - usa URLProcessor em modo API
+            // API route - uses URLProcessor in API mode
             $r->addRoute('GET', '/api/{url:.+}', function($vars) {
-                $_GET['url'] = $vars['url'];
-                require __DIR__ . '/api.php';
+                $processor = new URLProcessor($vars['url'], true);
+                $processor->process();
             });
 
             // Rota da API sem parâmetros - redireciona para raiz
@@ -95,11 +95,11 @@ class Router
                 exit;
             });
 
-            // Rota de processamento - inclui p.php existente
-            // Processing route - includes existing p.php
+            // Rota de processamento - usa URLProcessor em modo web
+            // Processing route - uses URLProcessor in web mode
             $r->addRoute('GET', '/p/{url:.+}', function($vars) {
-                $_GET['url'] = $vars['url'];
-                require __DIR__ . '/p.php';
+                $processor = new URLProcessor($vars['url'], false);
+                $processor->process();
             });
             
             // Rota de processamento com query parameter ou sem parâmetros
