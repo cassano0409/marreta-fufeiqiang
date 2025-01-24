@@ -621,6 +621,9 @@ class URLAnalyzer
         // Add Brand Bar / Adicionar barra de marca
         $this->addBrandBar($dom, $xpath);
 
+        // Add debug panel / Adicionar painel de debug
+        $this->addDebugBar($dom, $xpath);
+
         return $dom->saveHTML();
     }
 
@@ -772,16 +775,26 @@ class URLAnalyzer
         $body = $xpath->query('//body')->item(0);
         if ($body) {
             $brandDiv = $dom->createElement('div');
-            $brandDiv->setAttribute('style', 'z-index: 99999; position: fixed; top: 0; right: 4px; background: rgb(37,99,235); color: #fff; font-size: 13px; line-height: 1em; padding: 6px; margin: 0px; overflow: hidden; border-bottom-left-radius: 3px; border-bottom-right-radius: 3px; font-family: Tahoma, sans-serif;');
+            $brandDiv->setAttribute('style', 'z-index: 99999; position: fixed; top: 0; right: 1rem; background: rgba(37,99,235, 0.9); backdrop-filter: blur(8px); color: #fff; font-size: 13px; line-height: 1em; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); padding: 8px 12px; margin: 0px; overflow: hidden; border-bottom-left-radius: 8px; border-bottom-right-radius: 8px; font-family: Tahoma, sans-serif;');
             $brandHtml = $dom->createDocumentFragment();
             $brandHtml->appendXML('<a href="'.SITE_URL.'" style="color: #fff; text-decoration: none; font-weight: bold;" target="_blank">'.htmlspecialchars(SITE_DESCRIPTION).'</a>');
             $brandDiv->appendChild($brandHtml);
             $body->appendChild($brandDiv);
+        }
+    }
 
-            // Add debug panel if LOG_LEVEL is DEBUG / Adicionar painel de depuração se LOG_LEVEL for DEBUG
-            if (LOG_LEVEL === 'DEBUG') {
+
+    /**
+     * Add debug panel if LOG_LEVEL is DEBUG
+     * Adicionar painel de depuração se LOG_LEVEL for DEBUG
+     */
+    private function addDebugBar($dom, $xpath)
+    {
+        if (LOG_LEVEL === 'DEBUG') {
+            $body = $xpath->query('//body')->item(0);
+            if ($body) {
                 $debugDiv = $dom->createElement('div');
-                $debugDiv->setAttribute('style', 'z-index: 99999; position: fixed; bottom: 10px; right: 10px; background: rgba(0,0,0,0.8); color: #fff; font-size: 13px; line-height: 1.4; padding: 10px; border-radius: 3px; font-family: monospace; max-height: 200px; overflow-y: auto;');
+                $debugDiv->setAttribute('style', 'position: fixed; bottom: 1rem; right: 1rem; max-width: 400px; padding: 1rem; background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(8px); border: 1px solid #e5e7eb; border-radius: 0.5rem; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); overflow: auto; max-height: 80vh; z-index: 9999; font-family: monospace; font-size: 13px; line-height: 1.4;');
                 
                 if (empty($this->activatedRules)) {
                     $ruleElement = $dom->createElement('div');
