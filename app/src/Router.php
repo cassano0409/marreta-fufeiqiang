@@ -50,21 +50,19 @@ class Router
                 $message_type = '';
                 $url = '';
                 
-                // Processa mensagens da query string
-                // Process query string messages
+                // Sanitize and process query string messages
                 if (isset($_GET['message'])) {
-                    $message_key = $_GET['message'];
+                    $message_key = htmlspecialchars(trim($_GET['message']), ENT_QUOTES | ENT_HTML5, 'UTF-8');
                     $messageData = \Language::getMessage($message_key);
-                    $message = $messageData['message'];
-                    $message_type = $messageData['type'];
+                    $message = htmlspecialchars($messageData['message'], ENT_QUOTES | ENT_HTML5, 'UTF-8');
+                    $message_type = htmlspecialchars($messageData['type'], ENT_QUOTES | ENT_HTML5, 'UTF-8');
                 }
                 
-                // Processa submissão do formulário
                 // Process form submission
                 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['url'])) {
-                    $url = filter_var($_POST['url'], FILTER_SANITIZE_URL);
+                    $url = $this->sanitizeUrl($_POST['url']);
                     if (filter_var($url, FILTER_VALIDATE_URL)) {
-                        header('Location: ' . SITE_URL . '/p/' . urlencode($url));
+                        header('Location: ' . SITE_URL . '/p/' . $url);
                         exit;
                     } else {
                         $messageData = \Language::getMessage('INVALID_URL');
@@ -84,7 +82,7 @@ class Router
             // Rota da API - usa URLProcessor em modo API
             // API route - uses URLProcessor in API mode
             $r->addRoute('GET', '/api/{url:.+}', function($vars) {
-                $processor = new URLProcessor($vars['url'], true);
+                $processor = new URLProcessor($this->sanitizeUrl($vars['url']), true);
                 $processor->process();
             });
 
@@ -98,23 +96,23 @@ class Router
             // Rota de processamento - usa URLProcessor em modo web
             // Processing route - uses URLProcessor in web mode
             $r->addRoute('GET', '/p/{url:.+}', function($vars) {
-                $processor = new URLProcessor($vars['url'], false);
+                $processor = new URLProcessor($this->sanitizeUrl($vars['url']), false);
                 $processor->process();
             });
             
-            // Rota de processamento com query parameter ou sem parâmetros
             // Processing route with query parameter or without parameters
             $r->addRoute('GET', '/p[/]', function() {
                 if (isset($_GET['url']) || isset($_GET['text'])) {
-                    $url = isset($_GET['url']) ? $_GET['url'] : '';
-                    $text = isset($_GET['text']) ? $_GET['text'] : '';
+                    // Sanitize input parameters
+                    $url = isset($_GET['url']) ? $this->sanitizeUrl($_GET['url']) : '';
+                    $text = isset($_GET['text']) ? $this->sanitizeUrl($_GET['text']) : '';
                     
                     // Check which parameter is a valid URL
                     if (filter_var($url, FILTER_VALIDATE_URL)) {
-                        header('Location: /p/' . urlencode($url));
+                        header('Location: /p/' . $url);
                         exit;
                     } elseif (filter_var($text, FILTER_VALIDATE_URL)) {
-                        header('Location: /p/' . urlencode($text));
+                        header('Location: /p/' . $text);
                         exit;
                     } else {
                         header('Location: /?message=INVALID_URL');
@@ -134,11 +132,73 @@ class Router
     }
 
     /**
-     * Despacha a requisição para a rota apropriada
-     * Dispatches the request to the appropriate route
+     * Sanitizes URLs to prevent XSS and injection attacks
+     * Sanitiza URLs para prevenir ataques XSS e injeções
+     * 
+     * @param string $url The URL to sanitize
+     * @return string The sanitized URL
      */
+    /**
+     * Sanitizes and normalizes URLs
+     * Sanitiza e normaliza URLs
+     * 
+     * @param string $url The URL to sanitize and normalize
+     * @return string|false The cleaned URL or false if invalid
+     */
+    private function sanitizeUrl(string $url): string
+    {
+        $url = trim($url);
+
+        // Basic URL validation
+        if (!filter_var($url, FILTER_VALIDATE_URL)) {
+            return '';
+        }
+
+        // Handle AMP URLs
+        if (preg_match('#https://([^.]+)\.cdn\.ampproject\.org/v/s/([^/]+)(.*)#', $url, $matches)) {
+            $url = 'https://' . $matches[2] . $matches[3];
+        }
+
+        // Parse and reconstruct URL to ensure proper structure
+        $parts = parse_url($url);
+        if (!isset($parts['scheme']) || !isset($parts['host'])) {
+            return '';
+        }
+        
+        $cleanedUrl = $parts['scheme'] . '://' . $parts['host'];
+        
+        if (isset($parts['path'])) {
+            $cleanedUrl .= $parts['path'];
+        }
+        
+        // Remove control characters and sanitize
+        $cleanedUrl = preg_replace('/[\x00-\x1F\x7F]/', '', $cleanedUrl);
+        $cleanedUrl = filter_var($cleanedUrl, FILTER_SANITIZE_URL);
+        
+        // Convert special characters to HTML entities
+        return htmlspecialchars($cleanedUrl, ENT_QUOTES | ENT_HTML5, 'UTF-8');
+    }
+
+    /**
+     * Sets security headers for all responses
+     * Define cabeçalhos de segurança para todas as respostas
+     */
+    private function setSecurityHeaders()
+    {
+        // Set security headers
+        header("Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com; style-src 'self' 'unsafe-inline'; img-src 'self' data:;");
+        header("X-Content-Type-Options: nosniff");
+        header("X-Frame-Options: DENY");
+        header("X-XSS-Protection: 1; mode=block");
+        header("Referrer-Policy: strict-origin-when-cross-origin");
+        header("Permissions-Policy: geolocation=(), microphone=(), camera=()");
+        header("Strict-Transport-Security: max-age=31536000; includeSubDomains");
+    }
+
     public function dispatch()
     {
+        $this->setSecurityHeaders();
+        
         $httpMethod = $_SERVER['REQUEST_METHOD'];
         $uri = $_SERVER['REQUEST_URI'];
 

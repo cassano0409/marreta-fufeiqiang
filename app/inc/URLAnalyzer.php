@@ -234,33 +234,27 @@ class URLAnalyzer
         // Reset das regras ativadas para nova análise
         $this->activatedRules = [];
 
-        // 1. Clean URL / Limpa a URL
-        $cleanUrl = $this->cleanUrl($url);
-        if (!$cleanUrl) {
-            $this->throwError(self::ERROR_INVALID_URL);
+        // 1. Check cache / Verifica cache
+        if ($this->cache->exists($url)) {
+            return $this->cache->get($url);
         }
 
-        // 2. Check cache / Verifica cache
-        if ($this->cache->exists($cleanUrl)) {
-            return $this->cache->get($cleanUrl);
-        }
-
-        // 3. Check blocked domains / Verifica domínios bloqueados
-        $host = parse_url($cleanUrl, PHP_URL_HOST);
+        // 2. Check blocked domains / Verifica domínios bloqueados
+        $host = parse_url($url, PHP_URL_HOST);
         if (!$host) {
             $this->throwError(self::ERROR_INVALID_URL);
         }
         $host = preg_replace('/^www\./', '', $host);
 
         if (in_array($host, BLOCKED_DOMAINS)) {
-            Logger::getInstance()->logUrl($cleanUrl, 'BLOCKED_DOMAIN');
+            Logger::getInstance()->logUrl($url, 'BLOCKED_DOMAIN');
             $this->throwError(self::ERROR_BLOCKED_DOMAIN);
         }
 
-        // Check URL status code before proceeding
-        $redirectInfo = $this->checkStatus($cleanUrl);
+        // 3. Check URL status code before proceeding
+        $redirectInfo = $this->checkStatus($url);
         if ($redirectInfo['httpCode'] !== 200) {
-            Logger::getInstance()->logUrl($cleanUrl, 'INVALID_STATUS_CODE', "HTTP {$redirectInfo['httpCode']}");
+            Logger::getInstance()->logUrl($url, 'INVALID_STATUS_CODE', "HTTP {$redirectInfo['httpCode']}");
             if ($redirectInfo['httpCode'] === 404) {
                 $this->throwError(self::ERROR_NOT_FOUND);
             } else {
@@ -279,33 +273,33 @@ class URLAnalyzer
                     $content = null;
                     switch ($fetchStrategy) {
                         case 'fetchContent':
-                            $content = $this->fetchContent($cleanUrl);
+                            $content = $this->fetchContent($url);
                             break;
                         case 'fetchFromWaybackMachine':
-                            $content = $this->fetchFromWaybackMachine($cleanUrl);
+                            $content = $this->fetchFromWaybackMachine($url);
                             break;
                         case 'fetchFromSelenium':
-                            $content = $this->fetchFromSelenium($cleanUrl, isset($domainRules['browser']) ? $domainRules['browser'] : 'firefox');
+                            $content = $this->fetchFromSelenium($url, isset($domainRules['browser']) ? $domainRules['browser'] : 'firefox');
                             break;
                     }
                     
                     if (!empty($content)) {
                         $this->activatedRules[] = "fetchStrategy: $fetchStrategy";
-                        $processedContent = $this->processContent($content, $host, $cleanUrl);
-                        $this->cache->set($cleanUrl, $processedContent);
+                        $processedContent = $this->processContent($content, $host, $url);
+                        $this->cache->set($url, $processedContent);
                         return $processedContent;
                     }
                 } catch (Exception $e) {
-                    Logger::getInstance()->logUrl($cleanUrl, strtoupper($fetchStrategy) . '_ERROR', $e->getMessage());
+                    Logger::getInstance()->logUrl($url, strtoupper($fetchStrategy) . '_ERROR', $e->getMessage());
                     throw $e;
                 }
             }
 
             // 5. Try all strategies in sequence
             $fetchStrategies = [
-                ['method' => 'fetchContent', 'args' => [$cleanUrl]],
-                ['method' => 'fetchFromWaybackMachine', 'args' => [$cleanUrl]],
-                ['method' => 'fetchFromSelenium', 'args' => [$cleanUrl, 'firefox']]
+                ['method' => 'fetchContent', 'args' => [$url]],
+                ['method' => 'fetchFromWaybackMachine', 'args' => [$url]],
+                ['method' => 'fetchFromSelenium', 'args' => [$url, 'firefox']]
             ];
 
             $lastError = null;
@@ -314,8 +308,8 @@ class URLAnalyzer
                     $content = call_user_func_array([$this, $strategy['method']], $strategy['args']);
                     if (!empty($content)) {
                         $this->activatedRules[] = "fetchStrategy: {$strategy['method']}";
-                        $processedContent = $this->processContent($content, $host, $cleanUrl);
-                        $this->cache->set($cleanUrl, $processedContent);
+                        $processedContent = $this->processContent($content, $host, $url);
+                        $this->cache->set($url, $processedContent);
                         return $processedContent;
                     }
                 } catch (Exception $e) {
@@ -326,7 +320,7 @@ class URLAnalyzer
             }
 
             // If we get here, all strategies failed
-            Logger::getInstance()->logUrl($cleanUrl, 'GENERAL_FETCH_ERROR');
+            Logger::getInstance()->logUrl($url, 'GENERAL_FETCH_ERROR');
             if ($lastError) {
                 $message = $lastError->getMessage();
                 if (strpos($message, 'DNS') !== false) {
@@ -432,8 +426,8 @@ class URLAnalyzer
      */
     private function fetchFromWaybackMachine($url)
     {
-        $cleanUrl = preg_replace('#^https?://#', '', $url);
-        $availabilityUrl = "https://archive.org/wayback/available?url=" . urlencode($cleanUrl);
+        $url = preg_replace('#^https?://#', '', $url);
+        $availabilityUrl = "https://archive.org/wayback/available?url=" . urlencode($url);
         
         $curl = new Curl();
         $curl->setOpt(CURLOPT_FOLLOWLOCATION, true);
@@ -550,36 +544,6 @@ class URLAnalyzer
                 $this->throwError(self::ERROR_HTTP_ERROR);
             }
         }
-    }
-
-    /**
-     * Clean and normalize a URL
-     * Limpa e normaliza uma URL
-     */
-    private function cleanUrl($url)
-    {
-        $url = trim($url);
-
-        if (!filter_var($url, FILTER_VALIDATE_URL)) {
-            return false;
-        }
-
-        if (preg_match('#https://([^.]+)\.cdn\.ampproject\.org/v/s/([^/]+)(.*)#', $url, $matches)) {
-            $url = 'https://' . $matches[2] . $matches[3];
-        }
-
-        $parts = parse_url($url);
-        if (!isset($parts['scheme']) || !isset($parts['host'])) {
-            return false;
-        }
-        
-        $cleanedUrl = $parts['scheme'] . '://' . $parts['host'];
-        
-        if (isset($parts['path'])) {
-            $cleanedUrl .= $parts['path'];
-        }
-        
-        return $cleanedUrl;
     }
 
     /**

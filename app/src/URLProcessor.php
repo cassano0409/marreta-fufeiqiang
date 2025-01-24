@@ -31,7 +31,7 @@ class URLProcessor
         require_once __DIR__ . '/../inc/URLAnalyzer.php';
         require_once __DIR__ . '/../inc/Language.php';
 
-        $this->url = urldecode($url);
+        $this->url = $url;
         $this->isApi = $isApi;
         $this->analyzer = new \URLAnalyzer();
 
@@ -82,20 +82,6 @@ class URLProcessor
      */
     public function process(): void
     {
-        // Validate URL format
-        if (!filter_var($this->url, FILTER_VALIDATE_URL)) {
-            if ($this->isApi) {
-                $this->sendApiResponse([
-                    'error' => [
-                        'type' => \URLAnalyzer::ERROR_INVALID_URL,
-                        'message' => \Language::getMessage('INVALID_URL')['message']
-                    ]
-                ], 400);
-            } else {
-                $this->redirect(SITE_URL, \URLAnalyzer::ERROR_INVALID_URL);
-            }
-        }
-
         try {
             // Check for redirects in web mode
             if (!$this->isApi) {
