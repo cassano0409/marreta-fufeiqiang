@@ -87,7 +87,7 @@ SITE_NAME="Marreta"
 SITE_DESCRIPTION="Paywall hammer!"
 SITE_URL=http://localhost
 DNS_SERVERS=1.1.1.1,8.8.8.8
-DEBUG=true
+LOG_LEVEL=WARNING
 SELENIUM_HOST=selenium-hub:4444
 LANGUAGE=pt-br
 ```
@@ -98,8 +98,6 @@ docker-compose up -d
 ```
 
 Done! It will be running at `http://localhost` 🎉
-
-The `DEBUG` option when `true` will not generate cache!
 
 ## ⚙️ Customization
 
@@ -194,23 +192,32 @@ Important settings:
 
 After setting up Selenium, make sure to set the `SELENIUM_HOST` variable in your environment to point to the Selenium hub (typically `selenium-hub:4444`).
 
-### Error monitoring
+### Logging System
 
-Marreta uses [Hawk.so](https://hawk.so), an open-source error monitoring platform. To configure monitoring, add the following variables to your `.env` or docker:
+Logs are stored in `app/logs/app.log` with automatic 7-day rotation.
+
+Log settings available in `.env` or docker:
 
 ```env
-HAWK_TOKEN=your_token
+LOG_LEVEL=WARNING
 ```
 
-You can host your own Hawk.so instance or use the hosted service at [hawk.so](https://hawk.so). The source code is available at [github.com/codex-team/hawk](https://github.com/codex-team/hawk).
+Available log levels:
+- DEBUG: Detailed information for debugging
+- INFO: General operational information
+- WARNING: Warnings that deserve attention (default)
+- ERROR: Errors that don't stop operation
+- CRITICAL: Critical errors that need immediate attention
 
 ## 🛠️ Maintenance
 
 ### Logs
 
-See what's happening:
+View application logs:
 ```bash
 docker-compose logs app
+# or directly from the log file
+cat app/logs/app.log
 ```
 
 ### Clearing the cache

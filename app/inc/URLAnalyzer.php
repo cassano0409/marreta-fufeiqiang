@@ -814,8 +814,8 @@ class URLAnalyzer
             $brandDiv->appendChild($brandHtml);
             $body->appendChild($brandDiv);
 
-            // Add debug panel if DEBUG is true / Adicionar painel de depuração se DEBUG for verdadeiro
-            if (DEBUG) {
+            // Add debug panel if LOG_LEVEL is DEBUG / Adicionar painel de depuração se LOG_LEVEL for DEBUG
+            if (LOG_LEVEL === 'DEBUG') {
                 $debugDiv = $dom->createElement('div');
                 $debugDiv->setAttribute('style', 'z-index: 99999; position: fixed; bottom: 10px; right: 10px; background: rgba(0,0,0,0.8); color: #fff; font-size: 13px; line-height: 1.4; padding: 10px; border-radius: 3px; font-family: monospace; max-height: 200px; overflow-y: auto;');
                 

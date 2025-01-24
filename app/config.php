@@ -52,8 +52,6 @@ try {
         filter_var($_ENV['DISABLE_CACHE'], FILTER_VALIDATE_BOOLEAN) : false);
     define('SELENIUM_HOST', $_ENV['SELENIUM_HOST'] ?? 'localhost:4444');
     define('CACHE_DIR', __DIR__ . '/cache');
-    define('DEBUG', isset($_ENV['DEBUG']) ? 
-        filter_var($_ENV['DEBUG'], FILTER_VALIDATE_BOOLEAN) : false);
     define('LANGUAGE', $_ENV['LANGUAGE'] ?? 'pt-br');
 
     /**
@@ -65,10 +63,11 @@ try {
     define('REDIS_PREFIX', $_ENV['REDIS_PREFIX'] ?? 'marreta:');
 
     /**
-     * Hawk.so settings
-     * Configurações do Hawk.so
+     * Logging settings
+     * Configurações de log
      */
-    define('HAWK_TOKEN', $_ENV['HAWK_TOKEN'] ?? null);
+    define('LOG_LEVEL', $_ENV['LOG_LEVEL'] ?? 'WARNING'); // Available: DEBUG, INFO, WARNING, ERROR, CRITICAL
+    define('LOG_DAYS_TO_KEEP', 7);
 
     /**
      * S3 Cache settings

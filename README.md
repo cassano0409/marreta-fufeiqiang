@@ -87,7 +87,7 @@ SITE_NAME="Marreta"
 SITE_DESCRIPTION="Chapéu de paywall é marreta!"
 SITE_URL=http://localhost
 DNS_SERVERS=1.1.1.1,8.8.8.8
-DEBUG=true
+LOG_LEVEL=WARNING
 SELENIUM_HOST=selenium-hub:4444
 LANGUAGE=pt-br
 ```
@@ -98,8 +98,6 @@ docker-compose up -d
 ```
 
 Pronto! Vai estar rodando em `http://localhost` 🎉
-
-A opção de `DEBUG` quando `true` não irá gerar cache!
 
 ## ⚙️ Personalizando
 
@@ -194,23 +192,32 @@ Configurações importantes:
 
 Após configurar o Selenium, certifique-se de definir a variável `SELENIUM_HOST` no seu ambiente para apontar para o hub do Selenium (geralmente `selenium-hub:4444`).
 
-### Monitoramento de erros
+### Sistema de Logs
 
-O Marreta utiliza o [Hawk.so](https://hawk.so), uma plataforma de código aberto para monitoramento de erros. Para configurar o monitoramento, adicione as seguintes variáveis ao seu `.env` ou docker:
+Os logs são armazenados em `app/logs/app.log` com rotação automática a cada 7 dias.
+
+Configurações de log disponíveis no `.env` ou docker:
 
 ```env
-HAWK_TOKEN=seu_token
+LOG_LEVEL=WARNING
 ```
 
-Você pode hospedar sua própria instância do Hawk.so ou usar o serviço hospedado em [hawk.so](https://hawk.so). O código fonte está disponível em [github.com/codex-team/hawk](https://github.com/codex-team/hawk).
+Níveis de log disponíveis:
+- DEBUG: Informações detalhadas para debug
+- INFO: Informações gerais sobre operações
+- WARNING: Avisos que merecem atenção (padrão)
+- ERROR: Erros que não interrompem a operação
+- CRITICAL: Erros críticos que precisam de atenção imediata
 
 ## 🛠️ Manutenção
 
 ### Logs
 
-Ver o que tá acontecendo:
+Ver os logs da aplicação:
 ```bash
 docker-compose logs app
+# ou diretamente do arquivo de log
+cat app/logs/app.log
 ```
 
 ### Limpando o cache
