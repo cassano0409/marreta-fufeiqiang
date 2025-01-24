@@ -339,5 +339,41 @@ return [
             '__pvi' => null,
             '_pctx' => null
         ]
+    ],
+
+    // Domain test
+    'altendorfme.github.io' => [
+        'userAgent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+        'headers' => [
+            'Accept-Language' => 'en-US,en;q=0.9',
+            'Cache-Control' => 'no-cache',
+            'Pragma' => 'no-cache'
+        ],
+        'idElementRemove' => ['test-id-1', 'paywall'],
+        'classElementRemove' => ['test-class-1'],
+        'scriptTagRemove' => ['analytics.js', 'test-script.js', 'paywall.js'],
+        'cookies' => [
+            'visited' => 'true',
+            'consent' => 'accepted',
+            'session_id' => null
+        ],
+        'classAttrRemove' => ['test-attr-1','paywall'],
+        'customCode' => '
+            console.log("worked");
+        ',
+        'customStyle' => '
+            .test-style {
+                background: red;
+            }
+        ',
+        'excludeGlobalRules' => [
+            'scriptTagRemove' => ['excluded-script.js'],
+            'classElementRemove' => ['excluded-class']
+        ],
+        'fetchStrategies' => 'fetchContent',
+        'socialReferrers' => true,
+        'fromGoogleBot' => true,
+        'removeElementsByTag' => ['iframe'],
+        'removeCustomAttr' => ['data-*']
     ]
 ];
