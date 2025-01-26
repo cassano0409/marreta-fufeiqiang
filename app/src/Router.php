@@ -37,7 +37,7 @@ class Router
         $this->dispatcher = FastRoute\simpleDispatcher(function(FastRoute\RouteCollector $r) {
             // Rota principal - página inicial
             // Main route - home page
-            $r->addRoute('GET', '/', function() {
+            $r->addRoute(['GET','POST'], '/', function() {
                 // Inicialização das variáveis para a view principal
                 // Initialize variables for the main view
                 require_once __DIR__ . '/../config.php';
