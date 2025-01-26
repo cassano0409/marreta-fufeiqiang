@@ -41,7 +41,7 @@ $manifest = [
         ]
     ],
     'share_target' => [
-        'action' => 'pwa.php',
+        'action' => '/p/',
         'method' => 'GET',
         'enctype' => 'application/x-www-form-urlencoded',
         'params' => [
