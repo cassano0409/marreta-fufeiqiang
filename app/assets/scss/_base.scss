@@ -1,0 +1,33 @@
+// Default
+body {
+	font-family: var(--font-family-haffer);
+	font-size: var(--font-size);
+	font-weight: var(--font-weight);
+	line-height: var(--line-height);
+	color: var(--text);
+	text-align: left;
+	background-color: var(--background);
+	min-width: 320px;
+}
+
+a {
+	text-decoration: none;
+	color: var(--link);
+
+	&:hover {
+		text-decoration: none;
+		color: var(--link-lighten);
+	}
+}
+
+.container {
+	padding-right: var(--container_spacing);
+	padding-left: var(--container_spacing);
+	margin-right: auto;
+	margin-left: auto;
+
+	@include devices(desktop) {
+        max-width: 1248px;
+    }
+
+}

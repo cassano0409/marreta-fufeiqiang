@@ -1,0 +1,57 @@
+:root {
+	// Fonts
+	--font-family-sans-serif: -apple-system,
+		BlinkMacSystemFont,
+		"Segoe UI",
+		Roboto,
+		"Helvetica Neue",
+		Arial,
+		"Noto Sans",
+		"Liberation Sans",
+		sans-serif,
+		"Apple Color Emoji",
+		"Segoe UI Emoji",
+		"Segoe UI Symbol",
+		"Noto Color Emoji";
+	--font-family-monospace: SFMono-Regular,
+		Menlo, Monaco,
+		Consolas,
+		"Liberation Mono",
+		"Courier New",
+		monospace;
+	--font-family-haffer: "haffer";
+
+	//-- Styles
+	--font-size: 16px;
+	--font-weight: 500;
+	--line-height: 160%;
+
+	// Colors
+	$hex-marreta: #fff;
+	$hex-text: #000;
+    $hex-textmuted: #000;
+    $hex-link: #000;
+
+	@include create-color('marreta', $hex-marreta);
+    @include create-color('text', $hex-text);
+    @include create-color('textmuted', $hex-textmuted);
+    @include create-color('link', $hex-link);
+
+	// Borders
+	--border-radius-default: 1rem;
+
+	// Spacing
+	--container_spacing: 24px;
+	@include devices(desktop) {
+        --container_spacing: 64px;
+    }
+}
+
+html {
+	scroll-behavior: smooth;
+}
+@media screen and (prefers-reduced-motion: reduce) {
+	html {
+		scroll-behavior: auto;
+	}
+}

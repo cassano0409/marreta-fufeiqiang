@@ -1,0 +1,24 @@
+
+@mixin create-color($name, $color) {
+    --#{$name}: #{$color};
+    --#{$name}-lighten: color.scale($color, $lightness: -100%);
+    --#{$name}-darken: color.adjust($color, $lightness: -10%)
+}    
+
+@mixin devices($breakpoint) {
+	@if $breakpoint == desktop {
+		@media only screen and (min-width: 1200px) {
+			@content;
+		}
+	}
+}
+
+@mixin background-image-svg($name) {
+	background-image: url("../images/icons/#{$name}.svg");
+}
+
+@mixin icon($name) {
+	.icon--#{$name} {
+		@include background-image-svg($name);
+	}
+}

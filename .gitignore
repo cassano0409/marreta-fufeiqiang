@@ -4,6 +4,7 @@ composer.lock
 app/logs/*.log
 app/cache/*.gz
 TODO.md
+node_modules
 
 # Created by https://www.toptal.com/developers/gitignore/api/composer,windows,macos,linux
 # Edit at https://www.toptal.com/developers/gitignore?templates=composer,windows,macos,linux

@@ -1,0 +1,35 @@
+@font-face {
+    font-family: 'inter';
+    src: url('../fonts/inter-500.eot');
+    src: local('Inter Medium'), local('Inter-Medium'),
+        url('../fonts/inter-500.woff2') format('woff2'),
+        url('../fonts/inter-500.woff') format('woff'),
+        url('../fonts/inter-500.ttf') format('truetype');
+    font-weight: 500;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'inter';
+    src: url('../fonts/inter-600.eot');
+    src: local('Inter SemiBold'), local('Inter-SemiBold'),
+        url('../fonts/inter-600.woff2') format('woff2'),
+        url('../fonts/inter-600.woff') format('woff'),
+        url('../fonts/inter-600.ttf') format('truetype');
+    font-weight: 600;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'unna';
+    src: url('../fonts/unna-400.eot');
+    src: local('Unna Regular'), local('Unna-Regular'),
+        url('../fonts/unna-400.woff2') format('woff2'),
+        url('../fonts/unna-400.woff') format('woff'),
+        url('../fonts/unna-400.ttf') format('truetype');
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+}

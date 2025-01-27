@@ -1,0 +1,19 @@
+// https://icons.getbootstrap.com/
+// https://icofont.com/icons
+
+// https://jakearchibald.github.io/svgomg/
+// https://yoksel.github.io/url-encoder/
+// https://codepen.io/sosuke/pen/Pjoqqp
+
+.icon {
+	display: inline-block;
+	vertical-align: -0.125em;
+	fill: currentcolor;
+	width: 1em;
+	height: 1em;
+	background-repeat: no-repeat;
+	background-position: center center;
+	background-size: 100% auto;
+}
+
+@include icon('alice');
