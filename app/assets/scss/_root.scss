@@ -1,3 +1,5 @@
+@use "mixin";
+
 :root {
 	// Fonts
 	--font-family-sans-serif: -apple-system,
@@ -32,17 +34,17 @@
     $hex-textmuted: #000;
     $hex-link: #000;
 
-	@include create-color('marreta', $hex-marreta);
-    @include create-color('text', $hex-text);
-    @include create-color('textmuted', $hex-textmuted);
-    @include create-color('link', $hex-link);
+	@include mixin.create-color('marreta', $hex-marreta);
+    @include mixin.create-color('text', $hex-text);
+    @include mixin.create-color('textmuted', $hex-textmuted);
+    @include mixin.create-color('link', $hex-link);
 
 	// Borders
 	--border-radius-default: 1rem;
 
 	// Spacing
 	--container_spacing: 24px;
-	@include devices(desktop) {
+	@include mixin.devices(desktop) {
         --container_spacing: 64px;
     }
 }

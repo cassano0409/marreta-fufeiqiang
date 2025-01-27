@@ -1,13 +1,13 @@
 @use "sass:math";
 @use "sass:color";
 
-@import "normalize.css/normalize";
+@forward "normalize.css/normalize";
 
-@import "mixin";
-@import "fonts";
+@use "mixin";
+@use "fonts";
 
-@import "root";
-@import "base";
-@import "icons";
+@use "root";
+@use "base";
+@use "icons";
 
-@import "home";
+@use "home";

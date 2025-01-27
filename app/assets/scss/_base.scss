@@ -1,3 +1,5 @@
+@use "mixin";
+
 // Default
 body {
 	font-family: var(--font-family-haffer);
@@ -26,7 +28,7 @@ a {
 	margin-right: auto;
 	margin-left: auto;
 
-	@include devices(desktop) {
+	@include mixin.devices(desktop) {
         max-width: 1248px;
     }
 
