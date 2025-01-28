@@ -8,29 +8,31 @@
 // https://codepen.io/sosuke/pen/Pjoqqp
 
 .icon {
-	display: inline-block;
-	vertical-align: -0.125em;
-	fill: currentcolor;
-	width: 1em;
-	height: 1em;
-	background-repeat: no-repeat;
-	background-position: center center;
-	background-size: 100% auto;
+    display: inline-block;
+    vertical-align: -0.125em;
+    fill: currentcolor;
+    width: 16px;
+    height: 16px;
+    background-repeat: no-repeat;
+    background-position: center center;
+    background-size: 100% auto;
+    &--bookmark {
+        background-size: auto 100% !important;
+    }
 }
 
-@include mixin.icon('marreta');
-@include mixin.icon('android');
-@include mixin.icon('apple');
-@include mixin.icon('archive');
-@include mixin.icon('bookmark');
-@include mixin.icon('bsky');
-@include mixin.icon('bypass');
-@include mixin.icon('chrome');
-@include mixin.icon('code');
-@include mixin.icon('error');
-@include mixin.icon('firefox');
-@include mixin.icon('link');
-@include mixin.icon('refresh');
-@include mixin.icon('search');
-@include mixin.icon('telegram');
-@include mixin.icon('warning');
+@include mixin.icon('marreta', 'invert(43%) sepia(74%) saturate(2288%) hue-rotate(201deg) brightness(98%) contrast(97%)');
+@include mixin.icon('bookmark', 'invert(80%) sepia(46%) saturate(1512%) hue-rotate(340deg) brightness(106%) contrast(97%)');
+
+@include mixin.icon('android', 'invert(72%) sepia(34%) saturate(778%) hue-rotate(32deg) brightness(97%) contrast(88%)');
+@include mixin.icon('apple', 'invert(0%) sepia(21%) saturate(7425%) hue-rotate(12deg) brightness(96%) contrast(96%)');
+@include mixin.icon('bsky', 'invert(47%) sepia(66%) saturate(4445%) hue-rotate(195deg) brightness(98%) contrast(104%)');
+@include mixin.icon('telegram', 'invert(61%) sepia(86%) saturate(1341%) hue-rotate(166deg) brightness(96%) contrast(85%)');
+@include mixin.icon('chrome', 'invert(40%) sepia(90%) saturate(1163%) hue-rotate(203deg) brightness(104%) contrast(92%)');
+@include mixin.icon('firefox', 'invert(57%) sepia(43%) saturate(1854%) hue-rotate(360deg) brightness(102%) contrast(106%)');
+
+@include mixin.icon('link', 'invert(53%) sepia(12%) saturate(17%) hue-rotate(39deg) brightness(94%) contrast(91%)');
+@include mixin.icon('refresh', 'invert(100%) sepia(32%) saturate(8%) hue-rotate(23deg) brightness(102%) contrast(100%)');
+
+@include mixin.icon('error', 'invert(30%) sepia(58%) saturate(3703%) hue-rotate(336deg) brightness(90%) contrast(91%)');
+@include mixin.icon('warning', 'invert(89%) sepia(25%) saturate(5861%) hue-rotate(353deg) brightness(101%) contrast(101%)');

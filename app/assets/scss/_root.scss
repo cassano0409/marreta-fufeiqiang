@@ -21,7 +21,8 @@
 		"Liberation Mono",
 		"Courier New",
 		monospace;
-	--font-family-haffer: "haffer";
+	--font-family-inter: "inter";
+    --font-family-unna: "unna";
 
 	//-- Styles
 	--font-size: 16px;
@@ -29,18 +30,10 @@
 	--line-height: 160%;
 
 	// Colors
-	$hex-marreta: #fff;
-	$hex-text: #000;
-    $hex-textmuted: #000;
-    $hex-link: #000;
-
-	@include mixin.create-color('marreta', $hex-marreta);
-    @include mixin.create-color('text', $hex-text);
-    @include mixin.create-color('textmuted', $hex-textmuted);
-    @include mixin.create-color('link', $hex-link);
-
-	// Borders
-	--border-radius-default: 1rem;
+	@include mixin.create-color('marreta', #3B82F6);
+    @include mixin.create-color('text', #484848);
+    @include mixin.create-color('textmuted', #818181);
+    @include mixin.create-color('link', #3B82F6);
 
 	// Spacing
 	--container_spacing: 24px;

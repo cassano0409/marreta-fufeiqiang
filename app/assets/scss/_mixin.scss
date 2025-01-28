@@ -1,8 +1,10 @@
+@use "sass:math";
+@use "sass:color";
 
-@mixin create-color($name, $color) {
-    --#{$name}: #{$color};
-    --#{$name}-lighten: color.scale($color, $lightness: -100%);
-    --#{$name}-darken: color.adjust($color, $lightness: -10%)
+@mixin create-color($name, $hex) {
+    --#{$name}: #{$hex};
+    --#{$name}-lighten: #{color.adjust($hex, $lightness: 5%)};
+    --#{$name}-darken: #{color.adjust($hex, $lightness: -10%)};
 }    
 
 @mixin devices($breakpoint) {
@@ -13,12 +15,9 @@
 	}
 }
 
-@mixin background-image-svg($name) {
-	background-image: url("../images/icons/#{$name}.svg");
-}
-
-@mixin icon($name) {
+@mixin icon($name, $filter) {
 	.icon--#{$name} {
-		@include background-image-svg($name);
+		background-image: url("../dist/icons/#{$name}.svg");
+        filter: #{$filter};
 	}
 }

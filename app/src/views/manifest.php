@@ -28,13 +28,13 @@ $manifest = [
     'orientation' => 'any',
     'icons' => [
         [
-            'src' => 'assets/pwa/192x192.png',
+            'src' => 'dist/images/pwa/192x192.png',
             'sizes' => '192x192',
             'type' => 'image/png',
             'purpose' => 'any maskable'
         ],
         [
-            'src' => 'assets/pwa/512x512.png',
+            'src' => 'dist/images/pwa/512x512.png',
             'sizes' => '512x512',
             'type' => 'image/png',
             'purpose' => 'any maskable'

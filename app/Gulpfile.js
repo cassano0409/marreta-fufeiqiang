@@ -9,7 +9,10 @@ const sourcemaps = require('gulp-sourcemaps');
 const imagemin = require('gulp-imagemin');
 const webp = require('gulp-webp');
 const newer = require('gulp-newer');
-const fontmin = require('gulp-fontmin');
+const rename = require('gulp-rename');
+const ttf2woff = require('gulp-ttf2woff');
+const ttf2woff2 = require('gulp-ttf2woff2');
+const ttf2eot = require('gulp-ttf2eot');
 const svgmin = require('gulp-svgmin');
 
 const paths = {
@@ -52,7 +55,7 @@ function styles() {
 function scripts() {
     return gulp.src(paths.scripts.src)
         .pipe(sourcemaps.init())
-        .pipe(concat('script.js'))
+        .pipe(concat('scripts.js'))
         .pipe(uglify())
         .pipe(gulp.dest(paths.scripts.dest))
         .pipe(sourcemaps.write('.'))
@@ -78,8 +81,23 @@ function icons() {
 function fonts() {
     return gulp.src(paths.fonts.src)
         .pipe(newer(paths.fonts.dest))
-        .pipe(fontmin())
+
+        .pipe(ttf2woff())
+        .pipe(rename({ extname: '.woff' }))
         .pipe(gulp.dest(paths.fonts.dest))
+
+        .pipe(gulp.src(paths.fonts.src))
+        .pipe(ttf2woff2())
+        .pipe(rename({ extname: '.woff2' }))
+        .pipe(gulp.dest(paths.fonts.dest))
+
+        .pipe(gulp.src(paths.fonts.src))
+        .pipe(ttf2eot())
+        .pipe(rename({ extname: '.eot' }))
+        .pipe(gulp.dest(paths.fonts.dest))
+
+        .pipe(gulp.src(paths.fonts.src))
+        .pipe(gulp.dest(paths.fonts.dest));
 }
 
 function watch() {
