@@ -1,43 +1,19 @@
 <?php
 
 /**
- * Class responsible for content manipulation rules management
- * Classe responsável pelo gerenciamento de regras de manipulação de conteúdo
- * 
- * This class implements a rules system for different web domains,
- * allowing system behavior customization for each site.
- * Includes functionalities for paywall removal, specific elements,
- * cookie manipulation and custom code execution.
- * 
- * Esta classe implementa um sistema de regras para diferentes domínios web,
- * permitindo a personalização do comportamento do sistema para cada site.
- * Inclui funcionalidades para remoção de paywalls, elementos específicos,
- * manipulação de cookies e execução de códigos customizados.
+ * Manages domain-specific content manipulation rules
+ * Handles rule merging between global and domain-specific configurations
+ * Supports multiple rule types for web content manipulation
  */
 class Rules
 {
-    /**
-     * Associative array containing specific rules for each domain
-     * Array associativo contendo regras específicas para cada domínio
-     * 
-     * Possible configurations for each domain:
-     * Configurações possíveis para cada domínio:
-     * @var array
-     */
+    /** @var array Domain-specific rule configurations */
     private $domainRules = DOMAIN_RULES;
 
-    /**
-     * Expanded global rules
-     * Regras globais expandidas
-     * @var array
-     */
+    /** @var array Expanded global rule set */
     private $globalRules = GLOBAL_RULES;
 
-    /**
-     * List of supported rule types
-     * Lista de tipos de regras suportados
-     * @var array
-     */
+    /** @var array Supported rule types */
     private $supportedRuleTypes = [
         'userAgent',
         'headers',
@@ -57,11 +33,8 @@ class Rules
     ];
 
     /**
-     * Gets the base domain by removing www prefix
-     * Obtém o domínio base removendo o prefixo www
-     * 
-     * @param string $domain Full domain / Domínio completo
-     * @return string Base domain without www / Domínio base sem www
+     * Extracts root domain by removing www prefix
+     * @param string $domain Full domain name
      */
     private function getBaseDomain($domain)
     {
@@ -69,11 +42,9 @@ class Rules
     }
 
     /**
-     * Splits a domain into its constituent parts
-     * Divide um domínio em suas partes constituintes
-     * 
-     * @param string $domain Domain to be split / Domínio a ser dividido
-     * @return array Array with all possible domain combinations / Array com todas as combinações possíveis do domínio
+     * Generates domain variations for rule matching
+     * @param string $domain Original domain
+     * @return array Sorted domain combinations by length
      */
     private function getDomainParts($domain)
     {
@@ -93,11 +64,9 @@ class Rules
     }
 
     /**
-     * Gets specific rules for a domain
-     * Obtém as regras específicas para um domínio
-     * 
-     * @param string $domain Domain to search rules for / Domínio para buscar regras
-     * @return array|null Array with merged rules or null if not found / Array com regras mescladas ou null se não encontrar
+     * Retrieves merged rules for a domain
+     * @param string $domain Target domain
+     * @return array|null Combined ruleset or global rules
      */
     public function getDomainRules($domain)
     {
@@ -117,43 +86,28 @@ class Rules
             }
         }
 
-        // If no specific rules found, return only global rules
-        // Se não encontrou regras específicas, retorna apenas as regras globais
         return $this->getGlobalRules();
     }
 
     /**
-     * Merges domain-specific rules with global rules
-     * Mescla regras específicas do domínio com regras globais
-     * 
-     * @param array $rules Domain-specific rules / Regras específicas do domínio
-     * @return array Merged rules / Regras mescladas
+     * Combines domain rules with global configuration
+     * @param array $rules Domain-specific rules
      */
     private function mergeWithGlobalRules($rules)
     {
         $globalRules = $this->getGlobalRules();
         $mergedRules = [];
 
-        // Process global rules exclusions
-        // Processa as exclusões de regras globais
-        $excludeGlobalRules = isset($rules['excludeGlobalRules']) ? $rules['excludeGlobalRules'] : [];
-        unset($rules['excludeGlobalRules']); // Remove from rules array to avoid processing as normal rule / Remove do array de regras para não ser processado como regra normal
+        $excludeGlobalRules = $rules['excludeGlobalRules'] ?? [];
+        unset($rules['excludeGlobalRules']);
 
-        // First, add all global rules except excluded ones
-        // Primeiro, adiciona todas as regras globais, exceto as excluídas
         foreach ($globalRules as $ruleType => $globalTypeRules) {
-            if (!in_array($ruleType, $this->supportedRuleTypes)) {
-                continue;
-            }
+            if (!in_array($ruleType, $this->supportedRuleTypes)) continue;
 
             if (isset($excludeGlobalRules[$ruleType])) {
-                // If rule type is an associative array (like cookies or headers)
-                // Se o tipo de regra é um array associativo (como cookies ou headers)
-                if (is_array($globalTypeRules) && array_keys($globalTypeRules) !== range(0, count($globalTypeRules) - 1)) {
+                if (is_assoc_array($globalTypeRules)) {
                     $mergedRules[$ruleType] = array_diff_key($globalTypeRules, array_flip($excludeGlobalRules[$ruleType]));
                 } else {
-                    // For simple arrays (like classElementRemove)
-                    // Para arrays simples (como classElementRemove)
                     $mergedRules[$ruleType] = array_diff($globalTypeRules, $excludeGlobalRules[$ruleType]);
                 }
             } else {
@@ -161,27 +115,17 @@ class Rules
             }
         }
 
-        // Then, merge with domain-specific rules
-        // Depois, mescla com as regras específicas do domínio
         foreach ($rules as $ruleType => $domainTypeRules) {
-            if (!in_array($ruleType, $this->supportedRuleTypes)) {
-                continue;
-            }
+            if (!in_array($ruleType, $this->supportedRuleTypes)) continue;
 
             if (!isset($mergedRules[$ruleType])) {
                 $mergedRules[$ruleType] = $domainTypeRules;
                 continue;
             }
 
-            // If rule type already exists, merge appropriately
-            // Se o tipo de regra já existe, mescla apropriadamente
             if (in_array($ruleType, ['cookies', 'headers'])) {
-                // For cookies and headers, preserve keys
-                // Para cookies e headers, preserva as chaves
                 $mergedRules[$ruleType] = array_merge($mergedRules[$ruleType], $domainTypeRules);
             } else {
-                // For other types, merge as simple arrays
-                // Para outros tipos, mescla como arrays simples
                 $mergedRules[$ruleType] = array_values(array_unique(array_merge(
                     $mergedRules[$ruleType],
                     (array)$domainTypeRules
@@ -192,14 +136,14 @@ class Rules
         return $mergedRules;
     }
 
-    /**
-     * Returns all global rules
-     * Retorna todas as regras globais
-     * 
-     * @return array Array with all global rules / Array com todas as regras globais
-     */
+    /** @return array Global rule configuration */
     public function getGlobalRules()
     {
         return $this->globalRules;
     }
+}
+
+// Helper function for associative array check
+function is_assoc_array($array) {
+    return array_keys($array) !== range(0, count($array) - 1);
 }

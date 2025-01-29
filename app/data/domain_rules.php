@@ -2,38 +2,31 @@
 
 /**
  * Specific rule configurations for individual domains
- * Configurações específicas de regras para domínios individuais
- * 
- * This file contains custom rules for specific sites, allowing
- * system behavior adjustment for each domain individually.
- * 
- * Este arquivo contém regras personalizadas para sites específicos, permitindo
- * ajustar o comportamento do sistema para cada domínio individualmente.
  * 
  * Domain rule structure / Estrutura das regras por domínio:
- * - userAgent: Define custom User-Agent for the domain / Define um User-Agent personalizado para o domínio
- * - headers: Custom HTTP headers for requests / Headers HTTP personalizados para requisições
- * - idElementRemove: Array of HTML IDs to be removed / Array de IDs HTML que devem ser removidos da página
- * - classElementRemove: Array of HTML classes to be removed / Array de classes HTML que devem ser removidas
- * - scriptTagRemove: Array of scripts to be removed (partial match) / Array de scripts que devem ser removidos (partial match)
- * - cookies: Associative array of cookies to be set (null removes cookie) / Array associativo de cookies a serem definidos (null remove o cookie)
- * - classAttrRemove: Array of classes to be removed from elements / Array de classes a serem removidas de elementos
- * - customCode: String containing custom JavaScript code / String contendo código JavaScript personalizado
- * - customStyle: String containing custom CSS code / String contendo código CSS personalizado
- * - excludeGlobalRules: Associative array of global rules to exclude for this domain / Array associativo de regras globais a serem excluídas para este domínio
- *   Example / Exemplo:
+ * - userAgent: Define custom User-Agent for the domain
+ * - headers: Custom HTTP headers for requests
+ * - idElementRemove: Array of HTML IDs to be removed
+ * - classElementRemove: Array of HTML classes to be removed
+ * - scriptTagRemove: Array of scripts to be removed (partial match)
+ * - cookies: Associative array of cookies to be set (null removes cookie)
+ * - classAttrRemove: Array of classes to be removed from elements
+ * - customCode: String containing custom JavaScript code
+ * - customStyle: String containing custom CSS code
+ * - excludeGlobalRules: Associative array of global rules to exclude for this domain
+ *   Example:
  *   'excludeGlobalRules' => [
- *       'scriptTagRemove' => ['gtm.js', 'ga.js'],  // Excludes specific scripts from global rules / Exclui scripts específicos das regras globais
- *       'classElementRemove' => ['subscription']    // Excludes specific classes from global rules / Exclui classes específicas das regras globais
+ *       'scriptTagRemove' => ['gtm.js', 'ga.js'],
+ *       'classElementRemove' => ['subscription']
  *   ]
- * - fetchStrategies: String indicating which fetch strategy to use. Available values: / String indicando qual estratégia de fetch usar. Valores disponíveis:
- *   - fetchContent: Use standard fetch with domain rules / Usa fetch padrão com regras do domínio
- *   - fetchFromWaybackMachine: Try to fetch from Internet Archive / Tenta buscar do Internet Archive
- *   - fetchFromSelenium: Use Selenium for extraction / Usa Selenium para extração
- * - socialReferrers: Add random social media headers / Adiciona headers randomicos de redes sociais
- * - fromGoogleBot: Adds simulation of request coming from Google Bot / Adiciona simulação de requisição vinda do Google Bot
- * - removeElementsByTag: Remove specific elements via DOM / Remove elementos especificos via DOM
- * - removeCustomAttr: Remove custom attributes from elements / Remove custom attributes from elements
+ * - fetchStrategies: String indicating which fetch strategy to use. Available values:
+ *   - fetchContent: Use standard fetch with domain rules
+ *   - fetchFromWaybackMachine: Try to fetch from Internet Archive
+ *   - fetchFromSelenium: Use Selenium for extraction
+ * - socialReferrers: Add random social media headers
+ * - fromGoogleBot: Adds simulation of request coming from Google Bot
+ * - removeElementsByTag: Remove specific elements via DOM
+ * - removeCustomAttr: Remove custom attributes from elements
  */
 return [
     'nsctotal.com.br' => [

@@ -3,25 +3,19 @@
 namespace Inc\Cache;
 
 /**
- * Disk-based cache storage implementation
- * Implementação de armazenamento de cache em disco
- * 
- * This class implements file-based caching using gzip compression
- * Esta classe implementa cache baseado em arquivos usando compressão gzip
+ * Disk-based cache storage
+ * Implements file-based caching using gzip compression
  */
 class DiskStorage implements CacheStorageInterface
 {
     /**
-     * @var string Directory where cache files will be stored
-     * @var string Diretório onde os arquivos de cache serão armazenados
+     * @var string Directory for cache files
      */
     private $cacheDir;
 
     /**
      * Class constructor
-     * Construtor da classe
-     * 
-     * @param string $cacheDir Base directory for cache storage / Diretório base para armazenamento do cache
+     * @param string $cacheDir Base directory for cache storage
      */
     public function __construct(string $cacheDir)
     {
@@ -33,10 +27,8 @@ class DiskStorage implements CacheStorageInterface
 
     /**
      * Checks if cache exists for a given ID
-     * Verifica se existe cache para um determinado ID
-     * 
-     * @param string $id Cache ID / ID do cache
-     * @return bool True if cache exists, false otherwise / True se o cache existir, false caso contrário
+     * @param string $id Cache ID
+     * @return bool True if cache exists, false otherwise
      */
     public function exists(string $id): bool
     {
@@ -46,10 +38,8 @@ class DiskStorage implements CacheStorageInterface
 
     /**
      * Retrieves cached content
-     * Recupera o conteúdo em cache
-     * 
-     * @param string $id Cache ID / ID do cache
-     * @return string|null Cached content or null if not found / Conteúdo em cache ou null se não encontrado
+     * @param string $id Cache ID
+     * @return string|null Cached content or null if not found
      */
     public function get(string $id): ?string
     {
@@ -69,11 +59,9 @@ class DiskStorage implements CacheStorageInterface
 
     /**
      * Stores content in cache
-     * Armazena conteúdo em cache
-     * 
-     * @param string $id Cache ID / ID do cache
-     * @param string $content Content to be stored / Conteúdo a ser armazenado
-     * @return bool True if successful, false otherwise / True se bem sucedido, false caso contrário
+     * @param string $id Cache ID
+     * @param string $content Content to be stored
+     * @return bool True if successful, false otherwise
      */
     public function set(string $id, string $content): bool
     {

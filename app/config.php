@@ -1,84 +1,56 @@
 <?php
 
 /**
- * Main configuration file
- * Arquivo de configuração principal
- * 
- * This file contains all global system settings, including:
- * Este arquivo contém todas as configurações globais do sistema, incluindo:
- * 
- * - Environment variables loading / Carregamento de variáveis de ambiente
- * - System constants definition / Definições de constantes do sistema
- * - Security settings / Configurações de segurança
- * - Bot and user agent settings / Configurações de bots e user agents
- * - Blocked domains list / Lista de domínios bloqueados
- * - S3 cache settings / Configurações de cache S3
+ * System configuration manager
+ * - Loads and validates environment variables
+ * - Defines global constants for system settings
+ * - Manages security rules and external service configs
  */
 
 require_once __DIR__ . '/vendor/autoload.php';
 
 try {
-    // Initialize environment variables
-    // Inicializa as variáveis de ambiente
+    // Load environment variables
     $dotenv = Dotenv\Dotenv::createImmutable(__DIR__);
     $dotenv->load();
 
     // Validate required fields
-    // Valida campos obrigatórios
     $dotenv->required([
         'SITE_NAME',
         'SITE_DESCRIPTION',
         'SITE_URL'
     ])->notEmpty();
 
-    // Custom URL validation
-    // Validação personalizada de URL
+    // Validate URL format
     if (!filter_var($_ENV['SITE_URL'], FILTER_VALIDATE_URL)) {
         throw new Exception('SITE_URL must be a valid URL');
     }
 
-    /**
-     * Basic system settings
-     * Configurações básicas do sistema
-     */
+    // Core system settings
     define('SITE_NAME', $_ENV['SITE_NAME']);
     define('SITE_DESCRIPTION', $_ENV['SITE_DESCRIPTION']);
     define('SITE_URL', $_ENV['SITE_URL']);
     
-    // Optional settings with default values
-    // Configurações opcionais com valores padrão
+    // Optional settings with defaults
     define('DNS_SERVERS', $_ENV['DNS_SERVERS'] ?? '1.1.1.1, 8.8.8.8');
-    define('DISABLE_CACHE', isset($_ENV['DISABLE_CACHE']) ? 
-        filter_var($_ENV['DISABLE_CACHE'], FILTER_VALIDATE_BOOLEAN) : false);
+    define('DISABLE_CACHE', isset($_ENV['DISABLE_CACHE']) ? filter_var($_ENV['DISABLE_CACHE'], FILTER_VALIDATE_BOOLEAN) : false);
     define('SELENIUM_HOST', $_ENV['SELENIUM_HOST'] ?? 'localhost:4444');
     define('CACHE_DIR', __DIR__ . '/cache');
     define('LANGUAGE', $_ENV['LANGUAGE'] ?? 'pt-br');
 
-    /**
-     * Redis settings
-     * Configurações do Redis
-     */
+    // Redis connection settings
     define('REDIS_HOST', $_ENV['REDIS_HOST'] ?? 'localhost');
     define('REDIS_PORT', $_ENV['REDIS_PORT'] ?? 6379);
     define('REDIS_PREFIX', $_ENV['REDIS_PREFIX'] ?? 'marreta:');
 
-    /**
-     * Logging settings
-     * Configurações de log
-     */
-    define('LOG_LEVEL', $_ENV['LOG_LEVEL'] ?? 'WARNING'); // Available: DEBUG, INFO, WARNING, ERROR, CRITICAL
+    // Logging configuration
+    define('LOG_LEVEL', $_ENV['LOG_LEVEL'] ?? 'WARNING'); // DEBUG, INFO, WARNING, ERROR, CRITICAL
     define('LOG_DAYS_TO_KEEP', 7);
 
-    /**
-     * S3 Cache settings
-     * Configurações de Cache S3
-     */
-    define('S3_CACHE_ENABLED', isset($_ENV['S3_CACHE_ENABLED']) ? 
-        filter_var($_ENV['S3_CACHE_ENABLED'], FILTER_VALIDATE_BOOLEAN) : false);
+    // S3 cache configuration
+    define('S3_CACHE_ENABLED', isset($_ENV['S3_CACHE_ENABLED']) ? filter_var($_ENV['S3_CACHE_ENABLED'], FILTER_VALIDATE_BOOLEAN) : false);
     
     if (S3_CACHE_ENABLED) {
-        // Validate required S3 settings when S3 cache is enabled
-        // Valida configurações obrigatórias do S3 quando o cache S3 está ativado
         $dotenv->required([
             'S3_ACCESS_KEY',
             'S3_SECRET_KEY',
@@ -94,10 +66,7 @@ try {
         define('S3_ENDPOINT', $_ENV['S3_ENDPOINT'] ?? null);
     }
 
-    /**
-     * Load system configurations
-     * Carrega as configurações do sistema
-     */
+    // Load security rules
     define('BLOCKED_DOMAINS', require __DIR__ . '/data/blocked_domains.php');
     define('DOMAIN_RULES', require __DIR__ . '/data/domain_rules.php');
     define('GLOBAL_RULES', require __DIR__ . '/data/global_rules.php');

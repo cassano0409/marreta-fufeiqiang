@@ -1,19 +1,14 @@
 <?php
 
 /**
- * Class responsible for URL analysis and processing
- * Classe responsável pela análise e processamento de URLs
- * 
- * This class implements functionalities for:
- * Esta classe implementa funcionalidades para:
- * 
- * - URL analysis and cleaning / Análise e limpeza de URLs
- * - Content caching / Cache de conteúdo
- * - DNS resolution / Resolução DNS
- * - HTTP requests with multiple attempts / Requisições HTTP com múltiplas tentativas
- * - Content processing based on domain-specific rules / Processamento de conteúdo baseado em regras específicas por domínio
- * - Wayback Machine support as fallback / Suporte a Wayback Machine como fallback
- * - Selenium extraction support when enabled by domain / Suporte a extração via Selenium quando habilitado por domínio
+ * Class for URL analysis and processing
+ * URL analysis and cleaning
+ * Content caching
+ * DNS resolution
+ * HTTP requests with multiple attempts
+ * Content processing based on domain-specific rules
+ * Wayback Machine support
+ * Selenium extraction support
  */
 
 require_once __DIR__ . '/Rules.php';
@@ -31,7 +26,6 @@ use Inc\Logger;
 
 /**
  * Custom exception class for URL analysis errors
- * Classe de exceção personalizada para erros de análise de URL
  */
 class URLAnalyzerException extends Exception
 {
@@ -81,8 +75,7 @@ class URLAnalyzer
     ];
 
     /**
-     * Helper method to throw standardized errors
-     * Método auxiliar para lançar erros padronizados
+     * Helper method to throw errors
      */
     private function throwError($errorType, $additionalInfo = '')
     {
@@ -95,24 +88,19 @@ class URLAnalyzer
     }
 
     /**
-     * @var array List of available User Agents for requests
-     * @var array Lista de User Agents disponíveis para requisições
+     * @var array List of User Agents
      */
     private $userAgents = [
         // Google News bot
-        // Bot do Google News
         'Googlebot-News',
         // Mobile Googlebot
-        // Googlebot para dispositivos móveis
         'Mozilla/5.0 (Linux; Android 6.0.1; Nexus 5X Build/MMB29P) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/W.X.Y.Z Mobile Safari/537.36 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)',
         // Desktop Googlebot
-        // Googlebot para desktop
         'Mozilla/5.0 AppleWebKit/537.36 (KHTML, like Gecko; compatible; Googlebot/2.1; +http://www.google.com/bot.html) Chrome/W.X.Y.Z Safari/537.36'
     ];
 
     /**
      * @var array List of social media referrers
-     * @var array Lista de referenciadores de mídia social
      */
     private $socialReferrers = [
         // Twitter
@@ -125,35 +113,28 @@ class URLAnalyzer
     ];
 
     /**
-     * @var array List of DNS servers for resolution
-     * @var array Lista de servidores DNS para resolução
+     * @var array List of DNS servers
      */
     private $dnsServers;
 
     /**
      * @var Rules Instance of rules class
-     * @var Rules Instância da classe de regras
      */
     private $rules;
 
     /**
      * @var Cache Instance of cache class
-     * @var Cache Instância da classe de cache
      */
     private $cache;
 
     /**
-     * @var array List of rules activated during processing
-     * @var array Lista de regras ativadas durante o processamento
+     * @var array List of activated rules
      */
     private $activatedRules = [];
 
     /**
      * Class constructor
-     * Construtor da classe
-     * 
-     * Initializes required dependencies
-     * Inicializa as dependências necessárias
+     * Initializes dependencies
      */
     public function __construct()
     {
@@ -164,10 +145,8 @@ class URLAnalyzer
 
     /**
      * Check if a URL has redirects and return the final URL
-     * Verifica se uma URL tem redirecionamentos e retorna a URL final
-     * 
-     * @param string $url URL to check redirects / URL para verificar redirecionamentos
-     * @return array Array with final URL and if there was a redirect / Array com a URL final e se houve redirecionamento
+     * @param string $url URL to check redirects
+     * @return array Array with final URL and if there was a redirect
      */
     public function checkStatus($url)
     {
@@ -196,10 +175,8 @@ class URLAnalyzer
 
     /**
      * Get a random user agent, with possibility of using Google bot
-     * Obtém um user agent aleatório, com possibilidade de usar o Google bot
-     * 
-     * @param bool $preferGoogleBot Whether to prefer Google bot user agents / Se deve preferir user agents do Google bot
-     * @return string Selected user agent / User agent selecionado
+     * @param bool $preferGoogleBot Whether to prefer Google bot user agents
+     * @return string Selected user agent
      */
     private function getRandomUserAgent($preferGoogleBot = false)
     {
@@ -211,9 +188,7 @@ class URLAnalyzer
 
     /**
      * Get a random social media referrer
-     * Obtém um referenciador de mídia social aleatório
-     * 
-     * @return string Selected referrer / Referenciador selecionado
+     * @return string Selected referrer
      */
     private function getRandomSocialReferrer()
     {
@@ -222,24 +197,21 @@ class URLAnalyzer
 
     /**
      * Main method for URL analysis
-     * Método principal para análise de URLs
-     * 
-     * @param string $url URL to be analyzed / URL a ser analisada
-     * @return string Processed content / Conteúdo processado
-     * @throws URLAnalyzerException In case of processing errors / Em caso de erros durante o processamento
+     * @param string $url URL to be analyzed
+     * @return string Processed content
+     * @throws URLAnalyzerException In case of processing errors
      */
     public function analyze($url)
     {
         // Reset activated rules for new analysis
-        // Reset das regras ativadas para nova análise
         $this->activatedRules = [];
 
-        // 1. Check cache / Verifica cache
+        // 1. Check cache
         if ($this->cache->exists($url)) {
             return $this->cache->get($url);
         }
 
-        // 2. Check blocked domains / Verifica domínios bloqueados
+        // 2. Check blocked domains
         $host = parse_url($url, PHP_URL_HOST);
         if (!$host) {
             $this->throwError(self::ERROR_INVALID_URL);
@@ -263,11 +235,11 @@ class URLAnalyzer
         }
 
         try {
-            // 4. Get domain rules and check fetch strategy / Obtenha regras de domínio e verifique a estratégia de busca
+            // 4. Get domain rules and check fetch strategy
             $domainRules = $this->getDomainRules($host);
             $fetchStrategy = isset($domainRules['fetchStrategies']) ? $domainRules['fetchStrategies'] : null;
 
-            // If a specific fetch strategy is defined, use only that / Se uma estratégia de busca específica for definida, use somente essa
+            // If a specific fetch strategy is defined, use only that
             if ($fetchStrategy) {
                 try {
                     $content = null;
@@ -319,7 +291,7 @@ class URLAnalyzer
                 }
             }
 
-            // If we get here, all strategies failed
+            // If all strategies failed
             Logger::getInstance()->logUrl($url, 'GENERAL_FETCH_ERROR');
             if ($lastError) {
                 $message = $lastError->getMessage();
@@ -337,7 +309,7 @@ class URLAnalyzer
         } catch (URLAnalyzerException $e) {
             throw $e;
         } catch (Exception $e) {
-            // Map generic exceptions to appropriate error types
+            // Map exceptions to error types
             $message = $e->getMessage();
             if (strpos($message, 'DNS') !== false) {
                 $this->throwError(self::ERROR_DNS_FAILURE);
@@ -355,7 +327,6 @@ class URLAnalyzer
 
     /**
      * Fetch content from URL
-     * Busca conteúdo da URL
      */
     private function fetchContent($url)
     {
@@ -375,7 +346,7 @@ class URLAnalyzer
         $curl->setOpt(CURLOPT_DNS_SERVERS, implode(',', $this->dnsServers));
         $curl->setOpt(CURLOPT_ENCODING, '');
         
-        // Additional anti-detection headers / Cabeçalhos anti-detecção adicionais
+        // Additional anti-detection headers
         $curl->setHeaders([
             'Accept' => 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
             'Accept-Language' => 'en-US,en;q=0.5',
@@ -384,7 +355,7 @@ class URLAnalyzer
             'DNT' => '1'
         ]);
 
-        // Set Google bot specific headers / Definir cabeçalhos específicos do bot do Google
+        // Set Google bot specific headers
         if (isset($domainRules['fromGoogleBot'])) {
             $curl->setUserAgent($this->getRandomUserAgent(true));
             $curl->setHeaders([
@@ -393,7 +364,7 @@ class URLAnalyzer
             ]);
         }
 
-        // Add domain-specific headers / Adicionar cabeçalhos específicos de domínio
+        // Add domain-specific headers
         if (isset($domainRules['headers'])) {
             $curl->setHeaders($domainRules['headers']);
         }
@@ -421,8 +392,7 @@ class URLAnalyzer
     }
 
     /**
-     * Try to get content from Internet Archive's Wayback Machine
-     * Tenta obter conteúdo do Wayback Machine do Internet Archive
+     * Try to get content from Wayback Machine
      */
     private function fetchFromWaybackMachine($url)
     {
@@ -467,7 +437,7 @@ class URLAnalyzer
 
         $content = $curl->response;
         
-        // Remove Wayback Machine toolbar and cache URLs / Remover a barra de ferramentas do Wayback Machine e URLs de cache
+        // Remove Wayback Machine toolbar and cache URLs
         $content = preg_replace('/<!-- BEGIN WAYBACK TOOLBAR INSERT -->.*?<!-- END WAYBACK TOOLBAR INSERT -->/s', '', $content);
         $content = preg_replace('/https?:\/\/web\.archive\.org\/web\/\d+im_\//', '', $content);
         
@@ -476,7 +446,6 @@ class URLAnalyzer
 
     /**
      * Try to get content using Selenium
-     * Tenta obter conteúdo usando Selenium
      */
     private function fetchFromSelenium($url, $browser = 'firefox')
     {
@@ -548,7 +517,6 @@ class URLAnalyzer
 
     /**
      * Get specific rules for a domain
-     * Obtém regras específicas para um domínio
      */
     private function getDomainRules($domain)
     {
@@ -557,7 +525,6 @@ class URLAnalyzer
 
     /**
      * Process HTML content applying domain rules
-     * Processa conteúdo HTML aplicando regras de domínio
      */
     private function processContent($content, $host, $url)
     {
@@ -573,7 +540,7 @@ class URLAnalyzer
 
         $xpath = new DOMXPath($dom);
 
-        // Process canonical tags / Processar tags canônicas
+        // Process canonical tags
         $canonicalLinks = $xpath->query("//link[@rel='canonical']");
         if ($canonicalLinks !== false) {
             foreach ($canonicalLinks as $link) {
@@ -583,7 +550,7 @@ class URLAnalyzer
             }
         }
 
-        // Add new canonical tag / Adicionar nova tag canônica
+        // Add new canonical tag
         $head = $xpath->query('//head')->item(0);
         if ($head) {
             $newCanonical = $dom->createElement('link');
@@ -592,12 +559,12 @@ class URLAnalyzer
             $head->appendChild($newCanonical);
         }
 
-        // Fix relative URLs / Corrigir URLs relativas
+        // Fix relative URLs
         $this->fixRelativeUrls($dom, $xpath, $url);
 
         $domainRules = $this->getDomainRules($host);
 
-        // Apply domain rules / Aplicar regras de domínio
+        // Apply domain rules
         if (isset($domainRules['customStyle'])) {
             $styleElement = $dom->createElement('style');
             $styleElement->appendChild($dom->createTextNode($domainRules['customStyle']));
@@ -612,16 +579,16 @@ class URLAnalyzer
             $dom->getElementsByTagName('body')[0]->appendChild($scriptElement);
         }
 
-        // Remove unwanted elements / Remover elementos indesejados
+        // Remove unwanted elements
         $this->removeUnwantedElements($dom, $xpath, $domainRules);
 
-        // Clean inline styles / Limpar estilos inline
+        // Clean inline styles
         $this->cleanInlineStyles($xpath);
 
-        // Add Brand Bar / Adicionar barra de marca
+        // Add Brand bar
         $this->addBrandBar($dom, $xpath);
 
-        // Add debug panel / Adicionar painel de debug
+        // Add Debug panel
         $this->addDebugBar($dom, $xpath);
 
         return $dom->saveHTML();
@@ -629,7 +596,6 @@ class URLAnalyzer
 
     /**
      * Remove unwanted elements based on domain rules
-     * Remove elementos indesejados com base nas regras de domínio
      */
     private function removeUnwantedElements($dom, $xpath, $domainRules)
     {
@@ -715,7 +681,7 @@ class URLAnalyzer
         if (isset($domainRules['removeCustomAttr'])) {
             foreach ($domainRules['removeCustomAttr'] as $attrPattern) {
                 if (strpos($attrPattern, '*') !== false) {
-                    // For wildcard attributes (e.g. data-*) / Para atributos com wildcard (ex: data-*)
+                    // For wildcard attributes (e.g. data-*)
                     $elements = $xpath->query('//*');
                     if ($elements !== false) {
                         $pattern = '/^' . str_replace('*', '.*', $attrPattern) . '$/';
@@ -735,7 +701,7 @@ class URLAnalyzer
                         $this->activatedRules[] = "removeCustomAttr: $attrPattern";
                     }
             } else {
-                    // For non-wildcard attributes / Para atributos sem wildcard
+                    // For non-wildcard attributes
                     $elements = $xpath->query("//*[@$attrPattern]");
                     if ($elements !== false && $elements->length > 0) {
                         foreach ($elements as $element) {
@@ -749,8 +715,7 @@ class URLAnalyzer
     }
 
     /**
-     * Clean inline styles that might interfere with content visibility
-     * Limpa estilos inline que podem interferir na visibilidade do conteúdo
+     * Clean inline styles
      */
     private function cleanInlineStyles($xpath)
     {
@@ -767,8 +732,7 @@ class URLAnalyzer
     }
 
     /**
-     * Add Brand Bar CTA and debug panel
-     * Adiciona CTA da marca e painel de debug
+     * Add Brand Bar in pages
      */
     private function addBrandBar($dom, $xpath)
     {
@@ -783,10 +747,8 @@ class URLAnalyzer
         }
     }
 
-
     /**
      * Add debug panel if LOG_LEVEL is DEBUG
-     * Adicionar painel de depuração se LOG_LEVEL for DEBUG
      */
     private function addDebugBar($dom, $xpath)
     {
@@ -815,7 +777,6 @@ class URLAnalyzer
 
     /**
      * Remove specific classes from an element
-     * Remove classes específicas de um elemento
      */
     private function removeClassNames($element, $classesToRemove)
     {
@@ -837,7 +798,6 @@ class URLAnalyzer
 
     /**
      * Fix relative URLs in a DOM document
-     * Corrige URLs relativas em um documento DOM
      */
     private function fixRelativeUrls($dom, $xpath, $baseUrl)
     {
