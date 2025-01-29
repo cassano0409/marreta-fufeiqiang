@@ -7,13 +7,13 @@ return [
     'nav_integration' => 'Integrações',
     'nav_extension' => 'Instale a extensão',
     'bookmarklet_title' => 'Adicione aos Favoritos',
-    'bookmarklet_description' => 'Adicione aos favoritos arrastando o botão abaixo <strong>para sua barra de favoritos</strong> para acessar o Marreta rapidamente em qualquer página!',
+    'bookmarklet_description' => 'Adicione aos favoritos arrastando o botão abaixo <strong>para sua barra de favoritos</strong>!',
     'open_in' => 'Me arrasta',
     'adblocker_warning' => 'Conflitos entre o {site_name} e bloqueadores de anúncios podem causar tela branca. Use o modo anônimo ou desative a extensão.',
     'add_as_app' => 'Adicionar como aplicativo',
     'add_as_app_step1' => 'No seu navegador, clique no ícone de menu (três pontos)',
     'add_as_app_step2' => 'Selecione "Instalar aplicativo" ou "Adicionar à tela inicial"',
-    'add_as_app_step3' => 'Clique em "Instalar" para ter acesso rápido',
+    'add_as_app_step3' => 'Clique em "Instalar"',
     'add_as_app_step4' => 'Agora pode compartilhar diretamente links para o {site_name}',
     
     'messages' => [

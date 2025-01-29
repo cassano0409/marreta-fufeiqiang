@@ -7,7 +7,7 @@ return [
     'nav_integration' => 'Integrations',
     'nav_extension' => 'Install the extension',
     'bookmarklet_title' => 'Add to Bookmarks',
-    'bookmarklet_description' => 'Drag the button below to your bookmarks bar to quickly access {site_name} on any page:',
+    'bookmarklet_description' => 'Drag the button below to your bookmarks bar to quickly access on any page:',
     'open_in' => 'Open in {site_name}',
     'adblocker_warning' => 'Conflicts between {site_name} and ad blockers may cause a white screen. Use incognito mode or disable the extension.',
     'add_as_app' => 'Add as app',

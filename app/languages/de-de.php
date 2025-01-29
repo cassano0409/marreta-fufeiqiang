@@ -7,7 +7,7 @@ return [
     'nav_integration' => 'Integrations',
     'nav_extension' => 'Install the extension',
     'bookmarklet_title' => 'Zu Lesezeichen hinzufügen',
-    'bookmarklet_description' => 'Ziehe Sie die Schaltfläche unten in Ihre Lesezeichenleiste, um schnell auf {site_name} zuzugreifen:',
+    'bookmarklet_description' => 'Ziehe Sie die Schaltfläche unten in Ihre Lesezeichenleiste, um schnell auf zuzugreifen:',
     'open_in' => 'Öffne {site_name}',
     'adblocker_warning' => 'Bei Konflikten zwischen {site_name} und Werbeblockern kann ein weißer Bildschirm angezeigt werden. Verwenden Sie den Inkognito-Modus oder deaktivieren Sie die Erweiterung.',
     'add_as_app' => 'Als app hinzufügen',

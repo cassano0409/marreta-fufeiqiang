@@ -7,7 +7,7 @@ return [
     'nav_integration' => 'Integrations',
     'nav_extension' => 'Install the extension',
     'bookmarklet_title' => 'Добавить в закладки',
-    'bookmarklet_description' => 'Перетащите кнопку ниже на панель закладок, чтобы быстро получить доступ к {site_name} на любой странице:',
+    'bookmarklet_description' => 'Перетащите кнопку ниже на панель закладок, чтобы быстро получить доступ к на любой странице:',
     'open_in' => 'Открыть в {site_name}',
     'adblocker_warning' => 'Конфликты между {site_name} и блокировщиками рекламы могут вызывать белый экран. Используйте режим инкогнито или отключите расширение.',
     'add_as_app' => 'Добавить как приложение',

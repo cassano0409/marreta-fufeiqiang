@@ -7,7 +7,7 @@ return [
     'nav_integration' => 'Integraciones',
     'nav_extension' => 'Instalar la extensión',
     'bookmarklet_title' => 'Agregar a Favoritos',
-    'bookmarklet_description' => 'Arrastra el botón a tu barra de favoritos para acceder rápidamente a {site_name} en cualquier página:',
+    'bookmarklet_description' => 'Arrastra el botón a tu barra de favoritos para acceder rápidamente en cualquier página:',
     'open_in' => 'Abrir en {site_name}',
     'adblocker_warning' => 'Los conflictos entre {site_name} y los bloqueadores de anuncios pueden causar una pantalla en blanco. Use el modo incógnito o desactive la extensión.',
     'add_as_app' => 'Agregar como aplicación',
