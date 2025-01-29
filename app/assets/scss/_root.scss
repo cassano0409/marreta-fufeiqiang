@@ -1,7 +1,6 @@
 @use "mixin";
 
 :root {
-	// Fonts
 	--font-family-sans-serif: -apple-system,
 		BlinkMacSystemFont,
 		"Segoe UI",
@@ -24,18 +23,15 @@
 	--font-family-inter: "inter";
     --font-family-unna: "unna";
 
-	//-- Styles
 	--font-size: 16px;
 	--font-weight: 500;
 	--line-height: 160%;
 
-	// Colors
 	@include mixin.create-color('marreta', #3B82F6);
     @include mixin.create-color('text', #484848);
     @include mixin.create-color('textmuted', #818181);
     @include mixin.create-color('link', #3B82F6);
 
-	// Spacing
 	--container_spacing: 24px;
 	@include mixin.devices(desktop) {
         --container_spacing: 64px;

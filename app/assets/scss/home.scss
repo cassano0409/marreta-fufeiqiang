@@ -1,8 +1,11 @@
+body {
+    padding: 42px 0 52px 0;
+}
 header {
     display: grid;
     grid-template-columns: 1fr 2fr 1fr;
     align-items: center;
-    padding: 42px 0;
+    padding: 0 0 42px 0;
 
     .brand {
         display: flex;
@@ -49,7 +52,6 @@ header {
             }
 
             &__menu {
-                display: none;
                 position: absolute;
                 top: 110%;
                 left: 0;
@@ -61,7 +63,11 @@ header {
                 box-shadow: 0px 10px 15px 0px rgba(0, 0, 0, 0.1);
                 box-shadow: 0px 10px 10px 0px rgba(0, 0, 0, 0.04);
                 box-shadow: 0px 20px 25px 0px rgba(0, 0, 0, 0.1);
-    
+                transition: max-height 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+                max-height: 0;
+                opacity: 0;
+                overflow: hidden;
+
                 a {
                     margin-bottom: 4px;
                     &:first-child {
@@ -94,7 +100,8 @@ header {
 
             &.open {
                 .integration__menu {
-                    display: block;
+                    max-height: 200px;
+                    opacity: 1;
                 }
 
                 .arrow {
@@ -114,7 +121,7 @@ header {
                 border-top: 2px solid black;
                 transform: rotate(135deg);
                 margin-right: 0;
-                margin-left: 5px;
+                margin-left: 16px;
             }
         }
     }
@@ -139,7 +146,6 @@ header {
         }
 
         &__menu {
-            display: none;
             position: absolute;
             top: 110%;
             right: 0;
@@ -151,6 +157,10 @@ header {
             box-shadow: 0px 10px 15px 0px rgba(0, 0, 0, 0.1);
             box-shadow: 0px 10px 10px 0px rgba(0, 0, 0, 0.04);
             box-shadow: 0px 20px 25px 0px rgba(0, 0, 0, 0.1);
+            transition: max-height 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+            max-height: 0;
+            opacity: 0;
+            overflow: hidden;
 
             a {
                 margin-bottom: 4px;
@@ -188,7 +198,8 @@ header {
                 color: var(--textmuted);
             }
             .extension__menu {
-                display: block;
+                max-height: 200px;
+                opacity: 1;
             }
         }
     }
@@ -317,10 +328,10 @@ main {
         display: grid;
         grid-auto-columns: 1fr;
         grid-template-columns: 1fr 1fr;
-        gap: 0px 28px;
+        gap: 0px 38px;
         align-items: start;
-        max-width: 960px;
-        margin: 62px auto 24px auto;
+        max-width: 900px;
+        margin: 62px auto 0 auto;
 
         h2 {
             font-size: 16px;
@@ -344,6 +355,7 @@ main {
 
             p {
                 margin: 0;
+                padding-right: 22px;
             }
 
             strong {
