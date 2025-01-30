@@ -1,4 +1,8 @@
 <?php
+/**
+ * Processes and modifies HTML content
+ * Handles DOM changes and content rules
+ */
 
 namespace Inc\URLAnalyzer;
 
@@ -8,6 +12,7 @@ use DOMElement;
 
 class URLAnalyzerProcess extends URLAnalyzerBase
 {
+    /** @var URLAnalyzerError Handler for throwing formatted errors */
     private $error;
 
     public function __construct()
@@ -16,6 +21,7 @@ class URLAnalyzerProcess extends URLAnalyzerBase
         $this->error = new URLAnalyzerError();
     }
 
+    /** Creates DOM from HTML content */
     private function createDOM($content) {
         $dom = new DOMDocument();
         $dom->preserveWhiteSpace = true;
@@ -25,6 +31,10 @@ class URLAnalyzerProcess extends URLAnalyzerBase
         return $dom;
     }
 
+    /** 
+     * Processes and modifies HTML content
+     * Applies rules and fixes URLs
+     */
     public function processContent($content, $host, $url)
     {
         if (strlen($content) < 5120) {
@@ -45,6 +55,7 @@ class URLAnalyzerProcess extends URLAnalyzerBase
         return $dom->saveHTML();
     }
 
+    /** Updates canonical link tags */
     private function processCanonicalLinks($dom, $xpath, $url) 
     {
         $canonicalLinks = $xpath->query("//link[@rel='canonical']");
@@ -65,6 +76,7 @@ class URLAnalyzerProcess extends URLAnalyzerBase
         }
     }
 
+    /** Applies domain rules to content */
     private function applyDomainRules($dom, $xpath, $host)
     {
         $domainRules = $this->getDomainRules($host);
@@ -86,6 +98,7 @@ class URLAnalyzerProcess extends URLAnalyzerBase
         $this->removeUnwantedElements($dom, $xpath, $domainRules);
     }
 
+    /** Removes unwanted elements by rules */
     private function removeUnwantedElements($dom, $xpath, $domainRules)
     {
         if (isset($domainRules['classAttrRemove'])) {
@@ -201,6 +214,7 @@ class URLAnalyzerProcess extends URLAnalyzerBase
         }
     }
 
+    /** Cleans problematic inline styles */
     private function cleanInlineStyles($xpath)
     {
         $elements = $xpath->query("//*[@style]");
@@ -215,6 +229,7 @@ class URLAnalyzerProcess extends URLAnalyzerBase
         }
     }
 
+    /** Adds branded bar to page */
     private function addBrandBar($dom, $xpath)
     {
         $body = $xpath->query('//body')->item(0);
@@ -228,6 +243,7 @@ class URLAnalyzerProcess extends URLAnalyzerBase
         }
     }
 
+    /** Adds debug info bar in debug mode */
     private function addDebugBar($dom, $xpath)
     {
         if (defined('LOG_LEVEL') && LOG_LEVEL === 'DEBUG') {
@@ -253,6 +269,7 @@ class URLAnalyzerProcess extends URLAnalyzerBase
         }
     }
 
+    /** Removes class names from element */
     private function removeClassNames($element, $classesToRemove)
     {
         if (!$element->hasAttribute('class')) {
@@ -271,6 +288,7 @@ class URLAnalyzerProcess extends URLAnalyzerBase
         }
     }
 
+    /** Converts relative URLs to absolute */
     private function fixRelativeUrls($dom, $xpath, $baseUrl)
     {
         $parsedBase = parse_url($baseUrl);

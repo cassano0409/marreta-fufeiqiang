@@ -1,4 +1,8 @@
 <?php
+/**
+ * Base URL analyzer functionality
+ * Handles errors, user agents, and DNS config
+ */
 
 namespace Inc\URLAnalyzer;
 
@@ -15,7 +19,7 @@ use Facebook\WebDriver\Chrome\ChromeOptions;
 
 class URLAnalyzerBase
 {
-    // Error type constants
+    /** @var string Error constants for different failure scenarios */
     const ERROR_INVALID_URL = 'INVALID_URL';
     const ERROR_BLOCKED_DOMAIN = 'BLOCKED_DOMAIN';
     const ERROR_NOT_FOUND = 'NOT_FOUND';
@@ -25,7 +29,7 @@ class URLAnalyzerBase
     const ERROR_CONTENT_ERROR = 'CONTENT_ERROR';
     const ERROR_GENERIC_ERROR = 'GENERIC_ERROR';
 
-    // Error mapping
+    /** @var array Maps error types to HTTP codes and message keys */
     protected $errorMap = [
         self::ERROR_INVALID_URL => ['code' => 400, 'message_key' => 'INVALID_URL'],
         self::ERROR_BLOCKED_DOMAIN => ['code' => 403, 'message_key' => 'BLOCKED_DOMAIN'],
@@ -37,12 +41,14 @@ class URLAnalyzerBase
         self::ERROR_GENERIC_ERROR => ['code' => 500, 'message_key' => 'GENERIC_ERROR']
     ];
 
+    /** @var array List of user agents to rotate through, including Googlebot */
     protected $userAgents = [
         'Googlebot-News',
         'Mozilla/5.0 (Linux; Android 6.0.1; Nexus 5X Build/MMB29P) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/W.X.Y.Z Mobile Safari/537.36 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)',
         'Mozilla/5.0 AppleWebKit/537.36 (KHTML, like Gecko; compatible; Googlebot/2.1; +http://www.google.com/bot.html) Chrome/W.X.Y.Z Safari/537.36'
     ];
 
+    /** @var array Common social media referrer URLs */
     protected $socialReferrers = [
         'https://t.co/',
         'https://www.twitter.com/',
@@ -50,11 +56,22 @@ class URLAnalyzerBase
         'https://www.linkedin.com/'
     ];
 
+    /** @var array List of DNS servers to use */
     protected $dnsServers;
+    
+    /** @var Rules Rules manager for domain-specific handling */
     protected $rules;
+    
+    /** @var Cache Cache manager for storing fetched content */
     protected $cache;
+    
+    /** @var array Tracks which rules were used during analysis */
     protected $activatedRules = [];
 
+    /**
+     * Sets up base configuration for URL analysis
+     * Initializes DNS servers, rules engine, and cache
+     */
     public function __construct()
     {
         $this->dnsServers = explode(',', DNS_SERVERS);
@@ -62,6 +79,12 @@ class URLAnalyzerBase
         $this->cache = new Cache();
     }
 
+    /**
+     * Gets a random user agent string
+     * 
+     * @param bool $preferGoogleBot If true, 70% chance to return a Googlebot UA
+     * @return string Random user agent string
+     */
     protected function getRandomUserAgent($preferGoogleBot = false)
     {
         if ($preferGoogleBot && rand(0, 100) < 70) {
@@ -70,11 +93,22 @@ class URLAnalyzerBase
         return $this->userAgents[array_rand($this->userAgents)];
     }
 
+    /**
+     * Gets a random social media referrer URL
+     * 
+     * @return string Random social media referrer URL
+     */
     protected function getRandomSocialReferrer()
     {
         return $this->socialReferrers[array_rand($this->socialReferrers)];
     }
 
+    /**
+     * Gets domain-specific rules for content fetching and processing
+     * 
+     * @param string $domain The domain to get rules for
+     * @return array Domain rules configuration
+     */
     protected function getDomainRules($domain)
     {
         return $this->rules->getDomainRules($domain);

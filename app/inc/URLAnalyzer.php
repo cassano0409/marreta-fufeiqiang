@@ -1,4 +1,8 @@
 <?php
+/**
+ * URL analyzer with multiple fetch strategies and content processing
+ * Handles caching, error handling, and domain-specific rules
+ */
 
 namespace Inc;
 
@@ -12,16 +16,25 @@ use Inc\URLAnalyzer\URLAnalyzerUtils;
 
 class URLAnalyzer extends URLAnalyzerBase
 {
+    /** @var URLAnalyzerFetch Content fetcher */
     private $fetch;
+    
+    /** @var URLAnalyzerProcess Content processor */
     private $process;
+    
+    /** @var URLAnalyzerError Error handler */
     private $error;
+    
+    /** @var URLAnalyzerUtils URL utilities */
     private $utils;
 
+    /** Gets URL status info */
     public function checkStatus($url)
     {
         return $this->utils->checkStatus($url);
     }
 
+    /** Sets up analyzer components */
     public function __construct()
     {
         parent::__construct();
@@ -31,28 +44,36 @@ class URLAnalyzer extends URLAnalyzerBase
         $this->utils = new URLAnalyzerUtils();
     }
 
+    /**
+     * Analyzes URL and extracts content
+     * Uses cache if available, otherwise fetches and processes
+     */
     public function analyze($url)
     {
+        // Reset activated rules for new analysis
         $this->activatedRules = [];
 
-        // Get and process cached content if it exists
+        // Try to get and process cached content first
         if ($this->cache->exists($url)) {
             $rawContent = $this->cache->get($url);
             // Process the raw content in real-time
             return $this->process->processContent($rawContent, parse_url($url, PHP_URL_HOST), $url);
         }
 
+        // Extract and validate hostname
         $host = parse_url($url, PHP_URL_HOST);
         if (!$host) {
             $this->error->throwError(self::ERROR_INVALID_URL, '');
         }
         $host = preg_replace('/^www\./', '', $host);
 
+        // Check if domain is in blocked list
         if (in_array($host, BLOCKED_DOMAINS)) {
             Logger::getInstance()->logUrl($url, 'BLOCKED_DOMAIN');
             $this->error->throwError(self::ERROR_BLOCKED_DOMAIN, '');
         }
 
+        // Check HTTP status and handle any errors
         $redirectInfo = $this->utils->checkStatus($url);
         if ($redirectInfo['httpCode'] !== 200) {
             Logger::getInstance()->logUrl($url, 'INVALID_STATUS_CODE', "HTTP {$redirectInfo['httpCode']}");
@@ -64,9 +85,11 @@ class URLAnalyzer extends URLAnalyzerBase
         }
 
         try {
+            // Get specific rules for this domain
             $domainRules = $this->getDomainRules($host);
             $fetchStrategy = isset($domainRules['fetchStrategies']) ? $domainRules['fetchStrategies'] : null;
 
+            // Try domain-specific fetch strategy if available
             if ($fetchStrategy) {
                 try {
                     $content = null;
@@ -95,12 +118,14 @@ class URLAnalyzer extends URLAnalyzerBase
                 }
             }
 
+            // Try all fetch strategies in order if no domain-specific strategy worked
             $fetchStrategies = [
                 ['method' => 'fetchContent', 'args' => [$url]],
                 ['method' => 'fetchFromWaybackMachine', 'args' => [$url]],
                 ['method' => 'fetchFromSelenium', 'args' => [$url, 'firefox']]
             ];
 
+            // Track last error for better error reporting
             $lastError = null;
             foreach ($fetchStrategies as $strategy) {
                 try {

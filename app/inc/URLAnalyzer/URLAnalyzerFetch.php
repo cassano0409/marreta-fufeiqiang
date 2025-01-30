@@ -1,4 +1,8 @@
 <?php
+/**
+ * Fetches content using multiple strategies
+ * Uses cURL, Wayback Machine, and Selenium
+ */
 
 namespace Inc\URLAnalyzer;
 
@@ -11,14 +15,22 @@ use Facebook\WebDriver\Chrome\ChromeOptions;
 
 class URLAnalyzerFetch extends URLAnalyzerBase
 {
+    /** @var URLAnalyzerError Handler for throwing formatted errors */
     private $error;
 
+    /**
+     * Sets up the fetch handler with error handling capability
+     */
     public function __construct()
     {
         parent::__construct();
         $this->error = new URLAnalyzerError();
     }
 
+    /** 
+     * Fetches content using cURL
+     * Handles redirects and custom headers
+     */
     public function fetchContent($url)
     {
         $curl = new Curl();
@@ -79,6 +91,10 @@ class URLAnalyzerFetch extends URLAnalyzerBase
         return $curl->response;
     }
 
+    /** 
+     * Fetches from Wayback Machine archive
+     * Used when direct access fails
+     */
     public function fetchFromWaybackMachine($url)
     {
         $url = preg_replace('#^https?://#', '', $url);
@@ -128,6 +144,10 @@ class URLAnalyzerFetch extends URLAnalyzerBase
         return $content;
     }
 
+    /** 
+     * Fetches using Selenium for JS-heavy sites
+     * Supports Firefox and Chrome
+     */
     public function fetchFromSelenium($url, $browser = 'firefox')
     {
         $host = 'http://'.SELENIUM_HOST.'/wd/hub';

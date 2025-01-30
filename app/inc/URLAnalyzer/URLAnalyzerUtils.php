@@ -1,4 +1,8 @@
 <?php
+/**
+ * URL analysis utilities
+ * Checks status and redirects
+ */
 
 namespace Inc\URLAnalyzer;
 
@@ -6,6 +10,7 @@ use Curl\Curl;
 
 class URLAnalyzerUtils extends URLAnalyzerBase
 {
+    /** Gets URL status and redirect info */
     public function checkStatus($url)
     {
         $curl = new Curl();
