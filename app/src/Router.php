@@ -29,7 +29,7 @@ class Router
                 require_once __DIR__ . '/../inc/Cache.php';
                 require_once __DIR__ . '/../inc/Language.php';
 
-                \Language::init(LANGUAGE);
+                \Inc\Language::init(LANGUAGE);
                 
                 $message = '';
                 $message_type = '';
@@ -38,7 +38,7 @@ class Router
                 // Sanitize and process query string messages
                 if (isset($_GET['message'])) {
                     $message_key = htmlspecialchars(trim($_GET['message']), ENT_QUOTES | ENT_HTML5, 'UTF-8');
-                    $messageData = \Language::getMessage($message_key);
+                    $messageData = \Inc\Language::getMessage($message_key);
                     $message = htmlspecialchars($messageData['message'], ENT_QUOTES | ENT_HTML5, 'UTF-8');
                     $message_type = htmlspecialchars($messageData['type'], ENT_QUOTES | ENT_HTML5, 'UTF-8');
                 }
@@ -50,14 +50,14 @@ class Router
                         header('Location: ' . SITE_URL . '/p/' . $url);
                         exit;
                     } else {
-                        $messageData = \Language::getMessage('INVALID_URL');
+                        $messageData = \Inc\Language::getMessage('INVALID_URL');
                         $message = $messageData['message'];
                         $message_type = $messageData['type'];
                     }
                 }
                 
                 // Initialize cache for counting
-                $cache = new \Cache();
+                $cache = new \Inc\Cache();
                 $cache_folder = $cache->getCacheFileCount();
                 
                 require __DIR__ . '/views/home.php';

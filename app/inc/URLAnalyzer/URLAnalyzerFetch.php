@@ -1,0 +1,197 @@
+<?php
+
+namespace Inc\URLAnalyzer;
+
+use Curl\Curl;
+use Facebook\WebDriver\Remote\DesiredCapabilities;
+use Facebook\WebDriver\Remote\RemoteWebDriver;
+use Facebook\WebDriver\Firefox\FirefoxOptions;
+use Facebook\WebDriver\Firefox\FirefoxProfile;
+use Facebook\WebDriver\Chrome\ChromeOptions;
+
+class URLAnalyzerFetch extends URLAnalyzerBase
+{
+    private $error;
+
+    public function __construct()
+    {
+        parent::__construct();
+        $this->error = new URLAnalyzerError();
+    }
+
+    public function fetchContent($url)
+    {
+        $curl = new Curl();
+
+        $host = parse_url($url, PHP_URL_HOST);
+        if (!$host) {
+            $this->error->throwError(self::ERROR_INVALID_URL);
+        }
+        $host = preg_replace('/^www\./', '', $host);
+        $domainRules = $this->getDomainRules($host);
+
+        $curl->setOpt(CURLOPT_FOLLOWLOCATION, true);
+        $curl->setOpt(CURLOPT_MAXREDIRS, 2);
+        $curl->setOpt(CURLOPT_TIMEOUT, 10);
+        $curl->setOpt(CURLOPT_SSL_VERIFYPEER, false);
+        $curl->setOpt(CURLOPT_DNS_SERVERS, implode(',', $this->dnsServers));
+        $curl->setOpt(CURLOPT_ENCODING, '');
+
+        $curl->setHeaders([
+            'Accept' => 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+            'Accept-Language' => 'en-US,en;q=0.5',
+            'Cache-Control' => 'no-cache',
+            'Pragma' => 'no-cache',
+            'DNT' => '1'
+        ]);
+
+        if (isset($domainRules['fromGoogleBot'])) {
+            $curl->setUserAgent($this->getRandomUserAgent(true));
+            $curl->setHeaders([
+                'X-Forwarded-For' => '66.249.' . rand(64, 95) . '.' . rand(1, 254),
+                'From' => 'googlebot(at)googlebot.com'
+            ]);
+        }
+
+        if (isset($domainRules['headers'])) {
+            $curl->setHeaders($domainRules['headers']);
+        }
+
+        $curl->get($url);
+
+        if ($curl->error) {
+            $errorMessage = $curl->errorMessage;
+            if (strpos($errorMessage, 'DNS') !== false) {
+                $this->error->throwError(self::ERROR_DNS_FAILURE);
+            } elseif (strpos($errorMessage, 'CURL') !== false) {
+                $this->error->throwError(self::ERROR_CONNECTION_ERROR);
+            } elseif ($curl->httpStatusCode === 404) {
+                $this->error->throwError(self::ERROR_NOT_FOUND);
+            } else {
+                $this->error->throwError(self::ERROR_HTTP_ERROR);
+            }
+        }
+
+        if ($curl->httpStatusCode !== 200 || empty($curl->response)) {
+            $this->error->throwError(self::ERROR_HTTP_ERROR);
+        }
+
+        return $curl->response;
+    }
+
+    public function fetchFromWaybackMachine($url)
+    {
+        $url = preg_replace('#^https?://#', '', $url);
+        $availabilityUrl = "https://archive.org/wayback/available?url=" . urlencode($url);
+
+        $curl = new Curl();
+        $curl->setOpt(CURLOPT_FOLLOWLOCATION, true);
+        $curl->setOpt(CURLOPT_TIMEOUT, 10);
+        $curl->setOpt(CURLOPT_SSL_VERIFYPEER, false);
+        $curl->setUserAgent($this->getRandomUserAgent());
+
+        $curl->get($availabilityUrl);
+
+        if ($curl->error) {
+            if (strpos($curl->errorMessage, 'DNS') !== false) {
+                $this->error->throwError(self::ERROR_DNS_FAILURE);
+            } elseif (strpos($curl->errorMessage, 'CURL') !== false) {
+                $this->error->throwError(self::ERROR_CONNECTION_ERROR);
+            } else {
+                $this->error->throwError(self::ERROR_HTTP_ERROR);
+            }
+        }
+
+        $data = $curl->response;
+        if (!isset($data->archived_snapshots->closest->url)) {
+            $this->error->throwError(self::ERROR_NOT_FOUND);
+        }
+
+        $archiveUrl = $data->archived_snapshots->closest->url;
+        $curl = new Curl();
+        $curl->setOpt(CURLOPT_FOLLOWLOCATION, true);
+        $curl->setOpt(CURLOPT_TIMEOUT, 10);
+        $curl->setOpt(CURLOPT_SSL_VERIFYPEER, false);
+        $curl->setUserAgent($this->getRandomUserAgent());
+
+        $curl->get($archiveUrl);
+
+        if ($curl->error || $curl->httpStatusCode !== 200 || empty($curl->response)) {
+            $this->error->throwError(self::ERROR_HTTP_ERROR);
+        }
+
+        $content = $curl->response;
+
+        $content = preg_replace('/<!-- BEGIN WAYBACK TOOLBAR INSERT -->.*?<!-- END WAYBACK TOOLBAR INSERT -->/s', '', $content);
+        $content = preg_replace('/https?:\/\/web\.archive\.org\/web\/\d+im_\//', '', $content);
+
+        return $content;
+    }
+
+    public function fetchFromSelenium($url, $browser = 'firefox')
+    {
+        $host = 'http://'.SELENIUM_HOST.'/wd/hub';
+
+        if ($browser === 'chrome') {
+            $options = new ChromeOptions();
+            $options->addArguments([
+                '--headless',
+                '--disable-gpu',
+                '--no-sandbox',
+                '--disable-dev-shm-usage',
+                '--disable-images',
+                '--blink-settings=imagesEnabled=false'
+            ]);
+
+            $capabilities = DesiredCapabilities::chrome();
+            $capabilities->setCapability(ChromeOptions::CAPABILITY, $options);
+        } else {
+            $profile = new FirefoxProfile();
+            $profile->setPreference("permissions.default.image", 2);
+            $profile->setPreference("javascript.enabled", true);
+            $profile->setPreference("network.http.referer.defaultPolicy", 0);
+            $profile->setPreference("network.http.referer.defaultReferer", "https://www.google.com");
+            $profile->setPreference("network.http.referer.spoofSource", true);
+            $profile->setPreference("network.http.referer.trimmingPolicy", 0);
+
+            $options = new FirefoxOptions();
+            $options->setProfile($profile);
+
+            $capabilities = DesiredCapabilities::firefox();
+            $capabilities->setCapability(FirefoxOptions::CAPABILITY, $options);
+        }
+
+        try {
+            $driver = RemoteWebDriver::create($host, $capabilities);
+            $driver->manage()->timeouts()->pageLoadTimeout(10);
+            $driver->manage()->timeouts()->setScriptTimeout(5);
+
+            $driver->get($url);
+
+            $htmlSource = $driver->executeScript("return document.documentElement.outerHTML;");
+
+            $driver->quit();
+
+            if (empty($htmlSource)) {
+                $this->error->throwError(self::ERROR_CONTENT_ERROR);
+            }
+
+            return $htmlSource;
+        } catch (\Exception $e) {
+            if (isset($driver)) {
+                $driver->quit();
+            }
+
+            $message = $e->getMessage();
+            if (strpos($message, 'DNS') !== false) {
+                $this->error->throwError(self::ERROR_DNS_FAILURE);
+            } elseif (strpos($message, 'timeout') !== false) {
+                $this->error->throwError(self::ERROR_CONNECTION_ERROR);
+            } elseif (strpos($message, 'not found') !== false) {
+                $this->error->throwError(self::ERROR_NOT_FOUND);
+            } else {
+                $this->error->throwError(self::ERROR_HTTP_ERROR);
+            }
+        }
+    }
+}

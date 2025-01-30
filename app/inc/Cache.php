@@ -1,5 +1,7 @@
 <?php
 
+namespace Inc;
+
 use Inc\Cache\CacheStorageInterface;
 use Inc\Cache\DiskStorage;
 use Inc\Cache\S3Storage;

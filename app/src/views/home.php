@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="<?php echo Language::getCurrentLanguage(); ?>">
+<html lang="<?php echo \Inc\Language::getCurrentLanguage(); ?>">
 
 <head>
     <meta charset="UTF-8">
@@ -36,7 +36,7 @@
                 <a target="_blank" href="https://github.com/manualdousuario/marreta/wiki/API-Rest">API Rest</a>
                 <a target="_blank" href="https://github.com/manualdousuario/marreta/">Github</a>
                 <div class="integration">
-                    <button class="integration__toggle"><?php echo Language::get('nav_integration'); ?><span class="arrow"></span></button>
+                    <button class="integration__toggle"><?php echo \Inc\Language::get('nav_integration'); ?><span class="arrow"></span></button>
                     <div class="integration__menu">
                         <a target="_blank" href="https://bsky.app/profile/marreta.pcdomanual.com"><span class="name">Bsky</span><span class="icon icon--bsky"></span></a>
                         <a target="_blank" href="https://t.me/leissoai_bot"><span class="name">Telegram</span><span class="icon icon--telegram"></span></a>
@@ -45,10 +45,10 @@
                 </div>
             </nav>
             <div class="extension">
-                <button class="extension__toggle"><?php echo Language::get('nav_extension'); ?></button>
+                <button class="extension__toggle"><?php echo \Inc\Language::get('nav_extension'); ?></button>
                 <div class="extension__menu">
                     <a target="_blank" href="https://addons.mozilla.org/pt-BR/firefox/addon/marreta/"><span class="name">Firefox</span><span class="icon icon--firefox"></span></a>
-                    <a target="_blank" href="#"><span class="name">Chrome</span><span class="icon icon--chrome"></span></a>
+                    <a target="_blank" href="https://chromewebstore.google.com/detail/marreta/ipelapagohjgjcgpncpbmaaacemafppe"><span class="name">Chrome</span><span class="icon icon--chrome"></span></a>
                 </div>
             </div>
         </header>
@@ -56,7 +56,7 @@
         <main>
             <h2 class="description"><?php echo SITE_DESCRIPTION; ?></h2>
             <p class="walls_destroyed">
-                <strong><?php echo number_format($cache_folder, 0, ',', '.'); ?></strong> <span><?php echo Language::get('walls_destroyed'); ?></span>
+                <strong><?php echo number_format($cache_folder, 0, ',', '.'); ?></strong> <span><?php echo \Inc\Language::get('walls_destroyed'); ?></span>
             </p>
             <form id="urlForm" method="POST" onsubmit="return validateForm()" class="space-y-6">
                 <?php if ($message): ?>
@@ -83,31 +83,31 @@
                         <input type="url"
                             name="url"
                             id="url"
-                            placeholder="<?php echo Language::get('url_placeholder'); ?>"
+                            placeholder="<?php echo \Inc\Language::get('url_placeholder'); ?>"
                             value="<?php echo htmlspecialchars($url); ?>"
                             required
                             pattern="https?://.+"
-                            title="<?php echo Language::getMessage('INVALID_URL')['message']; ?>">
+                            title="<?php echo \Inc\Language::getMessage('INVALID_URL')['message']; ?>">
                     </div>
-                    <button type="submit" alt="<?php echo Language::get('analyze_button'); ?>">
+                    <button type="submit" alt="<?php echo \Inc\Language::get('analyze_button'); ?>">
                         <span class="icon icon--marreta"></span>
                     </button>
                 </div>
-                <p class="adblock"><?php echo str_replace('{site_name}', SITE_NAME, Language::get('adblocker_warning')); ?></p>
+                <p class="adblock"><?php echo str_replace('{site_name}', SITE_NAME, \Inc\Language::get('adblocker_warning')); ?></p>
             </form>
 
             <div class="plus">
                 <div class="add_as_app">
                     <h2>
-                        <span class="icon icon--android"></span><?php echo Language::get('add_as_app'); ?>
+                        <span class="icon icon--android"></span><?php echo \Inc\Language::get('add_as_app'); ?>
                     </h2>
                     <div class="text">
                         <div>
                             <ol>
-                                <li><?php echo Language::get('add_as_app_step1'); ?></li>
-                                <li><?php echo Language::get('add_as_app_step2'); ?></li>
-                                <li><?php echo Language::get('add_as_app_step3'); ?></li>
-                                <li><?php echo str_replace('{site_name}', SITE_NAME, Language::get('add_as_app_step4')); ?></li>
+                                <li><?php echo \Inc\Language::get('add_as_app_step1'); ?></li>
+                                <li><?php echo \Inc\Language::get('add_as_app_step2'); ?></li>
+                                <li><?php echo \Inc\Language::get('add_as_app_step3'); ?></li>
+                                <li><?php echo str_replace('{site_name}', SITE_NAME, \Inc\Language::get('add_as_app_step4')); ?></li>
                             </ol>
                         </div>
                     </div>
@@ -115,16 +115,16 @@
 
                 <div class="bookmarklet">
                     <h2>
-                        <span class="icon icon--bookmark"></span><?php echo Language::get('bookmarklet_title'); ?>
+                        <span class="icon icon--bookmark"></span><?php echo \Inc\Language::get('bookmarklet_title'); ?>
                     </h2>
                     <div class="text">
                         <p>
-                            <?php echo str_replace('{site_name}', SITE_NAME, Language::get('bookmarklet_description')); ?>
+                            <?php echo str_replace('{site_name}', SITE_NAME, \Inc\Language::get('bookmarklet_description')); ?>
                         </p>
                         <div>
                             <a href="javascript:(function(){let currentUrl=window.location.href;window.location.href='<?php echo SITE_URL; ?>/p/'+encodeURIComponent(currentUrl);})()"
                                 onclick="return false;">
-                                <?php echo str_replace('{site_name}', SITE_NAME, Language::get('open_in')); ?>
+                                <?php echo str_replace('{site_name}', SITE_NAME, \Inc\Language::get('open_in')); ?>
                             </a>
                         </div>
                     </div>

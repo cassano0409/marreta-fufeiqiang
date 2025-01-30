@@ -1,5 +1,7 @@
 <?php
 
+namespace Inc;
+
 /**
  * Manages domain-specific content manipulation rules
  * Handles rule merging between global and domain-specific configurations

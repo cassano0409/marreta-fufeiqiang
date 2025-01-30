@@ -2,6 +2,10 @@
 
 namespace App;
 
+use Inc\Language;
+use Inc\URLAnalyzer;
+use Inc\URLAnalyzer\URLAnalyzerException;
+
 /**
  * URL Processor
  * Combines functionality for URL processing, handling both web and API responses
@@ -20,15 +24,13 @@ class URLProcessor
     public function __construct(string $url = '', bool $isApi = false)
     {
         require_once __DIR__ . '/../config.php';
-        require_once __DIR__ . '/../inc/URLAnalyzer.php';
-        require_once __DIR__ . '/../inc/Language.php';
 
         $this->url = $url;
         $this->isApi = $isApi;
-        $this->analyzer = new \URLAnalyzer();
+        $this->analyzer = new URLAnalyzer();
 
         if ($isApi) {
-            \Language::init(LANGUAGE);
+            Language::init(LANGUAGE);
             header('Content-Type: application/json');
             header('Access-Control-Allow-Origin: *');
             header('Access-Control-Allow-Methods: GET');
@@ -87,7 +89,7 @@ class URLProcessor
             } else {
                 echo $content;
             }
-        } catch (\URLAnalyzerException $e) {
+        } catch (URLAnalyzerException $e) {
             $errorType = $e->getErrorType();
             $additionalInfo = $e->getAdditionalInfo();
 
@@ -105,7 +107,7 @@ class URLProcessor
                     ]
                 ], $e->getCode());
             } else {
-                if ($errorType === \URLAnalyzer::ERROR_BLOCKED_DOMAIN && $additionalInfo) {
+                if ($errorType === URLAnalyzer::ERROR_BLOCKED_DOMAIN && $additionalInfo) {
                     $this->redirect(trim($additionalInfo), $errorType);
                 }
                 $this->redirect(SITE_URL, $errorType);
@@ -114,12 +116,12 @@ class URLProcessor
             if ($this->isApi) {
                 $this->sendApiResponse([
                     'error' => [
-                        'type' => \URLAnalyzer::ERROR_GENERIC_ERROR,
-                        'message' => \Language::getMessage('GENERIC_ERROR')['message']
+                        'type' => URLAnalyzer::ERROR_GENERIC_ERROR,
+                        'message' => Language::getMessage('GENERIC_ERROR')['message']
                     ]
                 ], 500);
             } else {
-                $this->redirect(SITE_URL, \URLAnalyzer::ERROR_GENERIC_ERROR);
+                $this->redirect(SITE_URL, URLAnalyzer::ERROR_GENERIC_ERROR);
             }
         }
     }

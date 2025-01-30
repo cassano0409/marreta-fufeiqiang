@@ -4,6 +4,8 @@
  * Generates the Web App Manifest (manifest.json) for Progressive Web App (PWA) functionality
  */
 
+use Inc\Language;
+
 require_once __DIR__ . '/../../config.php';
 require_once __DIR__ . '/../../inc/Language.php';
 

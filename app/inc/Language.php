@@ -1,5 +1,7 @@
 <?php
 
+namespace Inc;
+
 /**
  * Manages language translations and localization
  * Loads language files based on system configuration
