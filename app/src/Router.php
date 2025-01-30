@@ -7,39 +7,24 @@ require_once __DIR__ . '/../vendor/autoload.php';
 use FastRoute;
 
 /**
- * Classe Router - Gerenciador de rotas da aplicação
  * Router Class - Application route manager
- * 
- * Esta classe implementa o sistema de roteamento usando FastRoute para:
- * - Gerenciar todas as rotas da aplicação
- * - Processar requisições HTTP
- * - Direcionar para os manipuladores apropriados
- * 
- * This class implements the routing system using FastRoute to:
- * - Manage all application routes
- * - Process HTTP requests
- * - Direct to appropriate handlers
+ * Manages all application routes, processes HTTP requests, and directs to appropriate handlers
  */
 class Router
 {
     /**
-     * Instância do dispatcher do FastRoute
-     * FastRoute dispatcher instance
+     * @var FastRoute\Dispatcher FastRoute dispatcher instance
      */
     private $dispatcher;
 
     /**
-     * Construtor - Inicializa as rotas da aplicação
      * Constructor - Initializes application routes
      */
     public function __construct()
     {
         $this->dispatcher = FastRoute\simpleDispatcher(function(FastRoute\RouteCollector $r) {
-            // Rota principal - página inicial
             // Main route - home page
             $r->addRoute(['GET','POST'], '/', function() {
-                // Inicialização das variáveis para a view principal
-                // Initialize variables for the main view
                 require_once __DIR__ . '/../config.php';
                 require_once __DIR__ . '/../inc/Cache.php';
                 require_once __DIR__ . '/../inc/Language.php';
@@ -71,7 +56,6 @@ class Router
                     }
                 }
                 
-                // Inicializa o cache para contagem
                 // Initialize cache for counting
                 $cache = new \Cache();
                 $cache_folder = $cache->getCacheFileCount();
@@ -79,21 +63,18 @@ class Router
                 require __DIR__ . '/views/home.php';
             });
 
-            // Rota da API - usa URLProcessor em modo API
             // API route - uses URLProcessor in API mode
             $r->addRoute('GET', '/api/{url:.+}', function($vars) {
                 $processor = new URLProcessor($this->sanitizeUrl($vars['url']), true);
                 $processor->process();
             });
 
-            // Rota da API sem parâmetros - redireciona para raiz
             // API route without parameters - redirects to root
             $r->addRoute('GET', '/api[/]', function() {
                 header('Location: /');
                 exit;
             });
 
-            // Rota de processamento - usa URLProcessor em modo web
             // Processing route - uses URLProcessor in web mode
             $r->addRoute('GET', '/p/{url:.+}', function($vars) {
                 $processor = new URLProcessor($this->sanitizeUrl($vars['url']), false);
@@ -103,11 +84,9 @@ class Router
             // Processing route with query parameter or without parameters
             $r->addRoute('GET', '/p[/]', function() {
                 if (isset($_GET['url']) || isset($_GET['text'])) {
-                    // Sanitize input parameters
                     $url = isset($_GET['url']) ? $this->sanitizeUrl($_GET['url']) : '';
                     $text = isset($_GET['text']) ? $this->sanitizeUrl($_GET['text']) : '';
                     
-                    // Check which parameter is a valid URL
                     if (filter_var($url, FILTER_VALIDATE_URL)) {
                         header('Location: /p/' . $url);
                         exit;
@@ -123,7 +102,6 @@ class Router
                 exit;
             });
 
-            // Rota do manifesto PWA - inclui manifest.php existente
             // PWA manifest route - includes existing manifest.php
             $r->addRoute('GET', '/manifest.json', function() {
                 require __DIR__ . '/views/manifest.php';
@@ -132,16 +110,7 @@ class Router
     }
 
     /**
-     * Sanitizes URLs to prevent XSS and injection attacks
-     * Sanitiza URLs para prevenir ataques XSS e injeções
-     * 
-     * @param string $url The URL to sanitize
-     * @return string The sanitized URL
-     */
-    /**
      * Sanitizes and normalizes URLs
-     * Sanitiza e normaliza URLs
-     * 
      * @param string $url The URL to sanitize and normalize
      * @return string|false The cleaned URL or false if invalid
      */
@@ -181,11 +150,9 @@ class Router
 
     /**
      * Sets security headers for all responses
-     * Define cabeçalhos de segurança para todas as respostas
      */
     private function setSecurityHeaders()
     {
-        // Set security headers
         header("X-Content-Type-Options: nosniff");
         header("X-Frame-Options: DENY");
         header("X-XSS-Protection: 1; mode=block");
@@ -201,7 +168,6 @@ class Router
         $httpMethod = $_SERVER['REQUEST_METHOD'];
         $uri = $_SERVER['REQUEST_URI'];
 
-        // Remove a query string mas mantém para processamento
         // Strip query string but keep for processing
         $queryString = '';
         if (false !== $pos = strpos($uri, '?')) {

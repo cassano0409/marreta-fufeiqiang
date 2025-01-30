@@ -4,13 +4,7 @@ namespace App;
 
 /**
  * URL Processor
- * Processador de URLs
- * 
- * This class combines the functionality of the previous p.php and api.php files
- * to provide a unified interface for URL processing, handling both web and API responses.
- * 
- * Esta classe combina as funcionalidades dos arquivos p.php e api.php anteriores
- * para fornecer uma interface unificada para processamento de URLs, tratando respostas web e API.
+ * Combines functionality for URL processing, handling both web and API responses
  */
 class URLProcessor
 {
@@ -20,8 +14,6 @@ class URLProcessor
 
     /**
      * Constructor - initializes the processor with URL and mode
-     * Construtor - inicializa o processador com URL e modo
-     * 
      * @param string $url The URL to process
      * @param bool $isApi Whether to return API response
      */
@@ -36,10 +28,7 @@ class URLProcessor
         $this->analyzer = new \URLAnalyzer();
 
         if ($isApi) {
-            // Initialize language system for API responses
             \Language::init(LANGUAGE);
-            
-            // Set API headers
             header('Content-Type: application/json');
             header('Access-Control-Allow-Origin: *');
             header('Access-Control-Allow-Methods: GET');
@@ -48,7 +37,6 @@ class URLProcessor
 
     /**
      * Sends a JSON response for API requests
-     * Envia uma resposta JSON para requisições API
      */
     private function sendApiResponse(array $data, int $statusCode = 200): void
     {
@@ -67,7 +55,6 @@ class URLProcessor
 
     /**
      * Handles web redirects
-     * Trata redirecionamentos web
      */
     private function redirect(string $path, string $message = ''): void
     {
@@ -78,7 +65,6 @@ class URLProcessor
 
     /**
      * Process the URL and return appropriate response
-     * Processa a URL e retorna resposta apropriada
      */
     public function process(): void
     {
@@ -106,7 +92,6 @@ class URLProcessor
             $additionalInfo = $e->getAdditionalInfo();
 
             if ($this->isApi) {
-                // Add error headers for API responses
                 header('X-Error-Type: ' . $errorType);
                 if ($additionalInfo) {
                     header('X-Error-Info: ' . $additionalInfo);
@@ -120,7 +105,6 @@ class URLProcessor
                     ]
                 ], $e->getCode());
             } else {
-                // Handle blocked domain with redirect URL for web responses
                 if ($errorType === \URLAnalyzer::ERROR_BLOCKED_DOMAIN && $additionalInfo) {
                     $this->redirect(trim($additionalInfo), $errorType);
                 }
