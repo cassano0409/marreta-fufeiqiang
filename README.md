@@ -15,35 +15,26 @@ Instancia publica em [marreta.pcdomanual.com](https://marreta.pcdomanual.com)!
 
 ## ✨ O que tem de legal?
 
-- Limpa e arruma URLs automaticamente
+- Limpa e corrige URLs automaticamente
 - Remove parâmetros chatos de rastreamento
 - Força HTTPS pra manter tudo seguro
 - Troca de user agent pra evitar bloqueios
-- DNS esperto
 - Deixa o HTML limpinho e otimizado
 - Conserta URLs relativas sozinho
-- Permite colocar seus próprios estilos
+- Permite colocar seus próprios estilos e scripts
 - Remove elementos indesejados
 - Cache, cache!
 - Bloqueia domínios que você não quer
 - Permite configurar headers e cookies do seu jeito
-- Tudo com SSL/TLS
-- PHP-FPM
-- OPcache ligado
-- Compartilhamento direto via PWA no Chrome do Android
+- PHP-FPM e OPcache
 
-## 🐳 Docker
+## 🐳 Instalando em Docker
 
-### Antes de começar
-
-Só precisa ter instalado:
-- Docker e docker compose
-
-### Produção
+Instale Docker e Docker Compose
 
 `curl -o ./docker-compose.yml https://raw.githubusercontent.com/manualdousuario/marreta/main/docker-compose.yml`
 
-Se necessario
+Agora modifique com suas configurações:
 
 `nano docker-compose.yml`
 
@@ -67,44 +58,6 @@ services:
 - `SELENIUM_HOST`: Servidor:PORTA do host do Selenium (ex: selenium-hub:4444)
 - 
 Agora pode rodar `docker compose up -d`
-
-#### Desenvolvimento
-
-1. Primeiro, clone o projeto:
-```bash
-git clone https://github.com/manualdousuario/marreta/
-cd marreta
-```
-
-2. Cria o arquivo de configuração:
-```bash
-cp app/.env.sample app/.env
-```
-
-3. Configura do seu jeito no `app/.env`:
-```env
-SITE_NAME="Marreta"
-SITE_DESCRIPTION="Chapéu de paywall é marreta!"
-SITE_URL=http://localhost
-DNS_SERVERS=1.1.1.1,8.8.8.8
-LOG_LEVEL=WARNING
-SELENIUM_HOST=selenium-hub:4444
-LANGUAGE=pt-br
-```
-
-4. Web Service: Utilize o `default.conf` como base do NGINX ou aponte seu webservice para `app/`
-
-## ⚙️ Personalizando
-
-As configurações estão organizadas em `data/`:
-
-- `domain_rules.php`: Regras específicas para cada site
-- `global_rules.php`: Regras que se aplicam a todos os sites
-- `blocked_domains.php`: Lista de sites bloqueados
-
-### Traduções
-
-- `/languages/`: Cada lingua está em seu ISO id (`pt-br, en, es ou de-de`) e pode ser definida no environment `LANGUAGE`
 
 ### Cache S3
 
@@ -146,7 +99,7 @@ S3_ACL=private
 
 ### Integração com Selenium
 
-Integração com Selenium para processar sites que requerem javascript ou têm algumas barreiras de proteção mais avançadas. Para usar esta funcionalidade, você precisa configurar um ambiente Selenium com Firefox. Adicione a seguinte configuração ao seu `docker-compose.yml`:
+Integração com Selenium permite processar sites que requerem javascript ou têm algumas barreiras de proteção mais avançadas. Para usar esta funcionalidade, você precisa configurar um ambiente Selenium com Firefox. Adicione a seguinte configuração ao seu `docker-compose.yml`:
 
 ```yaml
 services:
@@ -187,6 +140,45 @@ Configurações importantes:
 
 Após configurar o Selenium, certifique-se de definir a variável `SELENIUM_HOST` no seu ambiente para apontar para o hub do Selenium (geralmente `selenium-hub:4444`).
 
+## Desenvolvimento
+
+1. Primeiro, clone o projeto:
+```bash 
+git clone https://github.com/manualdousuario/marreta/
+cd marreta/app
+```
+
+2. Instale as dependências do projeto:
+```bash
+composer install
+npm install
+```
+
+3. Cria o arquivo de configuração: 
+```bash
+cp .env.sample .env
+```
+
+4. Configure as variáveis de ambiente no `.env`
+
+5. Utilize o `default.conf` como base do NGINX ou aponte seu webservice para `app/`
+
+O Gulp é usado para compilar Sass para CSS, minificar JavaScript, utilize: `gulp`
+
+### ⚙️ Personalizando
+
+As configurações estão organizadas em `data/`:
+
+- `domain_rules.php`: Regras específicas para cada site
+- `global_rules.php`: Regras que se aplicam a todos os sites
+- `blocked_domains.php`: Lista de sites bloqueados
+
+### Traduções
+
+- `/languages/`: Cada lingua está em seu ISO id (`pt-br, en, es ou de-de`) e pode ser definida no environment `LANGUAGE`
+
+## 🛠️ Manutenção
+
 ### Sistema de Logs
 
 Os logs são armazenados em `app/logs/*.log` com rotação automática a cada 7 dias.
@@ -203,10 +195,6 @@ Níveis de log disponíveis:
 - WARNING: Avisos que merecem atenção (padrão)
 - ERROR: Erros que não interrompem a operação
 - CRITICAL: Erros críticos que precisam de atenção imediata
-
-## 🛠️ Manutenção
-
-### Logs
 
 Ver os logs da aplicação:
 ```bash
