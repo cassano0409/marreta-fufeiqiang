@@ -1,4 +1,6 @@
 #!/bin/bash
+# Terminate the script immediately on error
+set -e
 
 ###########################################
 # Docker Entrypoint
@@ -51,6 +53,7 @@ log_success "Environment variables configured"
 # Permissions Adjustment
 log_info "Adjusting directory permissions..."
 
+mkdir -p /app/cache /app/logs # Ensures directories exist
 chown -R www-data:www-data /app/cache /app/logs
 chmod -R 775 /app/cache /app/logs
 
