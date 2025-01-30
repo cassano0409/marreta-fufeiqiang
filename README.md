@@ -70,7 +70,7 @@ Agora pode rodar `docker compose up -d`
 
 #### Desenvolvimento
 
-1. Primeiro, clona o projeto:
+1. Primeiro, clone o projeto:
 ```bash
 git clone https://github.com/manualdousuario/marreta/
 cd marreta
@@ -92,12 +92,7 @@ SELENIUM_HOST=selenium-hub:4444
 LANGUAGE=pt-br
 ```
 
-4. Roda tudo:
-```bash
-docker-compose up -d
-```
-
-Pronto! Vai estar rodando em `http://localhost` 🎉
+4. Web Service: Utilize o `default.conf` como base do NGINX ou aponte seu webservice para `app/`
 
 ## ⚙️ Personalizando
 
@@ -194,7 +189,7 @@ Após configurar o Selenium, certifique-se de definir a variável `SELENIUM_HOST
 
 ### Sistema de Logs
 
-Os logs são armazenados em `app/logs/app.log` com rotação automática a cada 7 dias.
+Os logs são armazenados em `app/logs/*.log` com rotação automática a cada 7 dias.
 
 Configurações de log disponíveis no `.env` ou docker:
 
@@ -217,7 +212,7 @@ Ver os logs da aplicação:
 ```bash
 docker-compose logs app
 # ou diretamente do arquivo de log
-cat app/logs/app.log
+cat app/logs/*.log
 ```
 
 ### Limpando o cache
@@ -231,9 +226,10 @@ docker-compose exec app rm -rf /app/cache/*
 
 - 🤖 **Telegram**: [Bot oficial](https://t.me/leissoai_bot)
 - 🦊 **Firefox**: Extensão por [Clarissa Mendes](https://claromes.com/pages/whoami) - [Baixar](https://addons.mozilla.org/pt-BR/firefox/addon/marreta/) | [Código fonte](https://github.com/manualdousuario/marreta-extensao)
+- 🌀 **Chrome**: Extensão por [Clarissa Mendes](https://claromes.com/pages/whoami) - [Baixar](https://chromewebstore.google.com/detail/marreta/ipelapagohjgjcgpncpbmaaacemafppe) | [Código fonte](https://github.com/manualdousuario/marreta-extensao)
 - 🦋 **Bluesky**: Bot por [Joselito](https://bsky.app/profile/joseli.to) - [Perfil](https://bsky.app/profile/marreta.pcdomanual.com) | [Código fonte](https://github.com/manualdousuario/marreta-bot)
 - 🍎 **Apple**: Integração ao [Atalhos](https://www.icloud.com/shortcuts/3594074b69ee4707af52ed78922d624f)
-- 
+
 ---
 
 Feito com ❤️! Se tiver dúvidas ou sugestões, abre uma issue que a gente ajuda! 😉

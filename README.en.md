@@ -92,12 +92,7 @@ SELENIUM_HOST=selenium-hub:4444
 LANGUAGE=pt-br
 ```
 
-4. Run everything:
-```bash
-docker-compose up -d
-```
-
-Done! It will be running at `http://localhost` 🎉
+4. Web Service: Use `default.conf` as the base for NGINX or point your webservice to `app/`
 
 ## ⚙️ Customization
 
@@ -194,7 +189,7 @@ After setting up Selenium, make sure to set the `SELENIUM_HOST` variable in your
 
 ### Logging System
 
-Logs are stored in `app/logs/app.log` with automatic 7-day rotation.
+Logs are stored in `app/logs/*.log` with automatic 7-day rotation.
 
 Log settings available in `.env` or docker:
 
@@ -217,7 +212,7 @@ View application logs:
 ```bash
 docker-compose logs app
 # or directly from the log file
-cat app/logs/app.log
+cat app/logs/*.log
 ```
 
 ### Clearing the cache
@@ -231,9 +226,10 @@ docker-compose exec app rm -rf /app/cache/*
 
 - 🤖 **Telegram**: [Official Bot](https://t.me/leissoai_bot)
 - 🦊 **Firefox**: Extension by [Clarissa Mendes](https://claromes.com/pages/whoami) - [Download](https://addons.mozilla.org/pt-BR/firefox/addon/marreta/) | [Source Code](https://github.com/manualdousuario/marreta-extensao)
+- 🌀 **Chrome**: Extension by [Clarissa Mendes](https://claromes.com/pages/whoami) - [Download](https://chromewebstore.google.com/detail/marreta/ipelapagohjgjcgpncpbmaaacemafppe) | [Source Code](https://github.com/manualdousuario/marreta-extensao)
 - 🦋 **Bluesky**: Bot by [Joselito](https://bsky.app/profile/joseli.to) - [Profile](https://bsky.app/profile/marreta.pcdomanual.com) | [Source Code](https://github.com/manualdousuario/marreta-bot)
 - 🍎 **Apple**: [Shortcuts](https://www.icloud.com/shortcuts/3594074b69ee4707af52ed78922d624f) integration
-- 
+
 ---
 
 Made with ❤️! If you have questions or suggestions, open an issue and we'll help! 😉
