@@ -5,7 +5,7 @@ return [
     'url_placeholder' => 'Введите URL (например, https://example.com)',
     'analyze_button' => 'Анализировать',
     'nav_integration' => 'Integrations',
-    'nav_extension' => 'Install the extension',
+    'nav_extension' => 'Install',
     'bookmarklet_title' => 'Добавить в закладки',
     'bookmarklet_description' => 'Перетащите кнопку ниже на панель закладок, чтобы быстро получить доступ к на любой странице:',
     'open_in' => 'Открыть в {site_name}',

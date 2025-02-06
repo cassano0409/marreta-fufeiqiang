@@ -1,22 +1,129 @@
+@use "mixin";
+
 body {
-    padding: 42px 0 52px 0;
+    padding: 42px 0 0 0;
+    @include mixin.devices(desktop) {
+        padding: 42px 0 52px 0;
+    }
 }
+
+.toasty {
+    border-radius: 8px;
+    box-shadow: 0px 4px 6px 0px rgba(0, 0, 0, 0.05);
+    box-shadow: 0px 10px 15px 0px rgba(0, 0, 0, 0.1);
+    box-shadow: 0px 10px 10px 0px rgba(0, 0, 0, 0.04);
+    box-shadow: 0px 20px 25px 0px rgba(0, 0, 0, 0.1);
+    position: absolute;
+    top: 16px;
+    left: 16px;
+    right: 16px;
+    color: #fff;
+    z-index: 1000;
+    width: auto;
+    padding: 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+
+    .close {
+        .icon {
+            width: 14px;
+            height: 14px;
+        }
+    }
+    p {
+        padding: 0;
+        margin: 0;
+        font-size: 12px;
+        line-height: 1.3em;
+    }
+
+    @include mixin.devices(desktop) {
+        max-width: 480px;
+        left: 50%;
+        margin-left: -256px;
+    }
+
+    &--error {
+        background-color: rgb(247, 102, 97);
+    }
+
+    &--warning {
+        background-color: rgb(247, 152, 97);
+    }
+}
+
 header {
     display: grid;
-    grid-template-columns: 1fr 2fr 1fr;
+    grid-template-columns: auto 1fr 1fr;
     align-items: center;
     padding: 0 0 42px 0;
+
+    @include mixin.devices(desktop) {
+        grid-template-columns: 1fr 2fr 1fr;
+    }
+
+    &.open {
+        .extension {
+            &__toggle {
+                background-color: #000;
+            }
+        }
+        .open-nav {
+            .icon {
+                &--hamburguer {
+                    display: none;
+                }
+                &--close {
+                    display: block;
+                }
+            }
+        }
+        nav {
+            display: flex;
+        }
+
+        .integration__menu {
+            .icon {
+                filter: invert(100%) sepia(32%) saturate(8%) hue-rotate(23deg) brightness(102%) contrast(100%);
+            }
+        }
+    }
+
+    .open-nav {
+        cursor: pointer;
+        position: relative;
+        z-index: 501;
+        padding-right: 16px;
+        .icon {
+            width: 24px;
+            height: 24px;
+            &--hamburguer {
+                display: block;
+            }
+            &--close {
+                display: none;
+            }
+        }
+        @include mixin.devices(desktop) {
+            display: none;
+        }
+    }
 
     .brand {
         display: flex;
         align-items: center;
+
         .icon {
             margin-right: 6px;
+
             &--marreta {
                 width: 32px;
                 height: 32px;
             }
         }
+
         h1 {
             font-family: var(--font-family-unna);
             color: #000;
@@ -24,77 +131,172 @@ header {
     }
 
     nav {
-        display: flex;
-        justify-content: center;
-        gap: 48px;
+        display: none;
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: var(--marreta);
+        padding: var(--container_spacing) var(--container_spacing) calc(4*var(--container_spacing)) var(--container_spacing);
+        z-index: 500;
+        align-items: flex-end;
+        flex-direction: column;
+        justify-content: end;
+
+        &> * {
+            width: 100%;
+            @include mixin.devices(desktop) {
+                width: auto;
+            }
+        }
+
+        @include mixin.devices(desktop) {
+            opacity: 1;
+            display: flex;
+            position: relative;
+            left: initial;
+            right: initial;
+            bottom: initial;
+            top: initial;
+            background-color: transparent;
+            padding: 0;
+            justify-content: center;
+            align-items: normal;
+            flex-direction:initial;
+            gap: 48px;
+        }
 
         a {
+            display: block;
+            font-size: 24px;
+            padding: 16px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.24);
+            color: #fff;
             text-decoration: none;
-            color: #333;
+
+            @include mixin.devices(desktop) {
+                color: #333;
+                font-size: initial;
+                padding: 0;
+                border-bottom: 0;
+            }
 
             &:hover {
-                color: #007bff;
+                color: #fff;
+                @include mixin.devices(desktop) {
+                    color: #007bff;
+                }
             }
         }
 
         .integration {
             position: relative;
+            padding-top: 32px;
+
+            @include mixin.devices(desktop) {
+                padding-top: 0;
+            }
 
             &__toggle {
                 background: none;
                 border: none;
-                cursor: pointer;
-                color: #333;
+                color: rgba(255,255,255,0.5);
+                padding: 0;
+                @include mixin.devices(desktop) {
+                    color: #333;
+                    cursor: pointer;
+                }
 
                 &:hover {
-                    color: #007bff;
+                    color: rgba(255,255,255,0.5);
+                    @include mixin.devices(desktop) {
+                        color: #007bff;
+                    }
                 }
             }
 
             &__menu {
-                position: absolute;
-                top: 110%;
-                left: 0;
-                border-radius: 16px;
-                background-color: #F4F4F5;
-                border: 4px solid #F4F4F5;
-                z-index: 10;
-                box-shadow: 0px 4px 6px 0px rgba(0, 0, 0, 0.05);
-                box-shadow: 0px 10px 15px 0px rgba(0, 0, 0, 0.1);
-                box-shadow: 0px 10px 10px 0px rgba(0, 0, 0, 0.04);
-                box-shadow: 0px 20px 25px 0px rgba(0, 0, 0, 0.1);
-                transition: max-height 0.8s cubic-bezier(0.16, 1, 0.3, 1);
-                max-height: 0;
-                opacity: 0;
-                overflow: hidden;
+                @include mixin.devices(desktop) {
+                    position: absolute;
+                    top: 110%;
+                    left: 0;
+                    border-radius: 16px;
+                    background-color: #F4F4F5;
+                    border: 4px solid #F4F4F5;
+                    z-index: 10;
+                    box-shadow: 0px 4px 6px 0px rgba(0, 0, 0, 0.05);
+                    box-shadow: 0px 10px 15px 0px rgba(0, 0, 0, 0.1);
+                    box-shadow: 0px 10px 10px 0px rgba(0, 0, 0, 0.04);
+                    box-shadow: 0px 20px 25px 0px rgba(0, 0, 0, 0.1);
+                    transition: max-height 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+                    max-height: 0;
+                    opacity: 0;
+                    overflow: hidden;
+                }
 
                 a {
-                    margin-bottom: 4px;
+                    font-size: 14px;
+                    border-bottom: 0;
+                    margin-top: 8px;
+                    padding: 16px 0 0 0;
+                    display: flex;
+                    align-items: center;
+                    color: #fff;
+                    font-weight: 600;
+
+                    @include mixin.devices(desktop) {
+                        background-color: #fff;
+                        margin-top: 0;
+                        margin-bottom: 4px;
+                        padding: 8px 16px;
+                        font-size: var(--font-size);
+                        color: var(--text);
+                    }
+
                     &:first-child {
                         border-top-left-radius: 16px;
                         border-top-right-radius: 16px;
                     }
+
                     &:last-child {
                         margin-bottom: 0;
                         border-bottom-left-radius: 16px;
                         border-bottom-right-radius: 16px;
                     }
-                    color: var(--text);
-                    font-weight: 600;
-                    display: block;
-                    padding: 8px 16px;
-                    background-color: #fff;
-                    display: flex;
-                    align-items: center;
+
                     &:hover {
                         color: var(--marreta);
                     }
+
                     span {
                         display: inline-block;
                     }
                 }
+
+                .icon {
+                    width: 22px;
+                    height: 22px;
+                    order: 1;
+
+                    @include mixin.devices(desktop) {
+                        order: 2;
+                        width: 16px;
+                        height: 16px;
+                    }
+                }
+
                 .name {
-                    width: 140px;
+                    order: 2;
+                    line-height: 1em;
+                    padding-left: 12px;
+
+                    @include mixin.devices(desktop) {
+                        order: 1;
+                        padding-left: 0;
+                        width: 140px;
+                        line-height: var(--line-height);
+                    }
                 }
             }
 
@@ -111,10 +313,10 @@ header {
             }
 
             .arrow {
+                display: none;
                 position: relative;
                 top: -3px;
                 content: "";
-                display: inline-block;
                 width: 6px;
                 height: 6px;
                 border-right: 2px solid black;
@@ -122,6 +324,10 @@ header {
                 transform: rotate(135deg);
                 margin-right: 0;
                 margin-left: 16px;
+
+                @include mixin.devices(desktop) {
+                    display: inline-block;
+                }
             }
         }
     }
@@ -130,6 +336,7 @@ header {
         display: flex;
         justify-content: flex-end;
         position: relative;
+        z-index: 501;
 
         &__toggle {
             background-color: var(--marreta);
@@ -140,6 +347,7 @@ header {
             font-weight: 600;
             padding: 12px 24px;
             line-height: 1.3em;
+
             &:hover {
                 background-color: var(--marreta-darken);
             }
@@ -164,15 +372,18 @@ header {
 
             a {
                 margin-bottom: 4px;
+
                 &:first-child {
                     border-top-left-radius: 16px;
                     border-top-right-radius: 16px;
                 }
+
                 &:last-child {
                     margin-bottom: 0;
                     border-bottom-left-radius: 16px;
                     border-bottom-right-radius: 16px;
                 }
+
                 color: var(--text);
                 font-weight: 600;
                 display: block;
@@ -180,13 +391,16 @@ header {
                 background-color: #fff;
                 display: flex;
                 align-items: center;
+
                 &:hover {
                     color: var(--marreta);
                 }
+
                 span {
                     display: inline-block;
                 }
             }
+
             .name {
                 width: 140px;
             }
@@ -197,6 +411,7 @@ header {
                 background-color: #F4F4F5;
                 color: var(--textmuted);
             }
+
             .extension__menu {
                 max-height: 200px;
                 opacity: 1;
@@ -325,13 +540,20 @@ main {
     .plus {
         z-index: 3;
         position: relative;
-        display: grid;
-        grid-auto-columns: 1fr;
-        grid-template-columns: 1fr 1fr;
-        gap: 0px 38px;
-        align-items: start;
-        max-width: 900px;
-        margin: 62px auto 0 auto;
+        background-color: rgba(244, 244, 245, 1);
+        margin-left: calc(-1*var(--container_spacing));
+        margin-right: calc(-1*var(--container_spacing));
+
+        @include mixin.devices(desktop) {
+            background-color: transparent;
+            display: grid;
+            grid-auto-columns: 1fr;
+            grid-template-columns: 1fr 1fr;
+            gap: 0px 38px;
+            align-items: start;
+            max-width: 900px;
+            margin: 62px auto 0 auto;
+        }
 
         h2 {
             font-size: 16px;
@@ -364,7 +586,23 @@ main {
             }
         }
 
+        .add_as_app {
+            margin-top: 62px;
+            padding: var(--container_spacing);
+
+            @include mixin.devices(desktop) {
+                padding: 0;
+                margin-top: 0;
+            }
+        }
+
         .bookmarklet {
+            display: none;
+
+            @include mixin.devices(desktop) {
+                display: block;
+            }
+
             a {
                 border: 2px solid var(--marreta);
                 color: var(--marreta);

@@ -64,4 +64,25 @@ document.addEventListener('DOMContentLoaded', function () {
     document.addEventListener('click', () => {
         closeAllMenus();
     });
+
+    // Remove toasty elements when clicked
+    document.addEventListener('click', (e) => {
+        const toastyElement = e.target.closest('.toasty');
+        if (toastyElement) {
+            toastyElement.remove();
+        }
+    });
+
+    // Toggle header open class when open-nav is clicked
+    document.addEventListener('click', (e) => {
+        const openNavElement = e.target.closest('.open-nav');
+        if (openNavElement) {
+            const header = document.querySelector('header');
+            if (header.classList.contains('open')) {
+                header.classList.remove('open');
+            } else {
+                header.classList.add('open');
+            }
+        }
+    });
 });

@@ -5,7 +5,7 @@ return [
     'url_placeholder' => 'Adresse eingegeben (z.B., https://example.com)',
     'analyze_button' => 'Analysiere',
     'nav_integration' => 'Integrations',
-    'nav_extension' => 'Install the extension',
+    'nav_extension' => 'Install',
     'bookmarklet_title' => 'Zu Lesezeichen hinzufügen',
     'bookmarklet_description' => 'Ziehe Sie die Schaltfläche unten in Ihre Lesezeichenleiste, um schnell auf zuzugreifen:',
     'open_in' => 'Öffne {site_name}',

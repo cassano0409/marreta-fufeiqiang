@@ -26,8 +26,24 @@
 </head>
 
 <body>
+    <?php if ($message): ?>
+        <div class="toasty toasty--<?php echo $message_type === 'error' ? 'error' : 'warning'; ?>">
+            <div>
+                <p>
+                    <?php echo htmlspecialchars($message); ?>
+                </p>
+            </div>
+            <div>
+                <span class="icon icon--close"></span>
+            </div>
+        </div>
+    <?php endif; ?>
     <div class="container">
         <header>
+            <div class="open-nav">
+                <span class="icon icon--hamburguer"></span>
+                <span class="icon icon--close"></span>
+            </div>
             <div class="brand">
                 <span class="icon icon--marreta"></span>
                 <h1><?php echo SITE_NAME; ?></h1>
@@ -59,24 +75,6 @@
                 <strong><?php echo number_format($cache_folder, 0, ',', '.'); ?></strong> <span><?php echo \Inc\Language::get('walls_destroyed'); ?></span>
             </p>
             <form id="urlForm" method="POST" onsubmit="return validateForm()" class="space-y-6">
-                <?php if ($message): ?>
-                    <div class="<?php echo $message_type === 'error' ? 'error' : 'warning'; ?>">
-                        <div>
-                            <div>
-                                <?php if ($message_type === 'error'): ?>
-                                    <span class="icon icon--error"></span>
-                                <?php else: ?>
-                                    <span class="icon icon--warning"></span>
-                                <?php endif; ?>
-                            </div>
-                            <div>
-                                <p class="<?php echo $message_type === 'error' ? 'error' : 'warning'; ?>">
-                                    <?php echo htmlspecialchars($message); ?>
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-                <?php endif; ?>
                 <div class="fields">
                     <div class="input">
                         <span class="icon icon--link"></span>

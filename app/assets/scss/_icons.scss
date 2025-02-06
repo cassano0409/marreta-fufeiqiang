@@ -36,3 +36,6 @@
 
 @include mixin.icon('error', 'invert(30%) sepia(58%) saturate(3703%) hue-rotate(336deg) brightness(90%) contrast(91%)');
 @include mixin.icon('warning', 'invert(89%) sepia(25%) saturate(5861%) hue-rotate(353deg) brightness(101%) contrast(101%)');
+
+@include mixin.icon('hamburguer', 'invert(0%) sepia(21%) saturate(7425%) hue-rotate(12deg) brightness(96%) contrast(96%)');
+@include mixin.icon('close', 'invert(100%) sepia(32%) saturate(8%) hue-rotate(23deg) brightness(102%) contrast(100%)');

@@ -5,7 +5,7 @@ return [
     'url_placeholder' => 'Enter URL (e.g., https://example.com)',
     'analyze_button' => 'Analyze',
     'nav_integration' => 'Integrations',
-    'nav_extension' => 'Install the extension',
+    'nav_extension' => 'Install',
     'bookmarklet_title' => 'Add to Bookmarks',
     'bookmarklet_description' => 'Drag the button below to your bookmarks bar to quickly access on any page:',
     'open_in' => 'Open in {site_name}',

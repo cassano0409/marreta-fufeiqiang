@@ -5,7 +5,7 @@ return [
     'url_placeholder' => 'Digite a URL (ex: https://exemplo.com)',
     'analyze_button' => 'Analisar',
     'nav_integration' => 'Integrações',
-    'nav_extension' => 'Instale a extensão',
+    'nav_extension' => 'Instale',
     'bookmarklet_title' => 'Adicione aos Favoritos',
     'bookmarklet_description' => 'Adicione aos favoritos arrastando o botão abaixo <strong>para sua barra de favoritos</strong>!',
     'open_in' => 'Me arrasta',

@@ -26,6 +26,7 @@ a {
 	padding-left: var(--container_spacing);
 	margin-right: auto;
 	margin-left: auto;
+    overflow: hidden;
 
 	@include mixin.devices(desktop) {
         max-width: 1248px;
