@@ -1,11 +1,12 @@
-# Stage 1
-FROM php:8.3-fpm
+# Stage 0: Base
+FROM php:8.3-fpm AS base
 
-# Install PHP dependencies and extensions
+# Install dependencies and extensions
 RUN apt-get update && apt-get install -y \
     nginx \
     nano \
     procps \
+    psmisc \
     zip \
     git \
     htop \
@@ -15,6 +16,9 @@ RUN apt-get update && apt-get install -y \
     && pecl install redis \
     && docker-php-ext-enable redis opcache \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
+
+# Stage 1: Build stage
+FROM base AS builder
 
 # Copy OPCache configuration
 COPY opcache.ini /usr/local/etc/php/conf.d/opcache.ini
@@ -29,8 +33,8 @@ COPY app/ /app/
 WORKDIR /app
 RUN composer install --no-interaction --optimize-autoloader
 
-# Stage 2: Final stage
-FROM php:8.3-fpm
+# Stage 2: Final
+FROM base
 
 # Copy necessary files from the builder stage
 COPY --from=builder /usr/local/etc/php/conf.d/opcache.ini /usr/local/etc/php/conf.d/opcache.ini
