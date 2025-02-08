@@ -64,6 +64,9 @@ return [
         'classElementRemove' => ['leaderboard__container'],
         'fetchStrategies' => 'fetchFromSelenium',
     ],
+    'lepoint.fr' => [
+        'classElementRemove' => ['paywall'],
+    ],
     'fortune.com' => [
         'classElementRemove' => ['latest-popular-module','own','drawer-menu'],
         'fetchStrategies' => 'fetchFromSelenium',
