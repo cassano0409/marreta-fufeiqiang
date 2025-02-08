@@ -67,6 +67,15 @@ return [
     'lepoint.fr' => [
         'classElementRemove' => ['paywall'],
     ],
+    'gamestar.de' => [
+        'classElementRemove' => ['plus-teaser'],
+        'classAttrRemove' => ['plus-'],
+        'idElementRemove' => ['commentReload']
+    ],
+    'heise.de' => [
+        'classAttrRemove' => ['curtain__purchase-container'],
+        'removeElementsByTag' => ['a-gift']
+    ],
     'fortune.com' => [
         'classElementRemove' => ['latest-popular-module','own','drawer-menu'],
         'fetchStrategies' => 'fetchFromSelenium',
