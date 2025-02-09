@@ -191,7 +191,7 @@ return [
         'fromGoogleBot' => true
     ],
     'nytimes.com' => [
-        'idElementRemove' => ['gateway-content','site-index'],
+        'idElementRemove' => ['gateway-content','site-index','complianceOverlay'],
         'customCode' => '
             setTimeout(function() {
                 const walk = document.createTreeWalker(
