@@ -164,7 +164,8 @@ return [
         ]
     ],
     'theverge.com' => [
-        'fetchStrategies' => 'fetchFromSelenium',
+        'scriptTagRemove' => 'zephr',
+        'classElementRemove' => 'zephr'
     ],
     'economist.com' => [
         'cookies' => [
