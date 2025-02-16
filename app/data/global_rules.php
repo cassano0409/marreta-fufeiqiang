@@ -68,6 +68,8 @@ return [
         'getblue.io',
         'smartocto.com',
         'cdn.pn.vg',
-        'static.vocstatic.com'
+        'static.vocstatic.com',
+        'recaptcha',
+		'intercom'
     ]
 ];

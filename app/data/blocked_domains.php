@@ -27,6 +27,7 @@ return [
     'mittelbayerische.de',
     'josimarfootball.com',
     'nordsee-zeitung.de',
+	'zorgvisie.nl',
     // List of common blocked sites to avoid unnecessary requests
     //-- Technical access blocking
     'bloomberg.com',

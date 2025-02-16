@@ -142,6 +142,21 @@ return [
             'paywall_access' => 'true'
         ]
     ],
+	'ftm.nl' => [
+		'fetchStrategies' => 'fetchFromSelenium',
+		'removeCustomAttr' => ['dialog','iframe'],
+		'classElementRemove' => ['modal'],
+		'scriptTagRemove' => ['footer.min','diffuser.js','insight.ftm.nl'],
+		'classAttrRemove' => ['hasBlockingOverlay', 'localstorage']
+	],
+	'denikn.cz' => [
+		'idElementRemove' => ['e_lock__hard']
+	],
+	'dtest.cz' => [
+		'fetchStrategies' => 'fetchFromSelenium',
+		'classAttrRemove' => ['is-hidden-compare'],
+		'classElementRemove' => ['cc-window']
+	],
     'uol.com.br' => [
         'scriptTagRemove' => ['me.jsuol.com.br', 'c.jsuol.com.br'],
         'classElementRemove' => ['header-top-wrapper'],
