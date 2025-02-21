@@ -86,6 +86,7 @@
                             required
                             pattern="https?://.+"
                             title="<?php echo \Inc\Language::getMessage('INVALID_URL')['message']; ?>">
+                            <span class="paste" id="paste"><span class="icon icon--paste"></span></span>
                     </div>
                     <button type="submit" alt="<?php echo \Inc\Language::get('analyze_button'); ?>">
                         <span class="icon icon--marreta"></span>

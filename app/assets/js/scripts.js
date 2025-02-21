@@ -85,4 +85,20 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         }
     });
+
+    // Paste button functionality
+    const pasteButton = document.getElementById('paste');
+    const urlInput = document.getElementById('url');
+
+    if (pasteButton && urlInput) {
+        pasteButton.addEventListener('click', async (e) => {
+            e.preventDefault();
+            try {
+                const clipboardText = await navigator.clipboard.readText();
+                urlInput.value = clipboardText.trim();
+            } catch (err) {
+                console.error('Failed to read clipboard contents', err);
+            }
+        });
+    }
 });
