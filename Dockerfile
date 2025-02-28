@@ -10,6 +10,7 @@ RUN apt-get update && apt-get install -y \
     zip \
     git \
     htop \
+    cron \
     libzip-dev \
     libsqlite3-dev \
     && docker-php-ext-install zip opcache pdo_sqlite \
@@ -45,7 +46,9 @@ COPY default.conf /etc/nginx/sites-available/default
 
 # Copy and configure initialization script permissions
 COPY docker-entrypoint.sh /usr/local/bin/
-RUN chmod +x /usr/local/bin/docker-entrypoint.sh
+COPY bin/cleanup /usr/local/bin/
+RUN chmod +x /usr/local/bin/docker-entrypoint.sh \
+    && chmod +x /usr/local/bin/cleanup
 
 # Create cache, database, and logs folders
 RUN mkdir -p /app/cache /app/cache/database /app/logs

@@ -30,6 +30,7 @@ try {
     define('SITE_NAME', $_ENV['SITE_NAME']);
     define('SITE_DESCRIPTION', $_ENV['SITE_DESCRIPTION']);
     define('SITE_URL', $_ENV['SITE_URL']);
+    define('CLEANUP_DAYS', $_ENV['CLEANUP_DAYS'] ?? 0);
     
     // Optional settings with defaults
     define('DNS_SERVERS', $_ENV['DNS_SERVERS'] ?? '1.1.1.1, 8.8.8.8');

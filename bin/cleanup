@@ -1,0 +1,99 @@
+#!/usr/bin/env php
+<?php
+
+/**
+ * Cache Cleanup Script
+ *
+ * Removes *.gz files from the cache directory that are older than the number
+ * of days specified in the define('CLEANUP_DAYS') environment variable.
+ * If define('CLEANUP_DAYS') is not set, no files will be cleaned.
+ */
+
+require_once __DIR__ . '/../app/vendor/autoload.php';
+
+use League\CLImate\CLImate;
+use Dotenv\Dotenv;
+
+$climate = new CLImate();
+$climate->bold()->out('Cache Cleanup Tool');
+$climate->br();
+
+$cleanupDays = 0;
+
+// Load environment variables from .env file
+try {
+    $dotenv = Dotenv::createImmutable(__DIR__ . '/../app');
+    $dotenv->load();
+    $climate->out('Environment variables loaded');
+    $cleanupDays = $_ENV['CLEANUP_DAYS'];
+} catch (\Exception $e) {
+    $climate->yellow()->out('Warning: ' . $e->getMessage());
+    // Continue execution even if .env file is not found
+}
+
+// Define cache directory constant if not already defined
+if (!defined('CACHE_DIR')) {
+    define('CACHE_DIR', __DIR__ . '/../app/cache');
+}
+
+// Check if define('CLEANUP_DAYS') is set
+if ($cleanupDays == 0) {
+    $climate->yellow()->out('CLEANUP_DAYS variable not set or 0. No files will be cleaned.');
+    exit(0);
+}
+
+// Validate define('CLEANUP_DAYS') is a positive integer
+$cleanupDays = (int)$cleanupDays;
+if ($cleanupDays <= 0) {
+    $climate->red()->out('CLEANUP_DAYS must be a positive integer. No files will be cleaned.');
+    exit(1);
+};
+
+// Calculate the cutoff timestamp
+$cutoffTime = time() - ($cleanupDays * 86400);
+
+// Get cache directory path
+$cacheDir = CACHE_DIR;
+
+$climate->out("Cleaning cache files older than {$cleanupDays} days from: {$cacheDir}");
+
+// Check if cache directory exists
+if (!is_dir($cacheDir)) {
+    $climate->red()->out("Cache directory not found: {$cacheDir}");
+    exit(1);
+}
+
+// Find all .gz files in the cache directory
+$gzFiles = glob($cacheDir . '/*.gz');
+$totalFiles = count($gzFiles);
+$deletedFiles = 0;
+
+if ($totalFiles === 0) {
+    $climate->out('No .gz files found in cache directory.');
+    exit(0);
+}
+
+$climate->out("Found {$totalFiles} .gz files in cache directory.");
+
+$progress = $climate->progress()->total($totalFiles);
+
+// Process each file
+foreach ($gzFiles as $index => $file) {
+    $progress->current($index + 1);
+    
+    // Get file modification time
+    $fileTime = filemtime($file);
+    
+    // Check if file is older than cutoff time
+    if ($fileTime < $cutoffTime) {
+        // Delete the file
+        if (unlink($file)) {
+            $deletedFiles++;
+        } else {
+            $climate->red()->out("Failed to delete: " . basename($file));
+        }
+    }
+}
+
+$climate->br();
+$climate->green()->out("Cleanup complete: {$deletedFiles} files deleted.");
