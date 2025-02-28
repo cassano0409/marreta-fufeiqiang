@@ -38,11 +38,6 @@ try {
     define('CACHE_DIR', __DIR__ . '/cache');
     define('LANGUAGE', $_ENV['LANGUAGE'] ?? 'pt-br');
 
-    // Redis connection settings
-    define('REDIS_HOST', $_ENV['REDIS_HOST'] ?? 'localhost');
-    define('REDIS_PORT', $_ENV['REDIS_PORT'] ?? 6379);
-    define('REDIS_PREFIX', $_ENV['REDIS_PREFIX'] ?? 'marreta:');
-
     // Logging configuration
     define('LOG_LEVEL', $_ENV['LOG_LEVEL'] ?? 'WARNING'); // DEBUG, INFO, WARNING, ERROR, CRITICAL
     define('LOG_DAYS_TO_KEEP', 7);

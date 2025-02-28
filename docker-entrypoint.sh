@@ -54,6 +54,7 @@ log_success "Environment variables configured"
 log_info "Adjusting directory permissions..."
 
 mkdir -p /app/cache /app/logs # Ensures directories exist
+mkdir -p /app/cache/database
 chown -R www-data:www-data /app/cache /app/logs
 chmod -R 775 /app/cache /app/logs
 

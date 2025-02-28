@@ -5,7 +5,7 @@ namespace Inc;
 use Inc\Cache\CacheStorageInterface;
 use Inc\Cache\DiskStorage;
 use Inc\Cache\S3Storage;
-use Inc\Cache\RedisStorage;
+use Inc\Cache\SQLiteStorage;
 
 /**
  * System cache management with multiple storage backends (disk/S3)
@@ -17,18 +17,18 @@ class Cache
     /** @var CacheStorageInterface Cache storage implementation */
     private $storage;
 
-    /** @var RedisStorage Redis instance for file counting */
-    private $redisStorage;
+    /** @var SQLiteStorage SQLite instance for file counting */
+    private $sqliteStorage;
 
     /**
      * Initializes storage based on configuration
      * Uses S3Storage if configured and enabled
-     * Defaults to DiskStorage otherwise
+     * Defaults to SQLiteStorage otherwise (which delegates to DiskStorage)
      */
     public function __construct()
     {
-        $this->redisStorage = new RedisStorage(CACHE_DIR);
-
+        $this->sqliteStorage = new SQLiteStorage(CACHE_DIR);
+        
         if (defined('S3_CACHE_ENABLED') && S3_CACHE_ENABLED === true) {
             $this->storage = new S3Storage([
                 'key'      => S3_ACCESS_KEY,
@@ -40,14 +40,14 @@ class Cache
                 'endpoint' => defined('S3_ENDPOINT') ? S3_ENDPOINT : null
             ]);
         } else {
-            $this->storage = new DiskStorage(CACHE_DIR);
+            $this->storage = $this->sqliteStorage;
         }
     }
 
     /** Gets total number of cached files */
     public function getCacheFileCount(): int
     {
-        return $this->redisStorage->countCacheFiles();
+        return $this->sqliteStorage->countCacheFiles();
     }
 
     /**

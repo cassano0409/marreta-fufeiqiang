@@ -11,10 +11,9 @@ RUN apt-get update && apt-get install -y \
     git \
     htop \
     libzip-dev \
-    libhiredis-dev \
-    && docker-php-ext-install zip opcache \
-    && pecl install redis \
-    && docker-php-ext-enable redis opcache \
+    sqlite3 \
+    && docker-php-ext-install zip opcache pdo_sqlite \
+    && docker-php-ext-enable opcache \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # Stage 1: Build stage
@@ -48,8 +47,8 @@ COPY default.conf /etc/nginx/sites-available/default
 COPY docker-entrypoint.sh /usr/local/bin/
 RUN chmod +x /usr/local/bin/docker-entrypoint.sh
 
-# Create cache and logs folders
-RUN mkdir -p /app/cache /app/logs
+# Create cache, database, and logs folders
+RUN mkdir -p /app/cache /app/cache/database /app/logs
 
 # Configure base permissions for /app directory
 RUN chown -R www-data:www-data /app \
