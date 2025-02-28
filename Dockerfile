@@ -11,7 +11,7 @@ RUN apt-get update && apt-get install -y \
     git \
     htop \
     libzip-dev \
-    sqlite3 \
+    libsqlite3-dev \
     && docker-php-ext-install zip opcache pdo_sqlite \
     && docker-php-ext-enable opcache \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
