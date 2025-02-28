@@ -57,6 +57,10 @@ RUN mkdir -p /app/cache /app/cache/database /app/logs
 RUN chown -R www-data:www-data /app \
     && chmod -R 755 /app
 
+# Configure Cron
+RUN touch /app/logs/cron.log
+RUN echo '0 * * * * root php "/app/bin/cleanup" >> /app/logs/cron.log 2>&1' >> /etc/crontab
+
 EXPOSE 80
 
 ENTRYPOINT ["/usr/local/bin/docker-entrypoint.sh"]

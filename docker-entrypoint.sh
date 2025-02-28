@@ -109,6 +109,11 @@ nginx -g "daemon off;" &
 sleep 3
 check_nginx
 
+# Starting Cron
+log_info "Starting Cron..."
+service cron restart
+log_success "Cron started"
+
 echo -e "\n${GREEN}=== Marreta initialized ===${NC}\n"
 
 # Wait for any process to exit

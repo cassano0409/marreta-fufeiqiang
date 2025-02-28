@@ -5,14 +5,16 @@
  * Cache Cleanup Script
  *
  * Removes *.gz files from the cache directory that are older than the number
- * of days specified in the define('CLEANUP_DAYS') environment variable.
- * If define('CLEANUP_DAYS') is not set, no files will be cleaned.
+ * of days specified in the CLEANUP_DAYS environment variable.
+ * If CLEANUP_DAYS is not set, no files will be cleaned.
  */
 
 require_once __DIR__ . '/../app/vendor/autoload.php';
 
 use League\CLImate\CLImate;
 use Dotenv\Dotenv;
+use Aws\S3\S3Client;
+use Aws\Exception\AwsException;
 
 $climate = new CLImate();
 $climate->bold()->out('Cache Cleanup Tool');
@@ -20,7 +22,6 @@ $climate->br();
 
 $cleanupDays = 0;
 
-// Load environment variables from .env file
 try {
     $dotenv = Dotenv::createImmutable(__DIR__ . '/../app');
     $dotenv->load();
@@ -28,21 +29,18 @@ try {
     $cleanupDays = $_ENV['CLEANUP_DAYS'];
 } catch (\Exception $e) {
     $climate->yellow()->out('Warning: ' . $e->getMessage());
-    // Continue execution even if .env file is not found
+    exit(0);
 }
 
-// Define cache directory constant if not already defined
 if (!defined('CACHE_DIR')) {
     define('CACHE_DIR', __DIR__ . '/../app/cache');
 }
 
-// Check if define('CLEANUP_DAYS') is set
 if ($cleanupDays == 0) {
     $climate->yellow()->out('CLEANUP_DAYS variable not set or 0. No files will be cleaned.');
     exit(0);
 }
 
-// Validate define('CLEANUP_DAYS') is a positive integer
 $cleanupDays = (int)$cleanupDays;
 if ($cleanupDays <= 0) {
     $climate->red()->out('CLEANUP_DAYS must be a positive integer. No files will be cleaned.');
@@ -52,48 +50,162 @@ if ($cleanupDays <= 0) {
 // Calculate the cutoff timestamp
 $cutoffTime = time() - ($cleanupDays * 86400);
 
-// Get cache directory path
-$cacheDir = CACHE_DIR;
+// Check if S3 cache is enabled
+$s3CacheEnabled = isset($_ENV['S3_CACHE_ENABLED']) && filter_var($_ENV['S3_CACHE_ENABLED'], FILTER_VALIDATE_BOOLEAN);
 
-$climate->out("Cleaning cache files older than {$cleanupDays} days from: {$cacheDir}");
-
-// Check if cache directory exists
-if (!is_dir($cacheDir)) {
-    $climate->red()->out("Cache directory not found: {$cacheDir}");
-    exit(1);
+if ($s3CacheEnabled) {
+    // Clean S3 cache
+    cleanS3Cache($climate, $cutoffTime, $cleanupDays);
+} else {
+    // Clean local disk cache
+    cleanDiskCache($climate, $cutoffTime, $cleanupDays);
 }
 
-// Find all .gz files in the cache directory
-$gzFiles = glob($cacheDir . '/*.gz');
-$totalFiles = count($gzFiles);
-$deletedFiles = 0;
-
-if ($totalFiles === 0) {
-    $climate->out('No .gz files found in cache directory.');
-    exit(0);
-}
-
-$climate->out("Found {$totalFiles} .gz files in cache directory.");
-
-$progress = $climate->progress()->total($totalFiles);
-
-// Process each file
-foreach ($gzFiles as $index => $file) {
-    $progress->current($index + 1);
-    
-    // Get file modification time
-    $fileTime = filemtime($file);
-    
-    // Check if file is older than cutoff time
-    if ($fileTime < $cutoffTime) {
-        // Delete the file
-        if (unlink($file)) {
-            $deletedFiles++;
-        } else {
-            $climate->red()->out("Failed to delete: " . basename($file));
+/**
+ * Clean cache files from S3 bucket
+ * 
+ * @param CLImate $climate CLImate instance for output
+ * @param int $cutoffTime Timestamp to use as cutoff for file age
+ * @param int $cleanupDays Number of days to keep files
+ */
+function cleanS3Cache($climate, $cutoffTime, $cleanupDays) {
+    $requiredVars = ['S3_ACCESS_KEY', 'S3_SECRET_KEY', 'S3_BUCKET'];
+    foreach ($requiredVars as $var) {
+        if (!isset($_ENV[$var]) || empty($_ENV[$var])) {
+            $climate->red()->out("$var environment variable is required for S3 cache cleaning.");
+            exit(1);
         }
+    }
+
+    $climate->out("S3 cache enabled. Cleaning S3 cache files older than {$cleanupDays} days...");
+
+    $clientConfig = [
+        'version' => 'latest',
+        'region'  => $_ENV['S3_REGION'] ?? 'us-east-1',
+        'credentials' => [
+            'key'    => $_ENV['S3_ACCESS_KEY'],
+            'secret' => $_ENV['S3_SECRET_KEY'],
+        ]
+    ];
+
+    if (!empty($_ENV['S3_ENDPOINT'])) {
+        $clientConfig['endpoint'] = $_ENV['S3_ENDPOINT'];
+        $clientConfig['use_path_style_endpoint'] = true;
+    }
+
+    try {
+        $s3Client = new S3Client($clientConfig);
+        $bucket = $_ENV['S3_BUCKET'];
+        $prefix = $_ENV['S3_FOLDER'] ?? 'cache/';
+
+        $climate->out("Listing objects in bucket: {$bucket} with prefix: {$prefix}");
+        
+        $objects = [];
+        $marker = null;
+        
+        do {
+            $params = [
+                'Bucket' => $bucket,
+                'Prefix' => $prefix,
+                'MaxKeys' => 1000
+            ];
+            
+            if ($marker) {
+                $params['Marker'] = $marker;
+            }
+            
+            $result = $s3Client->listObjects($params);
+            
+            if (isset($result['Contents'])) {
+                foreach ($result['Contents'] as $object) {
+                    if (substr($object['Key'], -3) === '.gz') {
+                        $objects[] = $object;
+                    }
+                }
+            }
+            
+            $marker = $result['NextMarker'] ?? ($result['IsTruncated'] ? end($result['Contents'])['Key'] : null);
+        } while ($marker);
+
+        $totalObjects = count($objects);
+        $climate->out("Found {$totalObjects} .gz objects in S3 bucket.");
+
+        if ($totalObjects === 0) {
+            $climate->out('No .gz objects found in S3 bucket.');
+            return;
+        }
+
+        $progress = $climate->progress()->total($totalObjects);
+        $deletedObjects = 0;
+
+        foreach ($objects as $index => $object) {
+            $progress->current($index + 1);
+            $lastModified = strtotime($object['LastModified']);
+
+            if ($lastModified < $cutoffTime) {
+                try {
+                    $s3Client->deleteObject([
+                        'Bucket' => $bucket,
+                        'Key'    => $object['Key']
+                    ]);
+                    $deletedObjects++;
+                } catch (AwsException $e) {
+                    $climate->red()->out("Failed to delete: " . $object['Key'] . " - " . $e->getMessage());
+                }
+            }
+        }
+
+        $climate->br();
+        $climate->green()->out("S3 cleanup complete: {$deletedObjects} objects deleted.");
+    } catch (AwsException $e) {
+        $climate->red()->out("AWS Error: " . $e->getMessage());
+        exit(1);
     }
 }
 
-$climate->br();
-$climate->green()->out("Cleanup complete: {$deletedFiles} files deleted.");
+/**
+ * Clean cache files from local disk
+ * 
+ * @param CLImate $climate CLImate instance for output
+ * @param int $cutoffTime Timestamp to use as cutoff for file age
+ * @param int $cleanupDays Number of days to keep files
+ */
+function cleanDiskCache($climate, $cutoffTime, $cleanupDays) {
+    $cacheDir = CACHE_DIR;
+
+    $climate->out("Cleaning cache files older than {$cleanupDays} days from: {$cacheDir}");
+
+    if (!is_dir($cacheDir)) {
+        $climate->red()->out("Cache directory not found: {$cacheDir}");
+        exit(1);
+    }
+
+    $gzFiles = glob($cacheDir . '/*.gz');
+    $totalFiles = count($gzFiles);
+    $deletedFiles = 0;
+
+    if ($totalFiles === 0) {
+        $climate->out('No .gz files found in cache directory.');
+        return;
+    }
+
+    $climate->out("Found {$totalFiles} .gz files in cache directory.");
+
+    $progress = $climate->progress()->total($totalFiles);
+
+    foreach ($gzFiles as $index => $file) {
+        $progress->current($index + 1);
+        $fileTime = filemtime($file);
+
+        if ($fileTime < $cutoffTime) {
+            if (unlink($file)) {
+                $deletedFiles++;
+            } else {
+                $climate->red()->out("Failed to delete: " . basename($file));
+            }
+        }
+    }
+
+    $climate->br();
+    $climate->green()->out("Disk cleanup complete: {$deletedFiles} files deleted.");
+}
