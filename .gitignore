@@ -3,7 +3,7 @@ composer.lock
 .env
 app/logs/*.log
 app/cache/*.gz
-app/cache/database/*.sql
+app/cache/database/.sqlite
 TODO.md
 node_modules
 

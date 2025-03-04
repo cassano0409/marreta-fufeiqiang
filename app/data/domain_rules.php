@@ -40,6 +40,12 @@ return [
         'removeElementsByTag' => ['style'],
         'removeCustomAttr' => ['hidden','data-*']
     ],
+    'wired.com' => [
+        'scriptTagRemove' => ['.js'],
+    ],
+    'newyorker.com' => [
+        'scriptTagRemove' => ['.js'],
+    ],
     'globo.com' => [
         'idElementRemove' => ['cookie-banner-lgpd', 'paywall-cpt', 'mc-read-more-wrapper', 'paywall-cookie-content', 'paywall-cpt'],
         'classElementRemove' => ['banner-lgpd', 'article-related-link__title', 'article-related-link__picture', 'paywall-denied', 'banner-subscription'],
