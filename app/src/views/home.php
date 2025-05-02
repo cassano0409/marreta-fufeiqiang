@@ -85,7 +85,8 @@
                             value="<?php echo htmlspecialchars($url); ?>"
                             required
                             pattern="https?://.+"
-                            title="<?php echo \Inc\Language::getMessage('INVALID_URL')['message']; ?>">
+                            title="<?php echo \Inc\Language::getMessage('INVALID_URL')['message']; ?>"
+                            autofocus>
                             <span class="paste" id="paste"><span class="icon icon--paste"></span></span>
                     </div>
                     <button type="submit" alt="<?php echo \Inc\Language::get('analyze_button'); ?>">
