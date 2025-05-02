@@ -6,7 +6,12 @@
  * Defines domains that cannot be accessed by the system
  * due to usage policies or technical restrictions
  */
+
+$host = parse_url(defined('SITE_URL') ? SITE_URL : '', PHP_URL_HOST);
 return [
+    $host,
+    'localhost',
+    '127.0.0.1',
     // News sites
     //-- Content behind login access/hard paywall
     'wsj.com',
