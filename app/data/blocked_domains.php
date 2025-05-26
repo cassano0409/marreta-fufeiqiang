@@ -126,7 +126,6 @@ return [
     'jusbrasil.com.br',
     'glassdoor.com.br',
     'gov.br',
-    'medium.com',
     'stackoverflow.com',
     'hoteis.com',
     'amazon.com',

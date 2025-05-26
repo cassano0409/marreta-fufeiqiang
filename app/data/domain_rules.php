@@ -27,18 +27,28 @@
  * - fromGoogleBot: Adds simulation of request coming from Google Bot
  * - removeElementsByTag: Remove specific elements via DOM
  * - removeCustomAttr: Remove custom attributes from elements
+ * - urlMods: Modify the URL before fetching content.
+ *     Example:
+ *     'urlMods' => [
+ *         'query' => [
+ *             [
+ *                 'key' => 'amp',
+ *                 'value' => '1'
+ *             ]
+ *         ]
+ *     ]
  */
 return [
     'nsctotal.com.br' => [
         'userAgent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36'
     ],
     'elcorreo.com' => [
-        'idElementRemove' => ['didomi-popup','engagement-top'],
+        'idElementRemove' => ['didomi-popup', 'engagement-top'],
         'classElementRemove' => ['content-exclusive-bg'],
-        'classAttrRemove' => ['didomi-popup-open','paywall'],
+        'classAttrRemove' => ['didomi-popup-open', 'paywall'],
         'fromGoogleBot' => true,
         'removeElementsByTag' => ['style'],
-        'removeCustomAttr' => ['hidden','data-*']
+        'removeCustomAttr' => ['hidden', 'data-*']
     ],
     'wired.com' => [
         'scriptTagRemove' => ['.js'],
@@ -83,17 +93,13 @@ return [
         'removeElementsByTag' => ['a-gift']
     ],
     'fortune.com' => [
-        'classElementRemove' => ['latest-popular-module','own','drawer-menu'],
+        'classElementRemove' => ['latest-popular-module', 'own', 'drawer-menu'],
         'fetchStrategies' => 'fetchFromSelenium',
         'browser' => 'chrome',
         'scriptTagRemove' => ['queryly.com'],
     ],
     'diplomatique.org.br' => [
         'idElementRemove' => ['cboxOverlay'],
-        'fetchStrategies' => 'fetchFromSelenium',
-    ],
-    'washingtonpost.com' => [
-        'classElementRemove' => ['paywall-overlay'],
         'fetchStrategies' => 'fetchFromSelenium',
     ],
     'oantagonista.com.br' => [
@@ -114,7 +120,7 @@ return [
     ],
     'leparisien.fr' => [
         'idElementRemove' => ['didomi-popup'],
-        'classAttrRemove' => ['paywall-article-section'],        
+        'classAttrRemove' => ['paywall-article-section'],
         'fetchStrategies' => 'fetchFromSelenium',
     ],
     'foreignaffairs.com' => [
@@ -148,21 +154,21 @@ return [
             'paywall_access' => 'true'
         ]
     ],
-	'ftm.nl' => [
-		'fetchStrategies' => 'fetchFromSelenium',
-		'removeCustomAttr' => ['dialog','iframe'],
-		'classElementRemove' => ['modal'],
-		'scriptTagRemove' => ['footer.min','diffuser.js','insight.ftm.nl'],
-		'classAttrRemove' => ['hasBlockingOverlay', 'localstorage']
-	],
-	'denikn.cz' => [
-		'idElementRemove' => ['e_lock__hard']
-	],
-	'dtest.cz' => [
-		'fetchStrategies' => 'fetchFromSelenium',
-		'classAttrRemove' => ['is-hidden-compare'],
-		'classElementRemove' => ['cc-window']
-	],
+    'ftm.nl' => [
+        'fetchStrategies' => 'fetchFromSelenium',
+        'removeCustomAttr' => ['dialog', 'iframe'],
+        'classElementRemove' => ['modal'],
+        'scriptTagRemove' => ['footer.min', 'diffuser.js', 'insight.ftm.nl'],
+        'classAttrRemove' => ['hasBlockingOverlay', 'localstorage']
+    ],
+    'denikn.cz' => [
+        'idElementRemove' => ['e_lock__hard']
+    ],
+    'dtest.cz' => [
+        'fetchStrategies' => 'fetchFromSelenium',
+        'classAttrRemove' => ['is-hidden-compare'],
+        'classElementRemove' => ['cc-window']
+    ],
     'uol.com.br' => [
         'scriptTagRemove' => ['me.jsuol.com.br', 'c.jsuol.com.br'],
         'classElementRemove' => ['header-top-wrapper'],
@@ -205,15 +211,8 @@ return [
             }
         '
     ],
-    'ft.com' => [
-        'cookies' => [
-            'next-flags' => null,
-            'next:ads' => null
-        ],
-        'fromGoogleBot' => true
-    ],
     'nytimes.com' => [
-        'idElementRemove' => ['gateway-content','site-index','complianceOverlay'],
+        'idElementRemove' => ['gateway-content', 'site-index', 'complianceOverlay'],
         'customCode' => '
             setTimeout(function() {
                 const walk = document.createTreeWalker(
@@ -363,8 +362,351 @@ return [
             '_pctx' => null
         ]
     ],
-
-    // Domain test
+    'thestar.com' => [
+        'classElementRemove' => ['subscriber-offers', 'subscriber-only', 'subscription-required', 'redacted-overlay', 'subscriber-hide', 'tnt-ads-container'],
+        'customCode' => '
+            window.localStorage.clear();
+            document.addEventListener("DOMContentLoaded", () => {
+                const paywall = document.querySelectorAll(\'div.subscriber-offers\');
+                paywall.forEach(el => { el.remove(); });
+                const subscriber_only = document.querySelectorAll(\'div.subscriber-only\');
+                for (const elem of subscriber_only) {
+                    if (elem.classList.contains(\'encrypted-content\') && typeof DOMPurify !== \'undefined\' && typeof unscramble !== \'undefined\') {
+                        const parser = new DOMParser();
+                        const doc = parser.parseFromString(\'<div>\' + DOMPurify.sanitize(unscramble(elem.innerText)) + \'</div>\', \'text/html\');
+                        const content_new = doc.querySelector(\'div\');
+                        elem.parentNode.replaceChild(content_new, elem);
+                    }
+                    elem.removeAttribute(\'style\');
+                    elem.removeAttribute(\'class\');
+                }
+                const banners = document.querySelectorAll(\'div.subscription-required, div.redacted-overlay, div.subscriber-hide, div.tnt-ads-container\');
+                banners.forEach(el => { el.remove(); });
+                const ads = document.querySelectorAll(\'div.tnt-ads-container, div[class*="adLabelWrapper"]\');
+                ads.forEach(el => { el.remove(); });
+                const recommendations = document.querySelectorAll(\'div[id^="tncms-region-article"]\');
+                recommendations.forEach(el => { el.remove(); });
+            });
+        '
+    ],
+    'niagarafallsreview.ca' => [
+        'classElementRemove' => ['subscriber-offers', 'subscriber-only', 'subscription-required', 'redacted-overlay', 'subscriber-hide', 'tnt-ads-container'],
+        'customCode' => '
+            window.localStorage.clear();
+            document.addEventListener("DOMContentLoaded", () => {
+                const paywall = document.querySelectorAll(\'div.subscriber-offers\');
+                paywall.forEach(el => { el.remove(); });
+                const subscriber_only = document.querySelectorAll(\'div.subscriber-only\');
+                for (const elem of subscriber_only) {
+                    if (elem.classList.contains(\'encrypted-content\') && typeof DOMPurify !== \'undefined\' && typeof unscramble !== \'undefined\') {
+                        const parser = new DOMParser();
+                        const doc = parser.parseFromString(\'<div>\' + DOMPurify.sanitize(unscramble(elem.innerText)) + \'</div>\', \'text/html\');
+                        const content_new = doc.querySelector(\'div\');
+                        elem.parentNode.replaceChild(content_new, elem);
+                    }
+                    elem.removeAttribute(\'style\');
+                    elem.removeAttribute(\'class\');
+                }
+                const banners = document.querySelectorAll(\'div.subscription-required, div.redacted-overlay, div.subscriber-hide, div.tnt-ads-container\');
+                banners.forEach(el => { el.remove(); });
+                const ads = document.querySelectorAll(\'div.tnt-ads-container, div[class*="adLabelWrapper"]\');
+                ads.forEach(el => { el.remove(); });
+                const recommendations = document.querySelectorAll(\'div[id^="tncms-region-article"]\');
+                recommendations.forEach(el => { el.remove(); });
+            });
+        '
+    ],
+    'thepeterboroughexaminer.com' => [
+        'classElementRemove' => ['subscriber-offers', 'subscriber-only', 'subscription-required', 'redacted-overlay', 'subscriber-hide', 'tnt-ads-container'],
+        'customCode' => '
+            window.localStorage.clear();
+            document.addEventListener("DOMContentLoaded", () => {
+                const paywall = document.querySelectorAll(\'div.subscriber-offers\');
+                paywall.forEach(el => { el.remove(); });
+                const subscriber_only = document.querySelectorAll(\'div.subscriber-only\');
+                for (const elem of subscriber_only) {
+                    if (elem.classList.contains(\'encrypted-content\') && typeof DOMPurify !== \'undefined\' && typeof unscramble !== \'undefined\') {
+                        const parser = new DOMParser();
+                        const doc = parser.parseFromString(\'<div>\' + DOMPurify.sanitize(unscramble(elem.innerText)) + \'</div>\', \'text/html\');
+                        const content_new = doc.querySelector(\'div\');
+                        elem.parentNode.replaceChild(content_new, elem);
+                    }
+                    elem.removeAttribute(\'style\');
+                    elem.removeAttribute(\'class\');
+                }
+                const banners = document.querySelectorAll(\'div.subscription-required, div.redacted-overlay, div.subscriber-hide, div.tnt-ads-container\');
+                banners.forEach(el => { el.remove(); });
+                const ads = document.querySelectorAll(\'div.tnt-ads-container, div[class*="adLabelWrapper"]\');
+                ads.forEach(el => { el.remove(); });
+                const recommendations = document.querySelectorAll(\'div[id^="tncms-region-article"]\');
+                recommendations.forEach(el => { el.remove(); });
+            });
+        '
+    ],
+    'therecord.com' => [
+        'classElementRemove' => ['subscriber-offers', 'subscriber-only', 'subscription-required', 'redacted-overlay', 'subscriber-hide', 'tnt-ads-container'],
+        'customCode' => '
+            window.localStorage.clear();
+            document.addEventListener("DOMContentLoaded", () => {
+                const paywall = document.querySelectorAll(\'div.subscriber-offers\');
+                paywall.forEach(el => { el.remove(); });
+                const subscriber_only = document.querySelectorAll(\'div.subscriber-only\');
+                for (const elem of subscriber_only) {
+                    if (elem.classList.contains(\'encrypted-content\') && typeof DOMPurify !== \'undefined\' && typeof unscramble !== \'undefined\') {
+                        const parser = new DOMParser();
+                        const doc = parser.parseFromString(\'<div>\' + DOMPurify.sanitize(unscramble(elem.innerText)) + \'</div>\', \'text/html\');
+                        const content_new = doc.querySelector(\'div\');
+                        elem.parentNode.replaceChild(content_new, elem);
+                    }
+                    elem.removeAttribute(\'style\');
+                    elem.removeAttribute(\'class\');
+                }
+                const banners = document.querySelectorAll(\'div.subscription-required, div.redacted-overlay, div.subscriber-hide, div.tnt-ads-container\');
+                banners.forEach(el => { el.remove(); });
+                const ads = document.querySelectorAll(\'div.tnt-ads-container, div[class*="adLabelWrapper"]\');
+                ads.forEach(el => { el.remove(); });
+                const recommendations = document.querySelectorAll(\'div[id^="tncms-region-article"]\');
+                recommendations.forEach(el => { el.remove(); });
+            });
+        '
+    ],
+    'thespec.com' => [
+        'classElementRemove' => ['subscriber-offers', 'subscriber-only', 'subscription-required', 'redacted-overlay', 'subscriber-hide', 'tnt-ads-container'],
+        'customCode' => '
+            window.localStorage.clear();
+            document.addEventListener("DOMContentLoaded", () => {
+                const paywall = document.querySelectorAll(\'div.subscriber-offers\');
+                paywall.forEach(el => { el.remove(); });
+                const subscriber_only = document.querySelectorAll(\'div.subscriber-only\');
+                for (const elem of subscriber_only) {
+                    if (elem.classList.contains(\'encrypted-content\') && typeof DOMPurify !== \'undefined\' && typeof unscramble !== \'undefined\') {
+                        const parser = new DOMParser();
+                        const doc = parser.parseFromString(\'<div>\' + DOMPurify.sanitize(unscramble(elem.innerText)) + \'</div>\', \'text/html\');
+                        const content_new = doc.querySelector(\'div\');
+                        elem.parentNode.replaceChild(content_new, elem);
+                    }
+                    elem.removeAttribute(\'style\');
+                    elem.removeAttribute(\'class\');
+                }
+                const banners = document.querySelectorAll(\'div.subscription-required, div.redacted-overlay, div.subscriber-hide, div.tnt-ads-container\');
+                banners.forEach(el => { el.remove(); });
+                const ads = document.querySelectorAll(\'div.tnt-ads-container, div[class*="adLabelWrapper"]\');
+                ads.forEach(el => { el.remove(); });
+                const recommendations = document.querySelectorAll(\'div[id^="tncms-region-article"]\');
+                recommendations.forEach(el => { el.remove(); });
+            });
+        '
+    ],
+    'wellandtribune.ca' => [
+        'classElementRemove' => ['subscriber-offers', 'subscriber-only', 'subscription-required', 'redacted-overlay', 'subscriber-hide', 'tnt-ads-container'],
+        'customCode' => '
+            window.localStorage.clear();
+            document.addEventListener("DOMContentLoaded", () => {
+                const paywall = document.querySelectorAll(\'div.subscriber-offers\');
+                paywall.forEach(el => { el.remove(); });
+                const subscriber_only = document.querySelectorAll(\'div.subscriber-only\');
+                for (const elem of subscriber_only) {
+                    if (elem.classList.contains(\'encrypted-content\') && typeof DOMPurify !== \'undefined\' && typeof unscramble !== \'undefined\') {
+                        const parser = new DOMParser();
+                        const doc = parser.parseFromString(\'<div>\' + DOMPurify.sanitize(unscramble(elem.innerText)) + \'</div>\', \'text/html\');
+                        const content_new = doc.querySelector(\'div\');
+                        elem.parentNode.replaceChild(content_new, elem);
+                    }
+                    elem.removeAttribute(\'style\');
+                    elem.removeAttribute(\'class\');
+                }
+                const banners = document.querySelectorAll(\'div.subscription-required, div.redacted-overlay, div.subscriber-hide, div.tnt-ads-container\');
+                banners.forEach(el => { el.remove(); });
+                const ads = document.querySelectorAll(\'div.tnt-ads-container, div[class*="adLabelWrapper"]\');
+                ads.forEach(el => { el.remove(); });
+                const recommendations = document.querySelectorAll(\'div[id^="tncms-region-article"]\');
+                recommendations.forEach(el => { el.remove(); });
+            });
+        '
+    ],
+    'time.com' => [
+        'headers' => [
+            'User-Agent' => 'Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)',
+            'Cookie' => 'nyt-a=; nyt-gdpr=0; nyt-geo=DE; nyt-privacy=1',
+            'Referer' => 'https://www.google.com/'
+        ],
+        'customCode' => '
+            window.localStorage.clear();
+            document.addEventListener("DOMContentLoaded", () => {
+                const banners = document.querySelectorAll(\'div[data-testid="inline-message"], div[id^="ad-"], div[id^="leaderboard-"], div.expanded-dock, div.pz-ad-box, div[id="top-wrapper"], div[id="bottom-wrapper"]\');
+                banners.forEach(el => { el.remove(); });
+            });
+        '
+    ],
+    'architecturaldigest.com' => [
+        'customCode' => '
+            document.addEventListener("DOMContentLoaded", () => {
+                const banners = document.querySelectorAll(\'.paywall-bar, div[class^="MessageBannerWrapper-"\');
+                banners.forEach(el => { el.remove(); });
+            });
+        '
+    ],
+    'bonappetit.com' => [
+        'customCode' => '
+            document.addEventListener("DOMContentLoaded", () => {
+                const banners = document.querySelectorAll(\'.paywall-bar, div[class^="MessageBannerWrapper-"\');
+                banners.forEach(el => { el.remove(); });
+            });
+        '
+    ],
+    'cntraveler.com' => [
+        'customCode' => '
+            document.addEventListener("DOMContentLoaded", () => {
+                const banners = document.querySelectorAll(\'.paywall-bar, div[class^="MessageBannerWrapper-"\');
+                banners.forEach(el => { el.remove(); });
+            });
+        '
+    ],
+    'epicurious.com' => [
+        'customCode' => '
+            document.addEventListener("DOMContentLoaded", () => {
+                const banners = document.querySelectorAll(\'.paywall-bar, div[class^="MessageBannerWrapper-"\');
+                banners.forEach(el => { el.remove(); });
+            });
+        '
+    ],
+    'gq.com' => [
+        'customCode' => '
+            document.addEventListener("DOMContentLoaded", () => {
+                const banners = document.querySelectorAll(\'.paywall-bar, div[class^="MessageBannerWrapper-"\');
+                banners.forEach(el => { el.remove(); });
+            });
+        '
+    ],
+    'vanityfair.com' => [
+        'customCode' => '
+            document.addEventListener("DOMContentLoaded", () => {
+                const banners = document.querySelectorAll(\'.paywall-bar, div[class^="MessageBannerWrapper-"\');
+                banners.forEach(el => { el.remove(); });
+            });
+        '
+    ],
+    'vogue.com' => [
+        'customCode' => '
+            document.addEventListener("DOMContentLoaded", () => {
+                const banners = document.querySelectorAll(\'.paywall-bar, div[class^="MessageBannerWrapper-"\');
+                banners.forEach(el => { el.remove(); });
+            });
+        '
+    ],
+    'americanbanker.com' => [
+        'customCode' => '
+            document.addEventListener("DOMContentLoaded", () => {
+                const inlineGate = document.querySelector(\'.inline-gate\');
+                if (inlineGate) {
+                    inlineGate.classList.remove(\'inline-gate\');
+                    const inlineGated = document.querySelectorAll(\'.inline-gated\');
+                    for (const elem of inlineGated) { elem.classList.remove(\'inline-gated\'); }
+                }
+            });
+        '
+    ],
+    'washingtonpost.com' => [
+        'classElementRemove' => ['paywall-overlay'],
+        'fetchStrategies' => 'fetchFromSelenium',
+        'customCode' => '
+            document.addEventListener("DOMContentLoaded", () => {
+                let paywall = document.querySelectorAll(\'div[data-qa$="-ad"], div[id="leaderboard-wrapper"], div[data-qa="subscribe-promo"]\');
+                paywall.forEach(el => { el.remove(); });
+                const images = document.querySelectorAll(\'img\');
+                images.forEach(image => { image.parentElement.style.filter = \'\'; });
+                const headimage = document.querySelectorAll(\'div .aspect-custom\');
+                headimage.forEach(image => { image.style.filter = \'\'; });
+            });
+        '
+    ],
+    'usatoday.com' => [
+        'customCode' => '
+            document.addEventListener("DOMContentLoaded", () => {
+                const banners = document.querySelectorAll(\'div.roadblock-container, .gnt_nb, [aria-label="advertisement"], div[id="main-frame-error"]\');
+                banners.forEach(el => { el.remove(); });
+            });
+        '
+    ],
+    'medium.com' => [
+        'headers' => [
+            'Referer' => 'https://t.co/x?amp=1',
+            'X-Forwarded-For' => 'none',
+            'User-Agent' => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36',
+            'Content-Security-Policy' => 'script-src \'self\';'
+        ]
+    ],
+    'tagesspiegel.de' => [
+        'headers' => [
+            'Content-Security-Policy' => 'script-src \'self\';',
+            'User-Agent' => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36'
+        ],
+        'urlMods' => [
+            'query' => [
+                [
+                    'key' => 'amp',
+                    'value' => '1'
+                ]
+            ]
+        ]
+    ],
+    'nzz.ch' => [
+        'customCode' => '
+            document.addEventListener("DOMContentLoaded", () => {
+                const paywall = document.querySelector(\'.dynamic-regwall\');
+                if (paywall) {
+                    paywall.remove();
+                }
+            });
+        '
+    ],
+    'demorgen.be' => [
+        'headers' => [
+            'Cookie' => 'isBot=true; authId=1',
+            'User-Agent' => 'Mozilla/5.0 AppleWebKit/537.36 (KHTML, like Gecko; compatible; Googlebot/2.1; Googlebot-News; +http://www.google.com/bot.html) Chrome/121.0.6140.0 Safari/537.36',
+            'X-Forwarded-For' => 'none',
+            'Referer' => 'https://news.google.com'
+        ],
+        'customCode' => '
+            document.addEventListener("DOMContentLoaded", () => {
+                // remove paywall items
+                let paywall = document.querySelectorAll(\'script[src*="advertising-cdn.dpgmedia.cloud"], div[data-temptation-position="ARTICLE_BOTTOM"]\');
+                paywall.forEach(el => { el.remove(); });
+                // remove empty advert
+                const advert = document.querySelector(\'div[data-advert-placeholder-collapses]\');
+                if (advert) {
+                    advert.remove();
+                }
+            });
+        '
+    ],
+    'ft.com' => [
+        'cookies' => [
+            'next-flags' => null,
+            'next:ads' => null
+        ],
+        'fromGoogleBot' => true,
+        'headers' => [
+            'Referer' => 'https://t.co/x?amp=1'
+        ],
+        'customCode' => '
+            document.addEventListener("DOMContentLoaded", () => {
+                const styleTags = document.querySelectorAll(\'link[rel="stylesheet"]\');
+                styleTags.forEach(el => {
+                    const href = el.getAttribute(\'href\');
+                    if (href && href.substring(0, 1) === \'/\') {
+                        const updatedHref = href.substring(1).replace(/(https?:\\/\\/.+?)\\/{2,}/, \'$1/\');
+                        el.setAttribute(\'href\', updatedHref);
+                    }
+                });
+                setTimeout(() => {
+                    const cookie = document.querySelectorAll(\'.o-cookie-message, .js-article-ribbon, .o-ads, .o-banner, .o-message, .article__content-sign-up\');
+                    cookie.forEach(el => { el.remove(); });
+                }, 1000);
+            })
+        '
+    ],
+    // Test domain
     'altendorfme.github.io' => [
         'userAgent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
         'headers' => [
@@ -380,7 +722,7 @@ return [
             'consent' => 'accepted',
             'session_id' => null
         ],
-        'classAttrRemove' => ['test-attr-1','paywall'],
+        'classAttrRemove' => ['test-attr-1', 'paywall'],
         'customCode' => '
             console.log("worked");
         ',
