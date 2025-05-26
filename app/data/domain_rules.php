@@ -13,6 +13,7 @@
  * - classAttrRemove: Array of classes to be removed from elements
  * - customCode: String containing custom JavaScript code
  * - customStyle: String containing custom CSS code
+ * - proxy: Enable proxy in Guzzle or Selenium requests
  * - excludeGlobalRules: Associative array of global rules to exclude for this domain
  *   Example:
  *   'excludeGlobalRules' => [
@@ -705,7 +706,7 @@ return [
                 }, 1000);
             })
         '
-    ],
+    ],    
     // Test domain
     'altendorfme.github.io' => [
         'userAgent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
@@ -714,6 +715,7 @@ return [
             'Cache-Control' => 'no-cache',
             'Pragma' => 'no-cache'
         ],
+        'proxy' => true,
         'idElementRemove' => ['test-id-1', 'paywall'],
         'classElementRemove' => ['test-class-1'],
         'scriptTagRemove' => ['analytics.js', 'test-script.js', 'paywall.js'],

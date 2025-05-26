@@ -59,7 +59,11 @@ RUN chown -R www-data:www-data /app \
 
 # Configure Cron
 RUN touch /app/logs/cron.log
-RUN echo '0 * * * * root php "/app/bin/cleanup" >> /app/logs/cron.log 2>&1' >> /etc/crontab
+RUN echo '0 * * * * root php "/app/bin/cleanup" >> /app/logs/cleanup.log 2>&1' >> /etc/crontab
+RUN echo '0 * * * * root php "/app/bin/proxy" >> /app/logs/proxy.log 2>&1' >> /etc/crontab
+
+# Run proxy list check
+RUN '/app/bin/proxy'
 
 EXPOSE 80
 

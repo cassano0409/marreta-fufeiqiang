@@ -27,6 +27,7 @@ Public instance at [marreta.pcdomanual.com](https://marreta.pcdomanual.com)!
 - Blocks domains you don't want
 - Allows configuring headers and cookies your way
 - PHP-FPM and OPcache
+- Proxy Support
 
 ## 🐳 Installing with Docker
 

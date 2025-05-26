@@ -32,7 +32,8 @@ class Rules
         'fromGoogleBot',
         'removeElementsByTag',
         'removeCustomAttr',
-        'urlMods'
+        'urlMods',
+        'proxy'
     ];
 
     /**

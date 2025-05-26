@@ -27,6 +27,7 @@ Instancia publica em [marreta.pcdomanual.com](https://marreta.pcdomanual.com)!
 - Bloqueia domínios que você não quer
 - Permite configurar headers e cookies do seu jeito
 - PHP-FPM e OPcache
+- Suporte a Proxy
 
 ## 🐳 Instalando em Docker
 

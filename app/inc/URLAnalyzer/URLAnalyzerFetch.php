@@ -21,10 +21,44 @@ class URLAnalyzerFetch extends URLAnalyzerBase
     /**
      * Sets up the fetch handler with error handling capability
      */
+    /** @var array List of available proxies */
+    private $proxyList = [];
+    
+    /** @var string Path to proxy cache file */
+    private $proxyCachePath = '';
+    
     public function __construct()
     {
         parent::__construct();
         $this->error = new URLAnalyzerError();
+        $this->proxyCachePath = __DIR__ . '/../../cache/proxy_list.json';
+        $this->loadProxyList();
+    }
+    
+    /**
+     * Loads proxy list from cache if available
+     */
+    private function loadProxyList()
+    {
+        if (isset($_ENV['PROXY_LIST']) && file_exists($this->proxyCachePath)) {
+            $cachedList = file_get_contents($this->proxyCachePath);
+            if (!empty($cachedList)) {
+                $this->proxyList = json_decode($cachedList, true);
+            }
+        }
+    }
+    
+    /**
+     * Gets a random proxy from the list
+     * @return string|null Random proxy URL or null if none available
+     */
+    private function getRandomProxy()
+    {
+        if (empty($this->proxyList)) {
+            return null;
+        }
+        
+        return $this->proxyList[array_rand($this->proxyList)];
     }
 
     /** 
@@ -45,27 +79,22 @@ class URLAnalyzerFetch extends URLAnalyzerBase
 
         $urlParts = parse_url($url);
         
-        // Handle query modifications
         if (isset($domainRules['urlMods']['query']) && is_array($domainRules['urlMods']['query'])) {
             $queryParams = [];
             
-            // Parse existing query parameters if any
             if (isset($urlParts['query'])) {
                 parse_str($urlParts['query'], $queryParams);
             }
             
-            // Apply query modifications
             foreach ($domainRules['urlMods']['query'] as $queryMod) {
                 if (isset($queryMod['key']) && isset($queryMod['value'])) {
                     $queryParams[$queryMod['key']] = $queryMod['value'];
                 }
             }
             
-            // Rebuild query string
             $urlParts['query'] = http_build_query($queryParams);
         }
-        
-        // Rebuild URL
+
         $modifiedUrl = '';
         
         if (isset($urlParts['scheme'])) {
@@ -114,7 +143,6 @@ class URLAnalyzerFetch extends URLAnalyzerBase
         $host = preg_replace('/^www\./', '', $host);
         $domainRules = $this->getDomainRules($host);
         
-        // Apply URL modifications if any
         $url = $this->applyUrlModifications($url, $domainRules);
 
         $curl->setOpt(CURLOPT_FOLLOWLOCATION, true);
@@ -123,6 +151,13 @@ class URLAnalyzerFetch extends URLAnalyzerBase
         $curl->setOpt(CURLOPT_SSL_VERIFYPEER, false);
         $curl->setOpt(CURLOPT_DNS_SERVERS, implode(',', $this->dnsServers));
         $curl->setOpt(CURLOPT_ENCODING, '');
+        
+        if (isset($domainRules['proxy']) && $domainRules['proxy'] === true) {
+            $proxy = $this->getRandomProxy();
+            if ($proxy) {
+                $curl->setOpt(CURLOPT_PROXY, $proxy);
+            }
+        }
 
         $curl->setHeaders([
             'Accept' => 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
@@ -172,7 +207,6 @@ class URLAnalyzerFetch extends URLAnalyzerBase
      */
     public function fetchFromWaybackMachine($url)
     {
-        // Apply URL modifications if any
         $domainHost = parse_url($url, PHP_URL_HOST);
         if ($domainHost) {
             $domainHost = preg_replace('/^www\./', '', $domainHost);
@@ -188,6 +222,13 @@ class URLAnalyzerFetch extends URLAnalyzerBase
         $curl->setOpt(CURLOPT_TIMEOUT, 10);
         $curl->setOpt(CURLOPT_SSL_VERIFYPEER, false);
         $curl->setUserAgent($this->getRandomUserAgent());
+        
+        if (isset($domainRules['proxy']) && $domainRules['proxy'] === true) {
+            $proxy = $this->getRandomProxy();
+            if ($proxy) {
+                $curl->setOpt(CURLOPT_PROXY, $proxy);
+            }
+        }
 
         $curl->get($availabilityUrl);
 
@@ -212,6 +253,13 @@ class URLAnalyzerFetch extends URLAnalyzerBase
         $curl->setOpt(CURLOPT_TIMEOUT, 10);
         $curl->setOpt(CURLOPT_SSL_VERIFYPEER, false);
         $curl->setUserAgent($this->getRandomUserAgent());
+        
+        if (isset($domainRules['proxy']) && $domainRules['proxy'] === true) {
+            $proxy = $this->getRandomProxy();
+            if ($proxy) {
+                $curl->setOpt(CURLOPT_PROXY, $proxy);
+            }
+        }
 
         $curl->get($archiveUrl);
 
@@ -235,7 +283,6 @@ class URLAnalyzerFetch extends URLAnalyzerBase
     {
         $host = 'http://'.SELENIUM_HOST.'/wd/hub';
         
-        // Apply URL modifications if any
         $domainHost = parse_url($url, PHP_URL_HOST);
         if ($domainHost) {
             $domainHost = preg_replace('/^www\./', '', $domainHost);
@@ -243,16 +290,25 @@ class URLAnalyzerFetch extends URLAnalyzerBase
             $url = $this->applyUrlModifications($url, $domainRules);
         }
 
+        $useProxy = isset($domainRules['proxy']) && $domainRules['proxy'] === true;
+        $proxy = $useProxy ? $this->getRandomProxy() : null;
+
         if ($browser === 'chrome') {
             $options = new ChromeOptions();
-            $options->addArguments([
+            $arguments = [
                 '--headless',
                 '--disable-gpu',
                 '--no-sandbox',
                 '--disable-dev-shm-usage',
                 '--disable-images',
                 '--blink-settings=imagesEnabled=false'
-            ]);
+            ];
+            
+            if ($useProxy && $proxy) {
+                $arguments[] = '--proxy-server=' . $proxy;
+            }
+            
+            $options->addArguments($arguments);
 
             $capabilities = DesiredCapabilities::chrome();
             $capabilities->setCapability(ChromeOptions::CAPABILITY, $options);
@@ -264,6 +320,22 @@ class URLAnalyzerFetch extends URLAnalyzerBase
             $profile->setPreference("network.http.referer.defaultReferer", "https://www.google.com");
             $profile->setPreference("network.http.referer.spoofSource", true);
             $profile->setPreference("network.http.referer.trimmingPolicy", 0);
+            
+            if ($useProxy && $proxy) {
+                $proxyParts = parse_url($proxy);
+                if (isset($proxyParts['host']) && isset($proxyParts['port'])) {
+                    $profile->setPreference("network.proxy.type", 1);
+                    $profile->setPreference("network.proxy.http", $proxyParts['host']);
+                    $profile->setPreference("network.proxy.http_port", $proxyParts['port']);
+                    $profile->setPreference("network.proxy.ssl", $proxyParts['host']);
+                    $profile->setPreference("network.proxy.ssl_port", $proxyParts['port']);
+                    
+                    if (isset($proxyParts['user']) && isset($proxyParts['pass'])) {
+                        $profile->setPreference("network.proxy.username", $proxyParts['user']);
+                        $profile->setPreference("network.proxy.password", $proxyParts['pass']);
+                    }
+                }
+            }
 
             $options = new FirefoxOptions();
             $options->setProfile($profile);

@@ -7,6 +7,7 @@
  * using the 'excludeGlobalRules' configuration in domain_rules.php
  */
 return [
+    'proxy' => false,    
     // Classes to be removed from all pages:
     'classElementRemove' => [
         'subscription',

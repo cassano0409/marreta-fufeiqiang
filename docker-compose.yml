@@ -17,6 +17,7 @@ services:
       - LOG_LEVEL=${LOG_LEVEL:-WARNING}
       - SELENIUM_HOST=${SELENIUM_HOST:-selenium-hub:4444}
       - CLEANUP_DAYS=7 # Optional
+      - PROXY_LIST=url # Optional
     restart: unless-stopped
   # Selenium
   selenium-hub:

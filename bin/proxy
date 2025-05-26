@@ -1,0 +1,105 @@
+#!/usr/bin/env php
+<?php
+
+/**
+ * Proxy List Cache Updater
+ *
+ * Fetches proxy list from the PROXY_LIST environment variable
+ * and stores it in the cache directory for reuse.
+ * This script should be run daily via cron to keep the proxy list updated.
+ *
+ * Supported proxy list formats:
+ * 1. http://USER:PASSWORD@HOST:PORT
+ * 2. IP:PORT:USER:PASSWORD
+ */
+
+require_once __DIR__ . '/../app/vendor/autoload.php';
+
+use League\CLImate\CLImate;
+use Dotenv\Dotenv;
+
+$climate = new CLImate();
+$climate->bold()->out('Proxy List Cache Updater');
+$climate->br();
+
+try {
+    $dotenv = Dotenv::createImmutable(__DIR__ . '/../app');
+    $dotenv->load();
+    $climate->out('Environment variables loaded');
+} catch (\Exception $e) {
+    $climate->yellow()->out('Warning: ' . $e->getMessage());
+    exit(0);
+}
+
+if (!defined('CACHE_DIR')) {
+    define('CACHE_DIR', __DIR__ . '/../app/cache');
+}
+
+if (!isset($_ENV['PROXY_LIST']) || empty($_ENV['PROXY_LIST'])) {
+    $climate->yellow()->out('PROXY_LIST environment variable not set. No proxies to cache.');
+    exit(0);
+}
+
+$proxyList = $_ENV['PROXY_LIST'];
+$proxyCachePath = CACHE_DIR . '/proxy_list.json';
+
+if (!is_dir(CACHE_DIR)) {
+    if (!mkdir(CACHE_DIR, 0755, true)) {
+        $climate->red()->out('Failed to create cache directory: ' . CACHE_DIR);
+        exit(1);
+    }
+}
+
+$climate->out('Parsing proxy list from environment variable...');
+$proxies = parseProxyList($proxyList);
+
+if (empty($proxies)) {
+    $climate->red()->out('No valid proxies found in PROXY_LIST. Supported formats are:');
+    $climate->red()->out('1. http://USER:PASSWORD@HOST:PORT');
+    $climate->red()->out('2. IP:PORT:USER:PASSWORD');
+    exit(1);
+}
+
+$climate->out('Found ' . count($proxies) . ' valid proxies.');
+
+if (file_put_contents($proxyCachePath, json_encode($proxies))) {
+    $climate->green()->out('Proxy list successfully cached to: ' . $proxyCachePath);
+} else {
+    $climate->red()->out('Failed to write proxy list to cache file: ' . $proxyCachePath);
+    exit(1);
+}
+
+/**
+ * Parse proxy list from environment variable
+ *
+ * @param string $proxyListString Proxy list in format http://USER:PASSWORD@HOST:PORT or IP:PORT:USER:PASSWORD
+ * @return array Array of valid proxy URLs
+ */
+function parseProxyList($proxyListString) {
+    $proxies = [];
+    $lines = preg_split('/[\r\n,]+/', $proxyListString);
+    
+    foreach ($lines as $line) {
+        $line = trim($line);
+        if (empty($line)) continue;
+        
+        // Format 1: http://USER:PASSWORD@HOST:PORT
+        if (preg_match('/^https?:\/\/[^:]+:[^@]+@[^:]+:\d+$/i', $line)) {
+            $proxies[] = $line;
+            continue;
+        }
+        
+        // Format 2: IP:PORT:USER:PASSWORD
+        if (preg_match('/^(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}):(\d+):([^:]+):(.+)$/', $line, $matches)) {
+            $ip = $matches[1];
+            $port = $matches[2];
+            $user = $matches[3];
+            $password = $matches[4];
+            
+            // Convert to standard format
+            $proxies[] = "http://{$user}:{$password}@{$ip}:{$port}";
+        }
+    }
+    
+    return $proxies;
+}
