@@ -31,7 +31,8 @@ class Rules
         'fetchStrategies',
         'fromGoogleBot',
         'removeElementsByTag',
-        'removeCustomAttr'
+        'removeCustomAttr',
+        'urlMods'
     ];
 
     /**

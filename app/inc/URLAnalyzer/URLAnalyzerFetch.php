@@ -31,6 +31,78 @@ class URLAnalyzerFetch extends URLAnalyzerBase
      * Fetches content using cURL
      * Handles redirects and custom headers
      */
+    /**
+     * Modifies URL based on urlMods rules
+     * @param string $url Original URL
+     * @param array $domainRules Domain rules containing urlMods
+     * @return string Modified URL
+     */
+    private function applyUrlModifications($url, $domainRules)
+    {
+        if (!isset($domainRules['urlMods'])) {
+            return $url;
+        }
+
+        $urlParts = parse_url($url);
+        
+        // Handle query modifications
+        if (isset($domainRules['urlMods']['query']) && is_array($domainRules['urlMods']['query'])) {
+            $queryParams = [];
+            
+            // Parse existing query parameters if any
+            if (isset($urlParts['query'])) {
+                parse_str($urlParts['query'], $queryParams);
+            }
+            
+            // Apply query modifications
+            foreach ($domainRules['urlMods']['query'] as $queryMod) {
+                if (isset($queryMod['key']) && isset($queryMod['value'])) {
+                    $queryParams[$queryMod['key']] = $queryMod['value'];
+                }
+            }
+            
+            // Rebuild query string
+            $urlParts['query'] = http_build_query($queryParams);
+        }
+        
+        // Rebuild URL
+        $modifiedUrl = '';
+        
+        if (isset($urlParts['scheme'])) {
+            $modifiedUrl .= $urlParts['scheme'] . '://';
+        }
+        
+        if (isset($urlParts['user'])) {
+            $modifiedUrl .= $urlParts['user'];
+            if (isset($urlParts['pass'])) {
+                $modifiedUrl .= ':' . $urlParts['pass'];
+            }
+            $modifiedUrl .= '@';
+        }
+        
+        if (isset($urlParts['host'])) {
+            $modifiedUrl .= $urlParts['host'];
+        }
+        
+        if (isset($urlParts['port'])) {
+            $modifiedUrl .= ':' . $urlParts['port'];
+        }
+        
+        if (isset($urlParts['path'])) {
+            $modifiedUrl .= $urlParts['path'];
+        }
+        
+        if (isset($urlParts['query'])) {
+            $modifiedUrl .= '?' . $urlParts['query'];
+        }
+        
+        if (isset($urlParts['fragment'])) {
+            $modifiedUrl .= '#' . $urlParts['fragment'];
+        }
+        
+        return $modifiedUrl;
+    }
+
     public function fetchContent($url)
     {
         $curl = new Curl();
@@ -41,6 +113,9 @@ class URLAnalyzerFetch extends URLAnalyzerBase
         }
         $host = preg_replace('/^www\./', '', $host);
         $domainRules = $this->getDomainRules($host);
+        
+        // Apply URL modifications if any
+        $url = $this->applyUrlModifications($url, $domainRules);
 
         $curl->setOpt(CURLOPT_FOLLOWLOCATION, true);
         $curl->setOpt(CURLOPT_MAXREDIRS, 2);
@@ -97,6 +172,14 @@ class URLAnalyzerFetch extends URLAnalyzerBase
      */
     public function fetchFromWaybackMachine($url)
     {
+        // Apply URL modifications if any
+        $domainHost = parse_url($url, PHP_URL_HOST);
+        if ($domainHost) {
+            $domainHost = preg_replace('/^www\./', '', $domainHost);
+            $domainRules = $this->getDomainRules($domainHost);
+            $url = $this->applyUrlModifications($url, $domainRules);
+        }
+        
         $url = preg_replace('#^https?://#', '', $url);
         $availabilityUrl = "https://archive.org/wayback/available?url=" . urlencode($url);
 
@@ -151,6 +234,14 @@ class URLAnalyzerFetch extends URLAnalyzerBase
     public function fetchFromSelenium($url, $browser = 'firefox')
     {
         $host = 'http://'.SELENIUM_HOST.'/wd/hub';
+        
+        // Apply URL modifications if any
+        $domainHost = parse_url($url, PHP_URL_HOST);
+        if ($domainHost) {
+            $domainHost = preg_replace('/^www\./', '', $domainHost);
+            $domainRules = $this->getDomainRules($domainHost);
+            $url = $this->applyUrlModifications($url, $domainRules);
+        }
 
         if ($browser === 'chrome') {
             $options = new ChromeOptions();
