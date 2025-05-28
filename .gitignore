@@ -4,6 +4,7 @@ composer.lock
 app/logs/*.log
 app/cache/*.gz
 app/cache/database/.sqlite
+app/cache/*.json
 TODO.md
 node_modules
 

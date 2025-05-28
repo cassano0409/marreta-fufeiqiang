@@ -93,6 +93,35 @@ class Rules
         return $this->getGlobalRules();
     }
 
+
+    /**
+     * Retrieves merged rules for a domain
+     * @param string $domain Target domain
+     * @return array|null Combined ruleset or global rules
+     */
+    public function hasDomainRules($domain)
+    {
+        $domainParts = $this->getDomainParts($domain);
+
+        // Check for exact domain match first
+        foreach ($this->domainRules as $pattern => $rules) {
+            if ($this->getBaseDomain($domain) === $this->getBaseDomain($pattern)) {
+                return true;
+            }
+        }
+
+        // Check for partial domain matches
+        foreach ($domainParts as $part) {
+            foreach ($this->domainRules as $pattern => $rules) {
+                if ($part === $this->getBaseDomain($pattern)) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
     /**
      * Combines domain rules with global configuration
      * @param array $rules Domain-specific rules
@@ -110,12 +139,14 @@ class Rules
 
             if (isset($excludeGlobalRules[$ruleType])) {
                 if (is_assoc_array($globalTypeRules)) {
-                    $mergedRules[$ruleType] = array_diff_key($globalTypeRules, array_flip($excludeGlobalRules[$ruleType]));
+                    $result = array_diff_key($globalTypeRules, array_flip($excludeGlobalRules[$ruleType]));
+                    $mergedRules[$ruleType] = is_array($result) ? $result : [];
                 } else {
-                    $mergedRules[$ruleType] = array_diff($globalTypeRules, $excludeGlobalRules[$ruleType]);
+                    $result = array_diff($globalTypeRules, $excludeGlobalRules[$ruleType]);
+                    $mergedRules[$ruleType] = is_array($result) ? $result : [];
                 }
             } else {
-                $mergedRules[$ruleType] = $globalTypeRules;
+                $mergedRules[$ruleType] = is_array($globalTypeRules) ? $globalTypeRules : [];
             }
         }
 
@@ -128,10 +159,13 @@ class Rules
             }
 
             if (in_array($ruleType, ['cookies', 'headers'])) {
-                $mergedRules[$ruleType] = array_merge($mergedRules[$ruleType], $domainTypeRules);
+                $mergedRules[$ruleType] = array_merge(
+                    is_array($mergedRules[$ruleType]) ? $mergedRules[$ruleType] : [],
+                    is_array($domainTypeRules) ? $domainTypeRules : []
+                );
             } else {
                 $mergedRules[$ruleType] = array_values(array_unique(array_merge(
-                    $mergedRules[$ruleType],
+                    is_array($mergedRules[$ruleType]) ? $mergedRules[$ruleType] : [],
                     (array)$domainTypeRules
                 )));
             }

@@ -4,7 +4,7 @@
 /**
  * Proxy List Cache Updater
  *
- * Fetches proxy list from the PROXY_LIST environment variable
+ * Downloads proxy list from the URL specified in the PROXY_LIST environment variable
  * and stores it in the cache directory for reuse.
  * This script should be run daily via cron to keep the proxy list updated.
  *
@@ -17,6 +17,7 @@ require_once __DIR__ . '/../app/vendor/autoload.php';
 
 use League\CLImate\CLImate;
 use Dotenv\Dotenv;
+use Curl\Curl;
 
 $climate = new CLImate();
 $climate->bold()->out('Proxy List Cache Updater');
@@ -40,8 +41,19 @@ if (!isset($_ENV['PROXY_LIST']) || empty($_ENV['PROXY_LIST'])) {
     exit(0);
 }
 
-$proxyList = $_ENV['PROXY_LIST'];
+$proxyListUrl = $_ENV['PROXY_LIST'];
 $proxyCachePath = CACHE_DIR . '/proxy_list.json';
+
+// Download proxy list from URL
+$climate->out('Downloading proxy list from: ' . $proxyListUrl);
+$proxyList = downloadProxyList($proxyListUrl, $climate);
+
+if ($proxyList === false) {
+    $climate->red()->out('Failed to download proxy list from URL: ' . $proxyListUrl);
+    exit(1);
+}
+
+$climate->green()->out('Proxy list downloaded successfully (' . strlen($proxyList) . ' bytes)');
 
 if (!is_dir(CACHE_DIR)) {
     if (!mkdir(CACHE_DIR, 0755, true)) {
@@ -102,4 +114,83 @@ function parseProxyList($proxyListString) {
     }
     
     return $proxies;
+}
+
+/**
+ * Download proxy list from URL using php-curl-class
+ *
+ * @param string $url URL to download proxy list from
+ * @param CLImate $climate CLImate instance for output
+ * @return string|false Downloaded content or false on failure
+ */
+function downloadProxyList($url, $climate = null) {
+    $curl = new Curl();
+    
+    // Configure cURL options
+    $curl->setTimeout(30);
+    $curl->setConnectTimeout(10);
+    $curl->setUserAgent('Marreta Proxy Updater/1.0');
+    $curl->setHeader('Accept', 'text/plain, text/html, */*');
+    $curl->setHeader('Accept-Encoding', 'gzip, deflate');
+    $curl->setOpt(CURLOPT_FOLLOWLOCATION, true);
+    $curl->setOpt(CURLOPT_MAXREDIRS, 3);
+    $curl->setOpt(CURLOPT_SSL_VERIFYPEER, false);
+    $curl->setOpt(CURLOPT_SSL_VERIFYHOST, false);
+    
+    try {
+        if ($climate) {
+            $climate->out('Making HTTP request with php-curl-class...');
+        }
+        
+        $curl->get($url);
+        
+        if ($curl->error) {
+            $errorMsg = 'cURL request failed: ' . $curl->errorMessage . ' (Code: ' . $curl->errorCode . ')';
+            
+            if ($climate) {
+                $climate->red()->out($errorMsg);
+            } else {
+                error_log($errorMsg);
+            }
+            
+            return false;
+        }
+        
+        $statusCode = $curl->httpStatusCode;
+        
+        if ($climate) {
+            $climate->out('HTTP Status Code: ' . $statusCode);
+        }
+        
+        if ($statusCode === 200) {
+            $content = $curl->response;
+            
+            if ($climate) {
+                $contentType = $curl->responseHeaders['Content-Type'] ?? 'unknown';
+                $climate->out('Content-Type: ' . $contentType);
+                $climate->out('Content-Length: ' . strlen($content) . ' bytes');
+            }
+            
+            return $content;
+        }
+        
+        if ($climate) {
+            $climate->yellow()->out('Unexpected HTTP status code: ' . $statusCode);
+        }
+        
+        return false;
+        
+    } catch (\Exception $e) {
+        $errorMsg = 'Unexpected error during download: ' . $e->getMessage();
+        
+        if ($climate) {
+            $climate->red()->out($errorMsg);
+        } else {
+            error_log($errorMsg);
+        }
+        
+        return false;
+    } finally {
+        $curl->close();
+    }
 }

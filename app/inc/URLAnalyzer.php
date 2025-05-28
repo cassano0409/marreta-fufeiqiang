@@ -73,14 +73,19 @@ class URLAnalyzer extends URLAnalyzerBase
             $this->error->throwError(self::ERROR_BLOCKED_DOMAIN, '');
         }
 
-        // Check HTTP status and handle any errors
-        $redirectInfo = $this->utils->checkStatus($url);
-        if ($redirectInfo['httpCode'] !== 200) {
-            Logger::getInstance()->logUrl($url, 'INVALID_STATUS_CODE', "HTTP {$redirectInfo['httpCode']}");
-            if ($redirectInfo['httpCode'] === 404) {
-                $this->error->throwError(self::ERROR_NOT_FOUND, '');
-            } else {
-                $this->error->throwError(self::ERROR_HTTP_ERROR, (string)$redirectInfo['httpCode']);
+        // Check if domain has specific rules by looking for domain-specific configurations
+        $hasCustomRules = $this->hasDomainRules($host);
+        
+        // Check HTTP status and handle any errors only if domain doesn't have custom rules
+        if (!$hasCustomRules) {
+            $redirectInfo = $this->utils->checkStatus($url);
+            if ($redirectInfo['httpCode'] !== 200) {
+                Logger::getInstance()->logUrl($url, 'INVALID_STATUS_CODE', "HTTP {$redirectInfo['httpCode']}");
+                if ($redirectInfo['httpCode'] === 404) {
+                    $this->error->throwError(self::ERROR_NOT_FOUND, '');
+                } else {
+                    $this->error->throwError(self::ERROR_HTTP_ERROR, (string)$redirectInfo['httpCode']);
+                }
             }
         }
 

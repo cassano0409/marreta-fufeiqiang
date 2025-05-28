@@ -113,4 +113,14 @@ class URLAnalyzerBase
     {
         return $this->rules->getDomainRules($domain);
     }
+    
+    /**
+     * Check if domain has specific rules
+     * @param string $host The domain host to check
+     * @return bool True if domain has custom rules, false otherwise
+     */
+    protected function hasDomainRules($domain)
+    {
+        return $this->rules->hasDomainRules($domain);
+    }
 }
