@@ -619,7 +619,8 @@ return [
                 const headimage = document.querySelectorAll(\'div .aspect-custom\');
                 headimage.forEach(image => { image.style.filter = \'\'; });
             });
-        '
+        ',
+        'idElementRemove' => ['wall-bottom-drawer-container']
     ],
     'usatoday.com' => [
         'customCode' => '
@@ -706,7 +707,7 @@ return [
                 }, 1000);
             })
         '
-    ],    
+    ],
     // Test domain
     'altendorfme.github.io' => [
         'userAgent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
