@@ -630,6 +630,12 @@ return [
             });
         '
     ],
+    'stcatharinesstandard.ca' => [
+        'proxy' => true,
+        'idElementRemove' => 'access-offers-modal',
+        'classElementRemove' => 'modal-backdrop',
+        'classAttrRemove' => ' modal-open'
+    ],
     'medium.com' => [
         'headers' => [
             'Referer' => 'https://t.co/x?amp=1',
