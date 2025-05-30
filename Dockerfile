@@ -62,9 +62,6 @@ RUN touch /app/logs/cron.log
 RUN echo '0 * * * * root php "/app/bin/cleanup" >> /app/logs/cleanup.log 2>&1' >> /etc/crontab
 RUN echo '0 * * * * root php "/app/bin/proxy" >> /app/logs/proxy.log 2>&1' >> /etc/crontab
 
-# Run proxy list check
-RUN php /app/bin/proxy
-
 EXPOSE 80
 
 ENTRYPOINT ["/usr/local/bin/docker-entrypoint.sh"]

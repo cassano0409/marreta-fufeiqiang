@@ -116,6 +116,14 @@ log_success "Cron started"
 
 echo -e "\n${GREEN}=== Marreta initialized ===${NC}\n"
 
+# Run proxy list updater
+log_info "Running proxy list updater..."
+if php /app/bin/proxy; then
+    log_success "Proxy list updater completed successfully"
+else
+    log_info "Proxy list updater finished (may not have been configured)"
+fi
+
 # Wait for any process to exit
 wait -n
 
