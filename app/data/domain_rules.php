@@ -71,11 +71,11 @@ return [
     'gauchazh.clicrbs.com.br' => [
         'idElementRemove' => ['paywallTemplate'],
         'classAttrRemove' => ['m-paid-content', 'paid-content-apply'],
-        'scriptTagRemove' => ['vendors-8'],
+        'scriptTagRemove' => ['vendors-9','vendors-10','vendors-11'],
         'excludeGlobalRules' => [
             'classElementRemove' => ['paid-content']
         ],
-        'fetchStrategies' => 'fetchFromSelenium',
+        'proxy' => true,
     ],
     'reuters.com' => [
         'classElementRemove' => ['leaderboard__container'],
