@@ -17,7 +17,7 @@
 
 @mixin icon($name, $filter) {
 	.icon--#{$name} {
-		background-image: url("../dist/icons/#{$name}.svg");
+		background-image: url("/dist/icons/#{$name}.svg");
         filter: #{$filter};
 	}
 }
