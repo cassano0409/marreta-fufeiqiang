@@ -9,7 +9,7 @@
  * If CLEANUP_DAYS is not set, no files will be cleaned.
  */
 
-require_once __DIR__ . '/../app/vendor/autoload.php';
+require_once __DIR__ . '/../vendor/autoload.php';
 
 use League\CLImate\CLImate;
 use Dotenv\Dotenv;
@@ -23,7 +23,7 @@ $climate->br();
 $cleanupDays = 0;
 
 try {
-    $dotenv = Dotenv::createImmutable(__DIR__ . '/../app');
+    $dotenv = Dotenv::createImmutable(__DIR__ . '/..');
     $dotenv->load();
     $climate->out('Environment variables loaded');
     $cleanupDays = $_ENV['CLEANUP_DAYS'];
@@ -33,7 +33,7 @@ try {
 }
 
 if (!defined('CACHE_DIR')) {
-    define('CACHE_DIR', __DIR__ . '/../app/cache');
+    define('CACHE_DIR', __DIR__ . '/../cache');
 }
 
 if ($cleanupDays == 0) {

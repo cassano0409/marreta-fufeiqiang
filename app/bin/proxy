@@ -13,7 +13,7 @@
  * 2. IP:PORT:USER:PASSWORD
  */
 
-require_once __DIR__ . '/../app/vendor/autoload.php';
+require_once __DIR__ . '/../vendor/autoload.php';
 
 use League\CLImate\CLImate;
 use Dotenv\Dotenv;
@@ -24,7 +24,7 @@ $climate->bold()->out('Proxy List Cache Updater');
 $climate->br();
 
 try {
-    $dotenv = Dotenv::createImmutable(__DIR__ . '/../app');
+    $dotenv = Dotenv::createImmutable(__DIR__ . '/..');
     $dotenv->load();
     $climate->out('Environment variables loaded');
 } catch (\Exception $e) {
@@ -33,7 +33,7 @@ try {
 }
 
 if (!defined('CACHE_DIR')) {
-    define('CACHE_DIR', __DIR__ . '/../app/cache');
+    define('CACHE_DIR', __DIR__ . '/../cache');
 }
 
 if (!isset($_ENV['PROXY_LIST']) || empty($_ENV['PROXY_LIST'])) {
