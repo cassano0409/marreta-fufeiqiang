@@ -21,6 +21,10 @@ return [
             'message' => 'Este dominio está bloqueado para extracción.',
             'type' => 'error'
         ],
+        'DMCA_DOMAIN' => [
+            'message' => 'El sitio web solicitado no se puede mostrar debido a las solicitudes de sus propietarios.',
+            'type' => 'error'
+        ],
         'DNS_FAILURE' => [
             'message' => 'Error al resolver DNS para el dominio. Verifique si la URL es correcta.',
             'type' => 'warning'

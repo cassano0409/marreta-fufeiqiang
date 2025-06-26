@@ -50,6 +50,25 @@ class URLAnalyzer extends URLAnalyzerBase
      */
     public function analyze($url)
     {
+        // Extract and validate hostname
+        $host = parse_url($url, PHP_URL_HOST);
+        if (!$host) {
+            $this->error->throwError(self::ERROR_INVALID_URL, '');
+        }
+        $originalHost = parse_url($url, PHP_URL_HOST);
+        $host = preg_replace('/^www\./', '', $host);
+
+        // Check if domain is in DMCA list FIRST (before any HTTP requests)
+        foreach (DMCA_DOMAINS as $dmcaEntry) {
+            if (is_array($dmcaEntry) && isset($dmcaEntry['host'])) {
+                if ($dmcaEntry['host'] === $host || $dmcaEntry['host'] === $originalHost) {
+                    Logger::getInstance()->logUrl($url, 'DMCA_DOMAIN');
+                    $customMessage = isset($dmcaEntry['message']) ? $dmcaEntry['message'] : '';
+                    $this->error->throwError(self::ERROR_DMCA_DOMAIN, $customMessage);
+                }
+            }
+        }
+
         // Reset activated rules for new analysis
         $this->activatedRules = [];
 
@@ -59,13 +78,6 @@ class URLAnalyzer extends URLAnalyzerBase
             // Process the raw content in real-time
             return $this->process->processContent($rawContent, parse_url($url, PHP_URL_HOST), $url);
         }
-
-        // Extract and validate hostname
-        $host = parse_url($url, PHP_URL_HOST);
-        if (!$host) {
-            $this->error->throwError(self::ERROR_INVALID_URL, '');
-        }
-        $host = preg_replace('/^www\./', '', $host);
 
         // Check if domain is in blocked list
         if (in_array($host, BLOCKED_DOMAINS)) {

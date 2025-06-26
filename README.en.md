@@ -66,6 +66,20 @@ Now just run `docker compose up -d`
 - S3 Cache: https://github.com/manualdousuario/marreta/wiki/%F0%9F%97%83%EF%B8%8F-Cache-S3
 - Maintenance: https://github.com/manualdousuario/marreta/wiki/%F0%9F%9B%A0%EF%B8%8F-Maintenance
 
+
+### 🛡️ DMCA
+
+To block domains from DMCA requests, create the file `app/cache/dmca_domains.json`:
+
+```json
+[
+    {
+        "host": "exemplo.com.br",
+        "message": "This content has been blocked on request"
+    }
+]
+```
+
 ## 🚀 Integrations
 
 - 🤖 **Telegram**: [Official Bot](https://t.me/leissoai_bot)

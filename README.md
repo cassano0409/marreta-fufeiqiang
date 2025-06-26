@@ -25,6 +25,7 @@ Instancia publica em [marreta.pcdomanual.com](https://marreta.pcdomanual.com)!
 - Remove elementos indesejados
 - Cache, cache!
 - Bloqueia domínios que você não quer
+- Proteção DMCA com mensagens personalizadas
 - Permite configurar headers e cookies do seu jeito
 - PHP-FPM e OPcache
 - Suporte a Proxy
@@ -65,6 +66,19 @@ Agora só rodar `docker compose up -d`
 - Selenium: https://github.com/manualdousuario/marreta/wiki/%F0%9F%92%BB-Selenium-Hub-(Chrome-and-Firefox)
 - Cache S3: https://github.com/manualdousuario/marreta/wiki/%F0%9F%97%83%EF%B8%8F-Cache-S3
 - Manutenção: https://github.com/manualdousuario/marreta/wiki/%F0%9F%9B%A0%EF%B8%8F-Maintenance
+
+### 🛡️ DMCA
+
+Para bloquear dominios por pedidos de DMCA, crie o arquivo `app/cache/dmca_domains.json`:
+
+```json
+[
+    {
+        "host": "exemplo.com.br",
+        "message": "Este conteúdo foi bloqueado a pedido"
+    }
+]
+```
 
 ## 🚀 Integrações
 

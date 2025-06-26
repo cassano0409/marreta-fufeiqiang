@@ -22,6 +22,7 @@ class URLAnalyzerBase
     /** @var string Error constants for different failure scenarios */
     const ERROR_INVALID_URL = 'INVALID_URL';
     const ERROR_BLOCKED_DOMAIN = 'BLOCKED_DOMAIN';
+    const ERROR_DMCA_DOMAIN = 'DMCA_DOMAIN';
     const ERROR_NOT_FOUND = 'NOT_FOUND';
     const ERROR_HTTP_ERROR = 'HTTP_ERROR';
     const ERROR_CONNECTION_ERROR = 'CONNECTION_ERROR';
@@ -33,6 +34,7 @@ class URLAnalyzerBase
     protected $errorMap = [
         self::ERROR_INVALID_URL => ['code' => 400, 'message_key' => 'INVALID_URL'],
         self::ERROR_BLOCKED_DOMAIN => ['code' => 403, 'message_key' => 'BLOCKED_DOMAIN'],
+        self::ERROR_DMCA_DOMAIN => ['code' => 403, 'message_key' => 'DMCA_DOMAIN'],
         self::ERROR_NOT_FOUND => ['code' => 404, 'message_key' => 'NOT_FOUND'],
         self::ERROR_HTTP_ERROR => ['code' => 502, 'message_key' => 'HTTP_ERROR'],
         self::ERROR_CONNECTION_ERROR => ['code' => 503, 'message_key' => 'CONNECTION_ERROR'],

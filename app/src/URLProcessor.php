@@ -5,6 +5,7 @@ namespace App;
 use Inc\Language;
 use Inc\URLAnalyzer;
 use Inc\URLAnalyzer\URLAnalyzerException;
+use Inc\Cache;
 
 /**
  * URL Processor
@@ -109,6 +110,19 @@ class URLProcessor
             } else {
                 if ($errorType === URLAnalyzer::ERROR_BLOCKED_DOMAIN && $additionalInfo) {
                     $this->redirect(trim($additionalInfo), $errorType);
+                } elseif ($errorType === URLAnalyzer::ERROR_DMCA_DOMAIN) {
+                    // For DMCA domains, show the custom message directly instead of redirecting
+                    Language::init(LANGUAGE);
+                    $message = $e->getMessage();
+                    $message_type = 'error';
+                    $url = ''; // Initialize url variable for the view
+                    
+                    // Initialize cache for counting
+                    $cache = new \Inc\Cache();
+                    $cache_folder = $cache->getCacheFileCount();
+                    
+                    require __DIR__ . '/views/home.php';
+                    exit;
                 }
                 $this->redirect(SITE_URL, $errorType);
             }

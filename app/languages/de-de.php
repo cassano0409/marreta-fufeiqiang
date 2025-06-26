@@ -21,6 +21,10 @@ return [
             'message' => 'Diese Seite ist nicht erlaubt.',
             'type' => 'error'
         ],
+        'DMCA_DOMAIN' => [
+            'message' => 'Die angeforderte Website kann aufgrund von Anfragen ihrer Eigentümer nicht angezeigt werden.',
+            'type' => 'error'
+        ],
         'DNS_FAILURE' => [
             'message' => 'DNS für die Domain konnte nicht aufgelöst werden. Bitte überprüfe, ob die URL korrekt ist.',
             'type' => 'warning'
