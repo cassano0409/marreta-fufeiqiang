@@ -46,9 +46,9 @@ COPY default.conf /etc/nginx/sites-available/default
 
 # Copy and configure initialization script permissions
 COPY docker-entrypoint.sh /usr/local/bin/
-COPY bin/cleanup /usr/local/bin/
-RUN chmod +x /usr/local/bin/docker-entrypoint.sh \
-    && chmod +x /usr/local/bin/cleanup
+RUN chmod +x /usr/local/bin/docker-entrypoint.sh
+RUN chmod +x /app/bin/cleanup
+RUN chmod +x /app/bin/proxy
 
 # Create cache, database, and logs folders
 RUN mkdir -p /app/cache /app/cache/database /app/logs
