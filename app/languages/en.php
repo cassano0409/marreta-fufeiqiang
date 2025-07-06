@@ -52,6 +52,10 @@ return [
         'GENERIC_ERROR' => [
             'message' => 'An error occurred while processing your request.',
             'type' => 'warning'
+        ],
+        'RESTRICTED_URL' => [
+            'message' => 'This URL contains restricted content and cannot be processed for security reasons.',
+            'type' => 'error'
         ]
     ]
 ];

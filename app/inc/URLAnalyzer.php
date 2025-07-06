@@ -55,6 +55,12 @@ class URLAnalyzer extends URLAnalyzerBase
         if (!$host) {
             $this->error->throwError(self::ERROR_INVALID_URL, '');
         }
+
+        // Check if URL contains restricted keywords
+        if ($this->isRestrictedUrl($url)) {
+            Logger::getInstance()->logUrl($url, 'RESTRICTED_URL');
+            $this->error->throwError(self::ERROR_RESTRICTED_URL, '');
+        }
         $originalHost = parse_url($url, PHP_URL_HOST);
         $host = preg_replace('/^www\./', '', $host);
 
