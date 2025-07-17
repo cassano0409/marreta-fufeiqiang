@@ -183,6 +183,12 @@ return [
     'nzherald.co.nz' => [
         'fetchStrategies' => 'fetchFromSelenium',
     ],
+    'onetz.de' => [
+        'idElementRemove' => ['checkout-container'],
+        'classElementRemove' => ['tp-backdrop','dm-nobg'],
+        'classAttrRemove' => ['field-dnt-body-pp'],
+        'scriptTagRemove' => ['.js'],
+    ],
     'opovo.com.br' => [
         'classElementRemove' => ['screen-loading', 'overlay-advise']
     ],
