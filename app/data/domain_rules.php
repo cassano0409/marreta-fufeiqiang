@@ -262,7 +262,7 @@ return [
                 position: relative !important;
             }
         ',
-        'fetchStrategies' => 'fetchFromSelenium',
+        'fetchStrategies' => 'fetchFromWaybackMachine',
         'excludeGlobalRules' => [
             'scriptTagRemove' => [
                 'gtm.js',
