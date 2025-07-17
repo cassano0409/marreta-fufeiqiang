@@ -41,3 +41,6 @@
 @include mixin.icon('close', 'invert(100%) sepia(32%) saturate(8%) hue-rotate(23deg) brightness(102%) contrast(100%)');
 
 @include mixin.icon('paste', 'invert(0%) sepia(21%) saturate(7425%) hue-rotate(12deg) brightness(96%) contrast(96%)');
+
+@include mixin.icon('sun', 'invert(0%) sepia(21%) saturate(7425%) hue-rotate(12deg) brightness(96%) contrast(96%)');
+@include mixin.icon('moon', 'invert(0%) sepia(21%) saturate(7425%) hue-rotate(12deg) brightness(96%) contrast(96%)');

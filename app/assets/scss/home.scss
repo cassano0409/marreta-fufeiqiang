@@ -46,22 +46,22 @@ body {
     }
 
     &--error {
-        background-color: rgb(247, 102, 97);
+        background-color: var(--toast-error);
     }
 
     &--warning {
-        background-color: rgb(247, 152, 97);
+        background-color: var(--toast-warning);
     }
 }
 
 header {
     display: grid;
-    grid-template-columns: auto 1fr 1fr;
+    grid-template-columns: auto 1fr auto 1fr;
     align-items: center;
     padding: 0 0 42px 0;
 
     @include mixin.devices(desktop) {
-        grid-template-columns: 1fr 2fr 1fr;
+        grid-template-columns: 1fr 2fr auto 1fr;
     }
 
     &.open {
@@ -126,7 +126,77 @@ header {
 
         h1 {
             font-family: var(--font-family-unna);
-            color: #000;
+            color: var(--header-text);
+        }
+    }
+
+    .fast_buttons {
+        display: flex;
+        gap: 8px;
+    }
+
+    .theme-controls {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 0 16px;
+
+        @include mixin.devices(desktop) {
+            padding: 0;
+        }
+
+        .theme-toggle {
+            background: none;
+            border: 2px solid var(--border);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            transition: all 0.3s ease;
+
+            &:hover {
+                border-color: var(--marreta);
+                background-color: var(--surface-hover);
+            }
+
+            .icon {
+                width: 18px;
+                height: 18px;
+                position: absolute;
+                transition: all 0.3s ease;
+                
+                &--sun {
+                    opacity: 1;
+                    transform: rotate(0deg) scale(1);
+                }
+                
+                &--moon {
+                    opacity: 0;
+                    transform: rotate(180deg) scale(0.8);
+                }
+                
+                [data-theme="dark"] & {
+                    filter: invert(1);
+                }
+            }
+
+            [data-theme="dark"] & {
+                .icon {
+                    &--sun {
+                        opacity: 0;
+                        transform: rotate(-180deg) scale(0.8);
+                    }
+                    
+                    &--moon {
+                        opacity: 1;
+                        transform: rotate(0deg) scale(1);
+                    }
+                }
+            }
         }
     }
 
@@ -137,7 +207,7 @@ header {
         left: 0;
         right: 0;
         bottom: 0;
-        background-color: var(--marreta);
+        background-color: var(--nav-mobile-bg);
         padding: var(--container_spacing) var(--container_spacing) calc(4*var(--container_spacing)) var(--container_spacing);
         z-index: 500;
         align-items: flex-end;
@@ -172,20 +242,20 @@ header {
             font-size: 24px;
             padding: 16px 0;
             border-bottom: 1px solid rgba(255, 255, 255, 0.24);
-            color: #fff;
+            color: var(--nav-mobile-text);
             text-decoration: none;
 
             @include mixin.devices(desktop) {
-                color: #333;
+                color: var(--nav-desktop-text);
                 font-size: initial;
                 padding: 0;
                 border-bottom: 0;
             }
 
             &:hover {
-                color: #fff;
+                color: var(--nav-mobile-text);
                 @include mixin.devices(desktop) {
-                    color: #007bff;
+                    color: var(--nav-desktop-hover);
                 }
             }
         }
@@ -204,14 +274,14 @@ header {
                 color: rgba(255,255,255,0.5);
                 padding: 0;
                 @include mixin.devices(desktop) {
-                    color: #333;
+                    color: var(--nav-desktop-text);
                     cursor: pointer;
                 }
 
                 &:hover {
                     color: rgba(255,255,255,0.5);
                     @include mixin.devices(desktop) {
-                        color: #007bff;
+                        color: var(--nav-desktop-hover);
                     }
                 }
             }
@@ -222,8 +292,8 @@ header {
                     top: 110%;
                     left: 0;
                     border-radius: 16px;
-                    background-color: #F4F4F5;
-                    border: 4px solid #F4F4F5;
+                    background-color: var(--surface);
+                    border: 4px solid var(--surface);
                     z-index: 10;
                     box-shadow: 0px 4px 6px 0px rgba(0, 0, 0, 0.05);
                     box-shadow: 0px 10px 15px 0px rgba(0, 0, 0, 0.1);
@@ -246,7 +316,7 @@ header {
                     font-weight: 600;
 
                     @include mixin.devices(desktop) {
-                        background-color: #fff;
+                        background-color: var(--background);
                         margin-top: 0;
                         margin-bottom: 4px;
                         padding: 8px 16px;
@@ -358,8 +428,8 @@ header {
             top: 110%;
             right: 0;
             border-radius: 16px;
-            background-color: #F4F4F5;
-            border: 4px solid #F4F4F5;
+            background-color: var(--surface);
+            border: 4px solid var(--surface);
             z-index: 10;
             box-shadow: 0px 4px 6px 0px rgba(0, 0, 0, 0.05);
             box-shadow: 0px 10px 15px 0px rgba(0, 0, 0, 0.1);
@@ -388,7 +458,7 @@ header {
                 font-weight: 600;
                 display: block;
                 padding: 8px 16px;
-                background-color: #fff;
+                background-color: var(--background);
                 display: flex;
                 align-items: center;
 
@@ -408,7 +478,7 @@ header {
 
         &.open {
             .extension__toggle {
-                background-color: #F4F4F5;
+                background-color: var(--surface);
                 color: var(--textmuted);
             }
 
@@ -428,7 +498,7 @@ main {
         font-size: 64px;
         line-height: 61.44px;
         text-align: center;
-        color: #000;
+        color: var(--header-text);
         max-width: 512px;
         margin: 0 auto;
     }
@@ -461,6 +531,11 @@ main {
                 top: -110px;
                 right: -180px;
                 z-index: 1;
+                transition: filter 0.3s ease;
+                
+                [data-theme="dark"] & {
+                    filter: invert(1);
+                }
             }
 
             max-width: 470px;
@@ -485,7 +560,7 @@ main {
                 }
 
                 input {
-                    background-color: #F4F4F5;
+                    background-color: var(--input-bg);
                     padding: 16px 0 16px 44px;
                     border: 0;
                     border-radius: 8px;
@@ -493,12 +568,13 @@ main {
                     box-sizing: border-box;
                     position: relative;
                     line-height: 1.3em;
+                    color: var(--text);
                 }
             }
 
             .paste {
-                background: rgb(244,244,245);
-                background: linear-gradient(90deg, rgba(244,244,245,0) 0%, rgba(244,244,245,1) 30%, rgba(244,244,245,1) 100%);
+                background: var(--input-bg);
+                background: linear-gradient(90deg, transparent 0%, var(--input-bg) 30%, var(--input-bg) 100%);
                 align-items: center;
                 z-index: 3;
                 position: absolute;
@@ -508,8 +584,13 @@ main {
                 cursor: pointer;
                 height: 48px;
                 display: flex;
+                
                 .icon {
-
+                    transition: filter 0.3s ease;
+                    
+                    [data-theme="dark"] & {
+                        filter: invert(1);
+                    }
                 }
             }
 
@@ -557,7 +638,7 @@ main {
     .plus {
         z-index: 3;
         position: relative;
-        background-color: rgba(244, 244, 245, 1);
+        background-color: var(--surface);
         margin-left: calc(-1*var(--container_spacing));
         margin-right: calc(-1*var(--container_spacing));
 

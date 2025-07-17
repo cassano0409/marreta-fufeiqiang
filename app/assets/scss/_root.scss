@@ -27,15 +27,51 @@
 	--font-weight: 500;
 	--line-height: 160%;
 
+	/* Light theme colors */
 	@include mixin.create-color('marreta', #3B82F6);
     @include mixin.create-color('text', #484848);
     @include mixin.create-color('textmuted', #818181);
     @include mixin.create-color('link', #3B82F6);
+    
+    /* Theme-aware colors */
+    --background: #ffffff;
+    --surface: #F4F4F5;
+    --surface-hover: #e4e4e7;
+    --border: #e4e4e7;
+    --header-text: #000000;
+    --nav-mobile-bg: var(--marreta);
+    --nav-mobile-text: #ffffff;
+    --nav-desktop-text: #333333;
+    --nav-desktop-hover: #007bff;
+    --input-bg: #F4F4F5;
+    --toast-error: rgb(247, 102, 97);
+    --toast-warning: rgb(247, 152, 97);
 
 	--container_spacing: 24px;
 	@include mixin.devices(desktop) {
         --container_spacing: 64px;
     }
+}
+
+/* Dark theme */
+[data-theme="dark"] {
+    @include mixin.create-color('marreta', #60A5FA);
+    @include mixin.create-color('text', #e5e5e5);
+    @include mixin.create-color('textmuted', #a1a1aa);
+    @include mixin.create-color('link', #60A5FA);
+    
+    --background: #000;
+    --surface: #1f1f1f;
+    --surface-hover: #2a2a2a;
+    --border: #2a2a2a;
+    --header-text: #ffffff;
+    --nav-mobile-bg: var(--marreta);
+    --nav-mobile-text: #ffffff;
+    --nav-desktop-text: #e5e5e5;
+    --nav-desktop-hover: #60A5FA;
+    --input-bg: #1f1f1f;
+    --toast-error: rgb(220, 38, 127);
+    --toast-warning: rgb(245, 158, 11);
 }
 
 html {

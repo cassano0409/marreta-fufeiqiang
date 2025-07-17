@@ -60,11 +60,19 @@
                     </div>
                 </div>
             </nav>
-            <div class="extension">
-                <button class="extension__toggle"><?php echo \Inc\Language::get('nav_extension'); ?></button>
-                <div class="extension__menu">
-                    <a target="_blank" href="https://addons.mozilla.org/pt-BR/firefox/addon/marreta/"><span class="name">Firefox</span><span class="icon icon--firefox"></span></a>
-                    <a target="_blank" href="https://chromewebstore.google.com/detail/marreta/ipelapagohjgjcgpncpbmaaacemafppe"><span class="name">Chrome</span><span class="icon icon--chrome"></span></a>
+            <div class="fast_buttons">
+                <div class="extension">
+                    <button class="extension__toggle"><?php echo \Inc\Language::get('nav_extension'); ?></button>
+                    <div class="extension__menu">
+                        <a target="_blank" href="https://addons.mozilla.org/pt-BR/firefox/addon/marreta/"><span class="name">Firefox</span><span class="icon icon--firefox"></span></a>
+                        <a target="_blank" href="https://chromewebstore.google.com/detail/marreta/ipelapagohjgjcgpncpbmaaacemafppe"><span class="name">Chrome</span><span class="icon icon--chrome"></span></a>
+                    </div>
+                </div>
+                <div class="theme-controls">
+                    <button class="theme-toggle" id="themeToggle">
+                        <span class="icon icon--sun"></span>
+                        <span class="icon icon--moon"></span>
+                    </button>
                 </div>
             </div>
         </header>
