@@ -81,6 +81,9 @@ return [
         'classElementRemove' => ['leaderboard__container'],
         'fetchStrategies' => 'fetchFromSelenium',
     ],
+    'cnn.com' => [
+        'fetchStrategies' => 'fetchFromSelenium',
+    ],
     'lepoint.fr' => [
         'classElementRemove' => ['paywall'],
     ],
