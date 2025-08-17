@@ -21,11 +21,6 @@ try {
         'SITE_URL'
     ])->notEmpty();
 
-    // Validate URL format
-    if (!filter_var($_ENV['SITE_URL'], FILTER_VALIDATE_URL)) {
-        throw new Exception('SITE_URL must be a valid URL');
-    }
-
     // Core system settings
     define('SITE_NAME', $_ENV['SITE_NAME']);
     define('SITE_DESCRIPTION', $_ENV['SITE_DESCRIPTION']);
